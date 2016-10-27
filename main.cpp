@@ -6,15 +6,78 @@
  */
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <cstdlib>
+#include <cstdio>
+
+#include <sys/time.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define N 50
+using namespace std;
 
-int main() {
-	//Node *buffer = new Node [N];
-	//uint32_t *index = new int [N]; // saving offset of buffer array
+int main(int argc,char **argv) {
+	cout << "Program is running " << endl;
+	struct timeval  tv1, tv2;
+	gettimeofday(&tv1, NULL);
+	clock_t begin = clock();
 
+	if (argc != 3) {
+		cerr << "Need TWO input files(Graph & Workload,respectively) as arguments" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	/**************		Read from Graph file	 **************/
+	char *graphFile = argv[1];
+	ifstream myFile;
+	myFile.open(graphFile);
+	string line; // 11.375753
+	if (myFile.is_open()) {
+		int source,dest;
+		while(getline(myFile, line)) {
+			istringstream iss(line);
+			if (!(iss >> source >> dest))
+				break;
+			cout << "Read " << source << " and " << dest << endl;
+		}
+	}
+	else
+		cerr << "Unable to open Graph file" << endl;
+	myFile.close();
+
+	/**************		Read from Workload file	 **************/
+	char *workFile = argv[2];
+	myFile.open(workFile);
+	if (myFile.is_open()) {
+		char Command;
+		int source,dest;
+		while(getline(myFile, line)) {
+			istringstream iss(line);
+			iss >> Command;
+			if (Command == 'Q') {
+				iss >> source >> dest;
+				cout << "Read command : " << Command << " with " << source << " and " << dest << endl;
+			}
+			else if (Command == 'A') {
+				iss >> source >> dest;
+				cout << "Read command : " << Command << " with " << source << " and " << dest << endl;
+			}
+			else if (Command == 'F') {
+				cout << "READ FUCK MOFO" << endl;
+			}
+		}
+	}
+	else
+		cerr << "Unable to open Workload file" << endl;
+	myFile.close();
+
+	gettimeofday(&tv2, NULL);
+	printf ("Total time = %f seconds\n",
+	         (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+	         (double) (tv2.tv_sec - tv1.tv_sec));
 
 	return EXIT_SUCCESS;
 }
