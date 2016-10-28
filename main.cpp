@@ -16,19 +16,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 50
+#include "Buffer.h"
+
 using namespace std;
 
 int main(int argc,char **argv) {
 	cout << "Program is running " << endl;
+
 	struct timeval  tv1, tv2;
 	gettimeofday(&tv1, NULL);
-	clock_t begin = clock();
 
 	if (argc != 3) {
 		cerr << "Need TWO input files(Graph & Workload,respectively) as arguments" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+	Buffer buffer;
+	Index index;
 
 	/**************		Read from Graph file	 **************/
 	char *graphFile = argv[1];
@@ -66,7 +70,7 @@ int main(int argc,char **argv) {
 				cout << "Read command : " << Command << " with " << source << " and " << dest << endl;
 			}
 			else if (Command == 'F') {
-				cout << "READ FUCK MOFO" << endl;
+				cout << "Read F*" << endl;
 			}
 		}
 	}
