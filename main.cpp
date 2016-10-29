@@ -31,8 +31,8 @@ int main(int argc,char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	Buffer buffer;
-	Index index;
+	Buffer *buffer = new Buffer();
+	Index *index = new Index();
 
 	/**************		Read from Graph file	 **************/
 	char *graphFile = argv[1];
@@ -40,11 +40,13 @@ int main(int argc,char **argv) {
 	myFile.open(graphFile);
 	string line; // 11.375753
 	if (myFile.is_open()) {
-		int source,dest;
+		uint32_t source,dest;
 		while(getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
 				break;
+			buffer->InsertBuffer(source,dest,index);
+			index->Insert(source,dest,buffer);
 			cout << "Read " << source << " and " << dest << endl;
 		}
 	}
@@ -82,6 +84,9 @@ int main(int argc,char **argv) {
 	printf ("Total time = %f seconds\n",
 	         (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
 	         (double) (tv2.tv_sec - tv1.tv_sec));
+
+	delete buffer;
+	delete index;
 
 	return EXIT_SUCCESS;
 }
