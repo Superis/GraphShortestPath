@@ -27,7 +27,7 @@ int main(int argc,char **argv) {
 	gettimeofday(&tv1, NULL);
 
 	if (argc != 3) {
-		cerr << "Need TWO input files(Graph & Workload,respectively) as arguments" << endl;
+		cerr << "Need TWO(not " << argc <<") input files(Graph & Workload,respectively) as arguments" << endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -45,14 +45,15 @@ int main(int argc,char **argv) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
 				break;
-			buffer->InsertBuffer(source,dest,index);
 			index->Insert(source,dest,buffer);
-			cout << "Read " << source << " and " << dest << endl;
+			buffer->InsertBuffer(source,dest,index);
+			//cout << "Read " << source << " and " << dest << endl;
 		}
 	}
 	else
 		cerr << "Unable to open Graph file" << endl;
 	myFile.close();
+	buffer->PrintBuffer(index);
 
 	/**************		Read from Workload file	 **************/
 	char *workFile = argv[2];
