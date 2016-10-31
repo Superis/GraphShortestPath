@@ -5,7 +5,7 @@
 #ifndef BUFFER_H_
 #define BUFFER_H_
 
-#define N 100
+#define N 4
 
 class Node {
 	//int id; na to prosthesoume gia extra sigouria?
@@ -23,6 +23,7 @@ public:
 
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
 	void SetNextNode(int);
+	int IsFull();
 
 	void PrintNeightbors();
 };
@@ -32,9 +33,7 @@ struct index_node {
 	//int id; // id of corresponding graph Node
 	int in; // offset of incoming node
 	int out; // offset of outcoming node
-	bool initIn; // check parameter if node is initialized
-	bool initOut;
-	//index_node() :in(0),out(0),initIn(false),initOut(false) {}
+	index_node() :in(-1),out(-1) {}
 };
 
 class Buffer;

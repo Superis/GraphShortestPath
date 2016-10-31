@@ -16,8 +16,8 @@ using namespace std;
 // Constructor & destructor are never used.
 Node::Node() : endPos(0),maxCapacity(N),nextNode(0) {
 	//for (int i = 0 ; i < N ; i++)
-		//neighbor[i] = -1;
-	//cout << "A Node has been created" << endl;
+	//	neighbor[i] = -1;
+//	cout << "A Node has been created" << endl;
 }
 
 Node::~Node() {
@@ -48,6 +48,13 @@ int Node::GetNextNode() {
 
 void Node::SetNextNode(int i) {
 	nextNode = i;
+}
+
+int Node::IsFull() {
+	if (endPos == maxCapacity)
+		return 1;
+	else
+		return 0;
 }
 
 void Node::PrintNeightbors() {
@@ -90,7 +97,7 @@ void Index::Insert(int src,int dest,Buffer *buf) {
 		}
 	}
 
-	if ( (indexArray[src].initOut == true) && (indexArray[dest].initIn == true) )
+	if ( (indexArray[src].out != -1) && (indexArray[dest].in != -1) )
 		// if initialized from previous Insert(s) do nothing -> return
 		return;
 
@@ -99,21 +106,19 @@ void Index::Insert(int src,int dest,Buffer *buf) {
 	 * then we "link" it with Buffer class by setting the offset values to
 	 * be equal with the corresponding cell of buffer arrays.
 	 */
-	if (indexArray[src].initOut == false) {
+	if (indexArray[src].out == -1) {
 		indexArray[src].out = buf->GetOutEnd();
-		indexArray[src].initOut = true;
 		buf->IncreaseEndPos('o');
 	}
-	if (indexArray[dest].initIn == false) {
+	if (indexArray[dest].in == -1) {
 		indexArray[dest].in = buf->GetIncEnd();
-		indexArray[dest].initIn = true;
 		buf->IncreaseEndPos('i');
 	}
 }
 
 void Index::Reallocate(int newCapacity) {
 	index_node *tmp = new index_node[indSize + newCapacity + 1];
-	memcpy(tmp,indexArray,indSize);
+	memcpy(tmp,indexArray,indSize * sizeof(index_node));
 	delete[] indexArray;
 	indexArray = tmp;
 	indSize = indSize + newCapacity + 1;
@@ -121,7 +126,7 @@ void Index::Reallocate(int newCapacity) {
 
 void Index::Print() {
 	for (int i = 0 ; i < indSize ; i++) {
-		cout << i << " bool : " << indexArray[i].initIn << " & " << indexArray[i].initOut << endl;
+		cout << i << " in : " << indexArray[i].in << " &  out " << indexArray[i].out << endl;
 	}
 }
 
@@ -193,9 +198,14 @@ void Buffer::InsertBuffer(int src, int dest,Index *index) {
 		while (outcoming[pos].GetNextNode() != 0) { // Find the non-full array cell to add neighbor
 			pos = outcoming[pos].GetNextNode();
 		}
-		outcoming[pos].SetNextNode(outEnd);
-		outcoming[outEnd].AddNeighbor(dest);
-		outEnd++;
+		if (outcoming[pos].IsFull()) { // if current pos full "allocate" the first available array cell
+			outcoming[pos].SetNextNode(outEnd);
+			outcoming[outEnd].AddNeighbor(dest);
+			outEnd++;
+		}
+		else {
+			outcoming[pos].AddNeighbor(dest);
+		}
 	}
 
 	//cout << "DEST adding " << dest << " @ "<< indexA[dest].in << endl;
@@ -204,16 +214,20 @@ void Buffer::InsertBuffer(int src, int dest,Index *index) {
 		while (incoming[pos].GetNextNode() != 0) {
 			pos = incoming[pos].GetNextNode();
 		}
-		incoming[pos].SetNextNode(incEnd);
-		incoming[incEnd].AddNeighbor(src);
-		incEnd++;
+		if (incoming[pos].IsFull()) {
+			incoming[pos].SetNextNode(incEnd);
+			incoming[incEnd].AddNeighbor(dest);
+			incEnd++;
+		}
+		else {
+			incoming[pos].AddNeighbor(dest);
+		}
 	}
 }
 
 void Buffer::IncreaseEndPos(char c) {
 	if (c == 'i') {
 		incEnd++;
-
 	}
 	else if (c == 'o')
 		outEnd++;
@@ -228,14 +242,14 @@ void Buffer::Reallocate(char c) {
 	// To poli poli vgazoume ton elenxo an trexei panta komple.
 	if (c == 'i') {
 		Node *tmp = new Node[2*incSize];
-		memcpy(tmp,incoming,incSize);
+		memcpy(tmp,incoming,incSize * sizeof(Node));
 		delete[] incoming;
 		incoming = tmp;
 		incSize = 2 * incSize;
 	}
 	else if (c == 'o') {
 		Node *tmp = new Node[2*outSize];
-		memcpy(tmp,outcoming,outSize);
+		memcpy(tmp,outcoming,outSize * sizeof(Node));
 		delete[] outcoming;
 		outcoming = tmp;
 		outSize = 2 * outSize;
@@ -243,38 +257,36 @@ void Buffer::Reallocate(char c) {
 }
 
 void Buffer::PrintBuffer(Index *index) {
-	cout << "Printing incoming array" << endl;
+	//index->Print();
 	index_node *a = index->GetIndexNode();
 	for (int i = 0 ; i < index->GetSize() ; i++) {
-		cout << a[i].out << " pos " << endl;
-		if ( (a[i].out == 0) && (i != 0) )
+		int pos = a[i].out;
+		if ( (pos == -1) && (i != 0) )
 			break; // break if we reached the end of array.
 		cout << "Printing outcoming of " << i << endl;
 		//outcoming[i].PrintNeightbors();
-		if (outcoming[a[i].out].GetNextNode() == 0) {
-			outcoming[i].PrintNeightbors();
-		}
-		else {
-			int pos = a[i].out;
-			while (outcoming[pos].GetNextNode() != 0) {
-				outcoming[a[i].out].PrintNeightbors();
-				pos = outcoming[pos].GetNextNode();
-			}
-		}
-
+		do {
+			cout << pos << " pos " << endl;
+			outcoming[pos].PrintNeightbors();
+			pos = outcoming[pos].GetNextNode();
+		} while (outcoming[pos].GetNextNode() != 0);
+		pos = a[i].in;
 		cout << "Printing incoming of " << i << endl;
-		if (incoming[a[i].in].GetNextNode() == 0) {
-			incoming[a[i].in].PrintNeightbors();
-		}
-		else {
-			int pos = a[i].in;
-			while (incoming[pos].GetNextNode() != 0) {
-				incoming[a[i].in].PrintNeightbors();
-				pos = incoming[pos].GetNextNode();
-			}
+		do {
+			cout << pos << " pos " << endl;
+			incoming[pos].PrintNeightbors();
+			pos = incoming[pos].GetNextNode();
+		} while (incoming[pos].GetNextNode() != 0);
 
-		}
 	}
+	/*cout << "Printing outcoming array" << endl;
+	for (int i = 0 ; i < outEnd ; i ++ ) {
+		outcoming[i].PrintNeightbors();
+	}
+	cout << "Printing incoming array" << endl;
+	for (int i = 0 ; i < incEnd ; i ++ ) {
+		incoming[i].PrintNeightbors();
+	}*/
 
 }
 
