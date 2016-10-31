@@ -13,7 +13,8 @@
 using namespace std;
 	/**************		Node class	 **************/
 
-Node::Node() : endPos(0),maxCapacity(N),nextNode(0) { // -1 means there isn't any nextNode.
+// Constructor & destructor are never used.
+Node::Node() : endPos(0),maxCapacity(N),nextNode(0) {
 	//cout << "A Node has been created" << endl;
 }
 
@@ -22,9 +23,9 @@ Node::~Node() {
 }
 
 void Node::Init() {
-	endPos = 0;
+	//endPos = 0;
 	maxCapacity = N;
-	nextNode = 0;
+	//nextNode = 0;
 }
 
 int Node::AddNeighbor(int i) {
@@ -39,7 +40,7 @@ int Node::AddNeighbor(int i) {
 	return 0;
 }
 
-uint32_t Node::GetNextNode() {
+int Node::GetNextNode() {
 	return nextNode;
 }
 
@@ -77,59 +78,34 @@ index_node* Index::GetIndexNode() {
 	return this->indexArray;
 }
 
-void Index::Insert(uint32_t src,uint32_t dest,Buffer *buf) {
+void Index::Insert(int src,int dest,Buffer *buf) {
 	// Checking if size of Array is enough for the 2 (new) values.If not realloc.
 	//this->Print();
 	if (src > dest) {
-		if (src > indSize) {
-			indexArray = (index_node*) realloc(indexArray,src * sizeof(index_node*));
+		if (src > indSize - 1) {
+			this->Reallocate(src);
 		}
 	}
 	else {
-		if (dest > indSize) {
-			indexArray = (index_node*) realloc(indexArray,dest * sizeof(index_node*));
+		if (dest  > indSize - 1) {
+			this->Reallocate(dest);
 		}
 	}
 
 	if ( (indexArray[src].initOut == true) && (indexArray[dest].initIn == true) )
 		// if initialized from previous Insert(s) do nothing -> return
 		return;
-	else if ( (indexArray[src].initOut == false) && (indexArray[dest].initIn == false) ) {
-		// anagkastika vazoume to index->insert prwto sti main!
-		/*
-		 * If it doesn't already exists in Index we insert it in the IndexArray[value] cell
-		 * then we "link" it with Buffer class by setting the offset values to
-		 * be equal with the corresponding cell of buffer arrays.
-		 */
-		if (buf->GetOutEnd() == 0) {
-			indexArray[src].out = 0;
-			indexArray[src].initOut = true;
-			buf->IncreaseEndPos('o');
-		}
-		else {
-			indexArray[src].out = buf->GetOutEnd();
-			indexArray[src].initOut = true;
-			buf->IncreaseEndPos('o');
-		}
-		// SHMEIWSH : edw einai i periptwsi pou kai ta 2 einai kainourgia stoixeia.
-		if (buf->GetIncEnd() == 0) {
-			indexArray[dest].in = 0;
-			indexArray[dest].initIn = true;
-			buf->IncreaseEndPos('i');
-		}
-		else {
-			indexArray[dest].in = buf->GetIncEnd();
-			indexArray[dest].initIn = true;
-			buf->IncreaseEndPos('i');
-		}
-	}
 
+	/*
+	 * If it doesn't already exists in Index we insert it in the IndexArray[value] cell
+	 * then we "link" it with Buffer class by setting the offset values to
+	 * be equal with the corresponding cell of buffer arrays.
+	 */
 	if (indexArray[src].initOut == false) {
 		indexArray[src].out = buf->GetOutEnd();
 		indexArray[src].initOut = true;
 		buf->IncreaseEndPos('o');
 	}
-
 	if (indexArray[dest].initIn == false) {
 		indexArray[dest].in = buf->GetIncEnd();
 		indexArray[dest].initIn = true;
@@ -138,18 +114,20 @@ void Index::Insert(uint32_t src,uint32_t dest,Buffer *buf) {
 }
 
 void Index::Reallocate(int newCapacity) {
-	index_node *tmp = (index_node*) realloc(indexArray,newCapacity * sizeof(index_node));
+	cout << "reallocating index with newCap : " << newCapacity + 1 << " from size :" << indSize << endl;
+	indSize = indSize + newCapacity + 1;
+	index_node *tmp = (index_node *) realloc(indexArray,indSize * sizeof(index_node));
 	if (tmp == NULL) {
 	    cout << "indexArray realloc failed!" << endl;
+	    exit(EXIT_FAILURE);
 	}
 	else {
 		indexArray = tmp;
 	}
-
 }
 
 void Index::Print() {
-	for (uint32_t i = 0 ; i < indSize ; i++) {
+	for (int i = 0 ; i < indSize ; i++) {
 		cout << i << " bool : " << indexArray[i].initIn << " & " << indexArray[i].initOut << endl;
 	}
 }
@@ -190,45 +168,43 @@ Node* Buffer::GetListNode(char c) {
 	return NULL;
 }
 
-uint32_t Buffer::GetIncEnd() {
+int Buffer::GetIncEnd() {
 	return incEnd;
 }
 
-uint32_t Buffer::GetOutEnd() {
+int Buffer::GetOutEnd() {
 	return outEnd;
 }
 
-void Buffer::InitBuffer(char c,uint32_t begin) {
+void Buffer::InitBuffer(char c,int begin) {
 	if (c == 'i') {
-		for (uint32_t i = begin ; i < incSize ; i++)
+		for (int i = begin ; i < incSize ; i++)
 			incoming[i].Init();
 	}
 	else if (c == 'o') {
-		for (uint32_t i = begin ; i < outSize ; i++)
+		for (int i = begin ; i < outSize ; i++)
 			outcoming[i].Init();
 	}
 	else { // an extra condition for Buffer constructor.
-		for (uint32_t i = begin ; i < incSize ; i++) {
+		for (int i = begin ; i < incSize ; i++) {
 			incoming[i].Init();
 			outcoming[i].Init();
 		}
 	}
 }
 
-void Buffer::InsertBuffer(uint32_t src, uint32_t dest,Index *index) {
+void Buffer::InsertBuffer(int src, int dest,Index *index) {
 	index_node *indexA = index->GetIndexNode();
 
 	if (outEnd >= outSize) { // must realloc
 		this->Reallocate('o');
-		this->InitBuffer('o',outSize/2);
 	}
 	if (incEnd >= incSize) {
 		this->Reallocate('i');
-		this->InitBuffer('i',incSize/2);
 	}
-	cout << "adding " << indexA[src].out << endl;
+	cout << "SRC adding " << src << " @ "<< indexA[src].out << endl;
 	if (outcoming[indexA[src].out].AddNeighbor(dest) == -1) { // need another array cell for storing data for this Node
-		uint32_t pos = indexA[src].out;
+		int pos = indexA[src].out;
 		while (outcoming[pos].GetNextNode() != 0) { // Find the non-full array cell to add neighbor
 			pos = outcoming[pos].GetNextNode();
 		}
@@ -237,9 +213,9 @@ void Buffer::InsertBuffer(uint32_t src, uint32_t dest,Index *index) {
 		outEnd++;
 	}
 
-	cout << "adding " << indexA[dest].in << endl;
+	cout << "DEST adding " << dest << " @ "<< indexA[dest].in << endl;
 	if (incoming[indexA[dest].in].AddNeighbor(src) == -1) {
-		uint32_t pos = indexA[dest].in;
+		int pos = indexA[dest].in;
 		while (incoming[pos].GetNextNode() != 0) {
 			pos = incoming[pos].GetNextNode();
 		}
@@ -250,8 +226,10 @@ void Buffer::InsertBuffer(uint32_t src, uint32_t dest,Index *index) {
 }
 
 void Buffer::IncreaseEndPos(char c) {
-	if (c == 'i')
+	if (c == 'i') {
 		incEnd++;
+
+	}
 	else if (c == 'o')
 		outEnd++;
 	else {
@@ -268,9 +246,12 @@ void Buffer::Reallocate(char c) {
 		Node *tmp = (Node*) realloc(incoming,incSize * sizeof(Node));
 		if (tmp == NULL) {
 		    cout << "Incoming realloc failed!" << endl;
+		    exit(EXIT_FAILURE);
 		}
 		else {
 		    incoming = tmp;
+			this->InitBuffer('i',incSize/2);
+
 		}
 		//incoming = (Node*) realloc(incoming,incSize * sizeof(Node));
 	}
@@ -279,17 +260,18 @@ void Buffer::Reallocate(char c) {
 		Node *tmp = (Node*) realloc(outcoming,incSize * sizeof(Node));
 		if (tmp == NULL) {
 		    cout << "outcoming realloc failed!" << endl;
+		    exit(EXIT_FAILURE);
 		}
 		else {
 			outcoming = tmp;
+			this->InitBuffer('o',outSize/2);
 		}
-		//outcoming = (Node*) realloc(outcoming,outSize * sizeof(Node));
 	}
 }
 
 void Buffer::PrintBuffer(Index *index) {
 	cout << "Printing incoming array" << endl;
-	for (uint32_t i = 0 ; i < index->GetSize() ; i++) {
+	for (int i = 0 ; i < index->GetSize() ; i++) {
 		index_node *a = index->GetIndexNode();
 		cout << a[i].out << " pos " << endl;
 
@@ -299,7 +281,7 @@ void Buffer::PrintBuffer(Index *index) {
 			outcoming[i].PrintNeightbors();
 		}
 		else {
-			uint32_t pos = a[i].out;
+			int pos = a[i].out;
 			while (outcoming[pos].GetNextNode() != 0) {
 				outcoming[a[i].out].PrintNeightbors();
 				pos = outcoming[pos].GetNextNode();
@@ -311,7 +293,7 @@ void Buffer::PrintBuffer(Index *index) {
 			incoming[a[i].in].PrintNeightbors();
 		}
 		else {
-			uint32_t pos = a[i].in;
+			int pos = a[i].in;
 			while (incoming[pos].GetNextNode() != 0) {
 				incoming[a[i].in].PrintNeightbors();
 				pos = incoming[pos].GetNextNode();

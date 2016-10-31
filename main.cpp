@@ -40,14 +40,16 @@ int main(int argc,char **argv) {
 	myFile.open(graphFile);
 	string line; // 11.375753
 	if (myFile.is_open()) {
-		uint32_t source,dest;
+		int source,dest;
 		while(getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
 				break;
+			if (dest == 17)
+				cout << "INc" << endl;
+			cout << "Read " << source << " and " << dest << endl;
 			index->Insert(source,dest,buffer);
 			buffer->InsertBuffer(source,dest,index);
-			//cout << "Read " << source << " and " << dest << endl;
 		}
 	}
 	else
