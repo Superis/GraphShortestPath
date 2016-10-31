@@ -45,9 +45,7 @@ int main(int argc,char **argv) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
 				break;
-			if (dest == 17)
-				cout << "INc" << endl;
-			cout << "Read " << source << " and " << dest << endl;
+			//cout << "Read " << source << " and " << dest << endl;
 			index->Insert(source,dest,buffer);
 			buffer->InsertBuffer(source,dest,index);
 		}
@@ -55,7 +53,7 @@ int main(int argc,char **argv) {
 	else
 		cerr << "Unable to open Graph file" << endl;
 	myFile.close();
-	buffer->PrintBuffer(index);
+	//buffer->PrintBuffer(index);
 
 	/**************		Read from Workload file	 **************/
 	char *workFile = argv[2];
@@ -66,7 +64,7 @@ int main(int argc,char **argv) {
 		while(getline(myFile, line)) {
 			istringstream iss(line);
 			iss >> Command;
-			if (Command == 'Q') {
+			/*if (Command == 'Q') {
 				iss >> source >> dest;
 				cout << "Read command : " << Command << " with " << source << " and " << dest << endl;
 			}
@@ -76,7 +74,7 @@ int main(int argc,char **argv) {
 			}
 			else if (Command == 'F') {
 				cout << "Read F*" << endl;
-			}
+			}*/
 		}
 	}
 	else

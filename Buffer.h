@@ -5,7 +5,7 @@
 #ifndef BUFFER_H_
 #define BUFFER_H_
 
-#define N 15
+#define N 100
 
 class Node {
 	//int id; na to prosthesoume gia extra sigouria?

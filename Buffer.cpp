@@ -5,9 +5,9 @@
  *      Author: alex
  */
 #include <iostream>
+#include <cstring>
 
 #include "Buffer.h"
-#include <stdio.h>
 
 
 using namespace std;
@@ -15,6 +15,8 @@ using namespace std;
 
 // Constructor & destructor are never used.
 Node::Node() : endPos(0),maxCapacity(N),nextNode(0) {
+	//for (int i = 0 ; i < N ; i++)
+		//neighbor[i] = -1;
 	//cout << "A Node has been created" << endl;
 }
 
@@ -32,7 +34,7 @@ int Node::AddNeighbor(int i) {
 	// mpainei stin arxi o elegxos giati an mpei meta to endPos++
 	// mporei na min exoume kapion extra geitona , opote spatali mnimis
 	if (endPos >= maxCapacity) {
-		cout << "endPos :" << endPos << " max :" << maxCapacity << endl;
+		//cout << "endPos :" << endPos << " max :" << maxCapacity << endl;
 		return -1;
 	}
 	neighbor[endPos] = i;
@@ -50,7 +52,7 @@ void Node::SetNextNode(int i) {
 
 void Node::PrintNeightbors() {
 	cout << flush;
-	for (int i = 0 ; i < N ; i++) {
+	for (int i = 0 ; i < endPos ; i++) {
 		cout << neighbor[i] << " ";
 	}
 	cout << endl;
@@ -61,16 +63,12 @@ void Node::PrintNeightbors() {
 	/**************		Index class 	**************/
 
 Index::Index() : indSize(N) {
-	indexArray = (index_node*) malloc(N * sizeof(index_node));
-	if (indexArray == NULL) {
-		cerr << "Failed to allocate memory for indexArray!" << endl;
-		exit(EXIT_FAILURE);
-	}
+	indexArray = new index_node [N];
 	cout << "An Index-data_type has been created." << endl;
 }
 
 Index::~Index() {
-	free(indexArray);
+	delete[] indexArray;
 	cout << "An Index-data_type has been deleted." << endl;
 }
 
@@ -114,16 +112,11 @@ void Index::Insert(int src,int dest,Buffer *buf) {
 }
 
 void Index::Reallocate(int newCapacity) {
-	cout << "reallocating index with newCap : " << newCapacity + 1 << " from size :" << indSize << endl;
+	index_node *tmp = new index_node[indSize + newCapacity + 1];
+	memcpy(tmp,indexArray,indSize);
+	delete[] indexArray;
+	indexArray = tmp;
 	indSize = indSize + newCapacity + 1;
-	index_node *tmp = (index_node *) realloc(indexArray,indSize * sizeof(index_node));
-	if (tmp == NULL) {
-	    cout << "indexArray realloc failed!" << endl;
-	    exit(EXIT_FAILURE);
-	}
-	else {
-		indexArray = tmp;
-	}
 }
 
 void Index::Print() {
@@ -137,23 +130,15 @@ void Index::Print() {
 	/**************		Buffer class	 **************/
 
 Buffer::Buffer() : incSize(N) , incEnd(0) , outSize(N) , outEnd(0) {
-	incoming = (Node*) malloc(N * sizeof(Node));
-	if (incoming == NULL) {
-		cerr << "Failed to allocate memory for incoming array!" << endl;
-		exit(EXIT_FAILURE);
-	}
-	outcoming = (Node*) malloc(N * sizeof(Node));
-	if (outcoming == NULL) {
-		cerr << "Failed to allocate memory for outcoming array!" << endl;
-		exit(EXIT_FAILURE);
-	}
-	this->InitBuffer('b',0);
+	incoming = new Node [N];
+	outcoming = new Node [N];
+	//this->InitBuffer('b',0);
 	cout << "A buffer-data_type has been created." << endl;
 }
 
 Buffer::~Buffer() {
-	free(incoming);
-	free(outcoming);
+	delete[] incoming;
+	delete[] outcoming;
 	cout << "A buffer-data_type has been deleted" << endl;
 }
 
@@ -202,7 +187,7 @@ void Buffer::InsertBuffer(int src, int dest,Index *index) {
 	if (incEnd >= incSize) {
 		this->Reallocate('i');
 	}
-	cout << "SRC adding " << src << " @ "<< indexA[src].out << endl;
+	//cout << "SRC adding " << src << " @ "<< indexA[src].out << endl;
 	if (outcoming[indexA[src].out].AddNeighbor(dest) == -1) { // need another array cell for storing data for this Node
 		int pos = indexA[src].out;
 		while (outcoming[pos].GetNextNode() != 0) { // Find the non-full array cell to add neighbor
@@ -213,7 +198,7 @@ void Buffer::InsertBuffer(int src, int dest,Index *index) {
 		outEnd++;
 	}
 
-	cout << "DEST adding " << dest << " @ "<< indexA[dest].in << endl;
+	//cout << "DEST adding " << dest << " @ "<< indexA[dest].in << endl;
 	if (incoming[indexA[dest].in].AddNeighbor(src) == -1) {
 		int pos = indexA[dest].in;
 		while (incoming[pos].GetNextNode() != 0) {
@@ -242,39 +227,28 @@ void Buffer::Reallocate(char c) {
 	// Thn allaxa elenxontas an einai valid to realloc.Alla tha argei kapws.
 	// To poli poli vgazoume ton elenxo an trexei panta komple.
 	if (c == 'i') {
-		incSize = incSize * 2;
-		Node *tmp = (Node*) realloc(incoming,incSize * sizeof(Node));
-		if (tmp == NULL) {
-		    cout << "Incoming realloc failed!" << endl;
-		    exit(EXIT_FAILURE);
-		}
-		else {
-		    incoming = tmp;
-			this->InitBuffer('i',incSize/2);
-
-		}
-		//incoming = (Node*) realloc(incoming,incSize * sizeof(Node));
+		Node *tmp = new Node[2*incSize];
+		memcpy(tmp,incoming,incSize);
+		delete[] incoming;
+		incoming = tmp;
+		incSize = 2 * incSize;
 	}
 	else if (c == 'o') {
-		outSize = outSize * 2;
-		Node *tmp = (Node*) realloc(outcoming,incSize * sizeof(Node));
-		if (tmp == NULL) {
-		    cout << "outcoming realloc failed!" << endl;
-		    exit(EXIT_FAILURE);
-		}
-		else {
-			outcoming = tmp;
-			this->InitBuffer('o',outSize/2);
-		}
+		Node *tmp = new Node[2*outSize];
+		memcpy(tmp,outcoming,outSize);
+		delete[] outcoming;
+		outcoming = tmp;
+		outSize = 2 * outSize;
 	}
 }
 
 void Buffer::PrintBuffer(Index *index) {
 	cout << "Printing incoming array" << endl;
+	index_node *a = index->GetIndexNode();
 	for (int i = 0 ; i < index->GetSize() ; i++) {
-		index_node *a = index->GetIndexNode();
 		cout << a[i].out << " pos " << endl;
-
+		if ( (a[i].out == 0) && (i != 0) )
+			break; // break if we reached the end of array.
 		cout << "Printing outcoming of " << i << endl;
 		//outcoming[i].PrintNeightbors();
 		if (outcoming[a[i].out].GetNextNode() == 0) {
