@@ -2,10 +2,19 @@
 #include <cstdlib>
 #include <stdint.h>
 
+
 #ifndef BUFFER_H_
 #define BUFFER_H_
 
 #define N 4
+
+/*static int value = N;
+
+inline void Redefinition() {
+	#undef N
+	#define N value
+	std::cout << value << std::endl;
+}*/
 
 class Node {
 	//int id; na to prosthesoume gia extra sigouria?
@@ -17,13 +26,13 @@ class Node {
 public:
 	Node();
 	~Node();
-	void Init();
 
 	int GetNextNode();
 
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
 	void SetNextNode(int);
 	int IsFull();
+	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 
 	void PrintNeightbors();
 };
@@ -42,7 +51,7 @@ class Index {
 	index_node *indexArray; // Dynamic array of graph indices
 	int indSize;
 public:
-	Index();
+	Index(int );
 	~Index();
 
 	index_node* GetIndexNode();
@@ -62,7 +71,7 @@ class Buffer {
 	int outSize;
 	int outEnd;
 public:
-	Buffer();
+	Buffer(int);
 	~Buffer();
 
 	Node* GetListNode(char);
@@ -72,7 +81,8 @@ public:
 	void InitBuffer(char , int); // initializing Buffer starting from "int"-th cell till maxSize
 	void InsertBuffer(int,int,Index*);
 	void IncreaseEndPos(char c);
-	int DestroyBuffer();
+	void AddNeighbor(int,int,Index*);
+	void Query(int,int,Index*);
 	/*
 	 * Increase capacity of Buffer data type.
 	 * if char == 'i' then realloc incoming array

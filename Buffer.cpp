@@ -9,25 +9,14 @@
 
 #include "Buffer.h"
 
-
 using namespace std;
 	/**************		Node class	 **************/
 
 // Constructor & destructor are never used.
-Node::Node() : endPos(0),maxCapacity(N),nextNode(0) {
-	//for (int i = 0 ; i < N ; i++)
-	//	neighbor[i] = -1;
-//	cout << "A Node has been created" << endl;
-}
+Node::Node() : endPos(0),maxCapacity(N),nextNode(0) {}
 
 Node::~Node() {
 	//cout << "A Node has been deleted" << endl;
-}
-
-void Node::Init() {
-	//endPos = 0;
-	maxCapacity = N;
-	//nextNode = 0;
 }
 
 int Node::AddNeighbor(int i) {
@@ -57,6 +46,14 @@ int Node::IsFull() {
 		return 0;
 }
 
+int Node::SearchNeighbors(int dest) {
+	for (int i = 0 ; i < endPos ; i++ ) {
+		if (neighbor[i] == dest)
+			return 0;
+	}
+	return 1;
+}
+
 void Node::PrintNeightbors() {
 	cout << flush;
 	for (int i = 0 ; i < endPos ; i++) {
@@ -69,8 +66,8 @@ void Node::PrintNeightbors() {
 
 	/**************		Index class 	**************/
 
-Index::Index() : indSize(N) {
-	indexArray = new index_node [N];
+Index::Index(int maxSize) : indSize(maxSize) {
+	indexArray = new index_node [maxSize];
 	cout << "An Index-data_type has been created." << endl;
 }
 
@@ -84,19 +81,6 @@ index_node* Index::GetIndexNode() {
 }
 
 void Index::Insert(int src,int dest,Buffer *buf) {
-	// Checking if size of Array is enough for the 2 (new) values.If not realloc.
-	//this->Print();
-	if (src > dest) {
-		if (src > indSize - 1) {
-			this->Reallocate(src);
-		}
-	}
-	else {
-		if (dest  > indSize - 1) {
-			this->Reallocate(dest);
-		}
-	}
-
 	if ( (indexArray[src].out != -1) && (indexArray[dest].in != -1) )
 		// if initialized from previous Insert(s) do nothing -> return
 		return;
@@ -116,13 +100,14 @@ void Index::Insert(int src,int dest,Buffer *buf) {
 	}
 }
 
+/*
 void Index::Reallocate(int newCapacity) {
 	index_node *tmp = new index_node[indSize + newCapacity + 1];
 	memcpy(tmp,indexArray,indSize * sizeof(index_node));
 	delete[] indexArray;
 	indexArray = tmp;
 	indSize = indSize + newCapacity + 1;
-}
+}*/
 
 void Index::Print() {
 	for (int i = 0 ; i < indSize ; i++) {
@@ -134,9 +119,9 @@ void Index::Print() {
 
 	/**************		Buffer class	 **************/
 
-Buffer::Buffer() : incSize(N) , incEnd(0) , outSize(N) , outEnd(0) {
-	incoming = new Node [N];
-	outcoming = new Node [N];
+Buffer::Buffer(int optVal) : incSize(optVal) , incEnd(0) , outSize(optVal) , outEnd(0) {
+	incoming = new Node [optVal];
+	outcoming = new Node [optVal];
 	//this->InitBuffer('b',0);
 	cout << "A buffer-data_type has been created." << endl;
 }
@@ -164,23 +149,6 @@ int Buffer::GetIncEnd() {
 
 int Buffer::GetOutEnd() {
 	return outEnd;
-}
-
-void Buffer::InitBuffer(char c,int begin) {
-	if (c == 'i') {
-		for (int i = begin ; i < incSize ; i++)
-			incoming[i].Init();
-	}
-	else if (c == 'o') {
-		for (int i = begin ; i < outSize ; i++)
-			outcoming[i].Init();
-	}
-	else { // an extra condition for Buffer constructor.
-		for (int i = begin ; i < incSize ; i++) {
-			incoming[i].Init();
-			outcoming[i].Init();
-		}
-	}
 }
 
 void Buffer::InsertBuffer(int src, int dest,Index *index) {
@@ -216,11 +184,11 @@ void Buffer::InsertBuffer(int src, int dest,Index *index) {
 		}
 		if (incoming[pos].IsFull()) {
 			incoming[pos].SetNextNode(incEnd);
-			incoming[incEnd].AddNeighbor(dest);
+			incoming[incEnd].AddNeighbor(src);
 			incEnd++;
 		}
 		else {
-			incoming[pos].AddNeighbor(dest);
+			incoming[pos].AddNeighbor(src);
 		}
 	}
 }
@@ -237,9 +205,25 @@ void Buffer::IncreaseEndPos(char c) {
 	}
 }
 
+void Buffer::AddNeighbor(int src,int dest,Index *index) {
+	index_node *indArray = index->GetIndexNode();
+	int pos = indArray[src].out;
+	do {
+		if (outcoming[pos].SearchNeighbors(dest) == 0) {
+			cout << "A :: Source node : " << src << " has already " << dest << " as neighbor" << endl;
+			return;
+		}
+		pos = outcoming[pos].GetNextNode();
+	} while (outcoming[pos].GetNextNode() != 0);
+	outcoming[pos].AddNeighbor(dest);
+}
+
+void Buffer::Query(int src,int dest,Index *index) {
+	index_node *indArray = index->GetIndexNode();
+
+}
+
 void Buffer::Reallocate(char c) {
-	// Thn allaxa elenxontas an einai valid to realloc.Alla tha argei kapws.
-	// To poli poli vgazoume ton elenxo an trexei panta komple.
 	if (c == 'i') {
 		Node *tmp = new Node[2*incSize];
 		memcpy(tmp,incoming,incSize * sizeof(Node));
@@ -259,24 +243,26 @@ void Buffer::Reallocate(char c) {
 void Buffer::PrintBuffer(Index *index) {
 	//index->Print();
 	index_node *a = index->GetIndexNode();
-	for (int i = 0 ; i < index->GetSize() ; i++) {
+	int size = index->GetSize();
+	for (int i = 0 ; i < size ; i++) {
 		int pos = a[i].out;
 		if ( (pos == -1) && (i != 0) )
 			break; // break if we reached the end of array.
 		cout << "Printing outcoming of " << i << endl;
 		//outcoming[i].PrintNeightbors();
 		do {
-			cout << pos << " pos " << endl;
 			outcoming[pos].PrintNeightbors();
 			pos = outcoming[pos].GetNextNode();
 		} while (outcoming[pos].GetNextNode() != 0);
+		outcoming[pos].PrintNeightbors();
+
 		pos = a[i].in;
 		cout << "Printing incoming of " << i << endl;
 		do {
-			cout << pos << " pos " << endl;
 			incoming[pos].PrintNeightbors();
 			pos = incoming[pos].GetNextNode();
 		} while (incoming[pos].GetNextNode() != 0);
+		incoming[pos].PrintNeightbors();
 
 	}
 	/*cout << "Printing outcoming array" << endl;
