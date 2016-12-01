@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Buffer.h"
+#include "buffer.h"
 
 using namespace std;
 
