@@ -3,10 +3,37 @@
 
 #include <cstdlib>
 #include <stdint.h>
+
 #define N 5
-class Index;
+
+struct IndexNode {
+	int in; // offset of incoming node
+	int out; // offset of outcoming node
+	int src_level;
+	int dest_level;
+	IndexNode() :in(-1), out(-1),src_level(-1),dest_level(-1) {}
+};
+
+class Buffer;
+
+class Index {
+	IndexNode *indexArray; // Dynamic array of graph indices
+	int indSize;
+public:
+	Index(int);
+	~Index();
+
+	IndexNode* GetIndexNode();
+	int GetSize() { return indSize; };
+	int NeighboursNum(int, char, Buffer*);
+	void Insert(int, int, Buffer *);
+	void Reallocate(int); // increase capacity of Index data type till == "int" | Realloc
+
+	void Print();
+};
+
 class Node {
-	//int id; na to prosthesoume gia extra sigouria?
+	int id;
 	int neighbor[N]; //the ids of the neighbor nodes
 	int endPos; // pointing to first empty cell of array.
 	int maxCapacity; // maxCapacity of arrays|Needed for reallocation.
@@ -15,7 +42,7 @@ class Node {
 public:
 	Node();
 	~Node();
-
+	void SetID(int ID) { id = ID; };
 	int GetNextNode();
 
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
@@ -23,37 +50,10 @@ public:
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
-	void PrintNeightbors();
 	int Get_MaxCap();
 	int Get_endPos();
 	int ShortestPath(Index*, char, int);
-};
-
-
-struct index_node {
-	int in; // offset of incoming node
-	int out; // offset of outcoming node
-	int src_level;
-	int dest_level;
-	index_node() :in(-1), out(-1),src_level(-1),dest_level(-1) {}
-};
-
-class Buffer;
-
-class Index {
-	index_node *indexArray; // Dynamic array of graph indices
-	int indSize;
-public:
-	Index(int);
-	~Index();
-
-	index_node* GetIndexNode();
-	int GetSize() { return indSize; };
-	int NeighboursNum(int, char, Buffer*);
-	void Insert(int, int, Buffer *);
-	void Reallocate(int); // increase capacity of Index data type till == "int" | Realloc
-
-	void Print();
+	void PrintNeightbors(int);
 };
 
 class Buffer {
@@ -63,7 +63,6 @@ class Buffer {
 	Node *outcoming; // Dynamic array of graph outcoming adjacency list
 	int outSize;
 	int outEnd;
-	int optVal;
 public:
 	Buffer(int);
 	~Buffer();

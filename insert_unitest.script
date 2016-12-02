@@ -1,0 +1,4 @@
+echo "Sorting file based of first column" 
+sort -s -n -k 1,1 ./small/smallGraph.txt > newSorted.txt
+echo "Comparing two files"
+diff --speed-large-files -w newSorted.txt graph.txt 

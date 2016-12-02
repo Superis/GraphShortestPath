@@ -2,12 +2,13 @@
 
 CC = g++
 CFLAGS = -c -Wall -g 
-SRCS = main.cpp Buffer.cpp
+SRCS = main.cpp buffer.cpp components.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = exec
-
+SCRIPT = insert_unitest.script
 	
 all : $(SRCS) $(EXE)
+	chmod +x $(SCRIPT)
 	@echo $(EXE) "HAS BEEN COMPILED" 
 	
 $(EXE): $(OBJS)

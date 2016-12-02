@@ -11,12 +11,13 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-//#include <sys/time.h>
+
+#include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Buffer.h"
+#include "buffer.h"
 
 using namespace std;
 
@@ -64,19 +65,12 @@ int main(int argc, char **argv) {
 	else
 		cerr << "Unable to open Graph file(1)" << endl;
 
-	/*value = optimalCell		Value;
-	Redefinition(); // auto den douleuei.mallon to define ginetai sto compile opote einai fixed.
-	// gia na doulepsei mallon prepei to neightbor na nai pointer.Rwtiste piazza an einai*/
-
-
 	Buffer *buffer = new Buffer(maxVal + 1);
 	Index *index = new Index(maxVal + 1);
 
 	/** Resetting file for second read**/
 	myFile.clear();
-	//cout<<"here"<<endl;
 	myFile.seekg(0, myFile.beg);
-	//cout<<"here"<<endl;
 
 	if (myFile.is_open()) {
 		int source, dest;
@@ -95,8 +89,11 @@ int main(int argc, char **argv) {
 	}
 	else
 		cerr << "Unable to open Graph file(2)" << endl;
+
 	myFile.close();
-	//buffer->PrintBuffer(index);
+	buffer->PrintBuffer(index);
+
+	ofstream result("results.txt");
 
 	/**************		Read from Workload file	 **************/
 	char *workFile = argv[2];
@@ -110,7 +107,7 @@ int main(int argc, char **argv) {
 			if (Command == 'Q') {
 				iss >> source >> dest;
 				//buffer->Query(source,dest,index);
-				cout << buffer->Query(source, dest, index) << endl;
+				result << buffer->Query(source, dest, index) << endl;
 			}
 			else if (Command == 'A') {
 				iss >> source >> dest;
@@ -126,14 +123,8 @@ int main(int argc, char **argv) {
 	else
 		cerr << "Unable to open Workload file" << endl;
 	myFile.close();
+	result.close();
 
-	//gettimeofday(&tv2, NULL);
-	/*printf ("Total time = %f seconds\n",
-	(double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-	(double) (tv2.tv_sec - tv1.tv_sec));*/
-
-	//	buffer->PrintBuffer(index);
-	//delete buffer;
 	delete buffer;
 	delete index;
 	return 0;
