@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "buffer.h"
+#include "Buffer.h"
 
 using namespace std;
 
@@ -41,14 +41,13 @@ int main(int argc, char **argv) {
 	myFile.open(graphFile);
 	string line;
 	int maxVal = 0;
-	//double optimalCellValue = 0;
 	/*
 	* Find :
 	* max value of file so we don't need to reallocate Index array.
 	* the average of neighbors for the most optimal allocation.
 	*/
 	if (myFile.is_open()) {
-		int source, dest;//, srcompare = -1, uniqueNodes = 0, linesCounter = 0;
+		int source, dest;
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))

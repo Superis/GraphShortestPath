@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <stdint.h>
 #define N 5
-
+class Index;
 class Node {
 	//int id; na to prosthesoume gia extra sigouria?
 	int neighbor[N]; //the ids of the neighbor nodes
@@ -26,27 +26,28 @@ public:
 	void PrintNeightbors();
 	int Get_MaxCap();
 	int Get_endPos();
-	int ShortestPath(int**, int**, int);
+	int ShortestPath(Index*, char, int);
 };
 
 
-struct IndexNode {
-	//int id; // id of corresponding graph Node
+struct index_node {
 	int in; // offset of incoming node
 	int out; // offset of outcoming node
-	IndexNode() :in(-1), out(-1) {}
+	int src_level;
+	int dest_level;
+	index_node() :in(-1), out(-1),src_level(-1),dest_level(-1) {}
 };
 
 class Buffer;
 
 class Index {
-	IndexNode *indexArray; // Dynamic array of graph indices
+	index_node *indexArray; // Dynamic array of graph indices
 	int indSize;
 public:
 	Index(int);
 	~Index();
 
-	IndexNode* GetIndexNode();
+	index_node* GetIndexNode();
 	int GetSize() { return indSize; };
 	int NeighboursNum(int, char, Buffer*);
 	void Insert(int, int, Buffer *);
@@ -62,6 +63,7 @@ class Buffer {
 	Node *outcoming; // Dynamic array of graph outcoming adjacency list
 	int outSize;
 	int outEnd;
+	int optVal;
 public:
 	Buffer(int);
 	~Buffer();
@@ -72,8 +74,7 @@ public:
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*);
 	int Query(int, int, Index*);
-	int SearchNodeNeighbours(Node*, char, int**, int**, int);
-	void Destroy();
+	int SearchNodeNeighbours(Node*,Index*, char, int);
 	/*
 	* Increase capacity of Buffer data type.
 	* if char == 'i' then realloc incoming array
