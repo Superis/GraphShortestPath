@@ -18,6 +18,7 @@
 #include <stdlib.h>
 
 #include "buffer.h"
+#include "components.h"
 
 using namespace std;
 
@@ -91,7 +92,13 @@ int main(int argc, char **argv) {
 		cerr << "Unable to open Graph file(2)" << endl;
 
 	myFile.close();
-	buffer->PrintBuffer(index);
+	//buffer->PrintBuffer(index); // insert_unitest
+	SCC strongCC;
+	strongCC.EstimateSCC(buffer,index);
+	strongCC.Print();
+	cout << "Waiting char" << endl;
+	getchar();
+
 
 	ofstream result("results.txt");
 
@@ -111,6 +118,7 @@ int main(int argc, char **argv) {
 			}
 			else if (Command == 'A') {
 				iss >> source >> dest;
+				index->CheckCap(source,dest); // Checking if reallocation is needed for Index
 				index->Insert(source, dest, buffer);
 				buffer->AddNeighbor(source, dest, index);
 			}
@@ -127,5 +135,6 @@ int main(int argc, char **argv) {
 
 	delete buffer;
 	delete index;
+	cout << "Program terminated successfully!" << endl;
 	return 0;
 }

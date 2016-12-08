@@ -9,9 +9,19 @@
 struct IndexNode {
 	int in; // offset of incoming node
 	int out; // offset of outcoming node
-	int src_level;
+	int src_level; // numbers the iteration in which this Node was discovered from source Node
 	int dest_level;
-	IndexNode() :in(-1), out(-1),src_level(-1),dest_level(-1) {}
+
+	// Part 2 Additions :
+	int recursive_level; // numbers the iteration this node was discovered.Mporw na xrisimopoihsw kai src_level kai na to thetw pali -1 sto telos
+	int index; // numbers the nodes consecutively in the order in which they are discovered
+	int lowlink; // smallest index of any node known to be reachable this->Node,this included
+	bool visited;
+	int componentID;
+	int parentNode;
+
+	IndexNode() : in(-1), out(-1), src_level(-1), dest_level(-1),
+		recursive_level(-1),index(-1), lowlink(-1), visited(false), componentID(-1) ,parentNode(-1) {}
 };
 
 class Buffer;
@@ -28,12 +38,13 @@ public:
 	int NeighboursNum(int, char, Buffer*);
 	void Insert(int, int, Buffer *);
 	void Reallocate(int); // increase capacity of Index data type till == "int" | Realloc
+	void CheckCap(int, int);
 
 	void Print();
 };
 
 class Node {
-	int id;
+	//int id;
 	int neighbor[N]; //the ids of the neighbor nodes
 	int endPos; // pointing to first empty cell of array.
 	int maxCapacity; // maxCapacity of arrays|Needed for reallocation.
@@ -42,8 +53,9 @@ class Node {
 public:
 	Node();
 	~Node();
-	void SetID(int ID) { id = ID; };
+	//void SetID(int ID) { id = ID; };
 	int GetNextNode();
+	int GetNeightbor(int pos) { return neighbor[pos]; };
 
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
 	void SetNextNode(int);
@@ -53,6 +65,11 @@ public:
 	int Get_MaxCap();
 	int Get_endPos();
 	int ShortestPath(Index*, char, int);
+
+	//Part 2
+	//void Tarjan(Stack<int>* stack,int*,IndexNode* indArr);
+
+
 	void PrintNeightbors(int);
 };
 

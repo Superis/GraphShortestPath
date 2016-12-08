@@ -9,14 +9,24 @@
 #define COMPONENTS_H_
 
 #include "buffer.h"
+#include "template_list.h"
+#include "template_stack.h"
 
+// MACRO using typeof/template.
+#define MIN(a,b) \
+    ({ typeof (a) _a = (a); \
+	typeof (b) _b = (b); \
+    _a < _b ? _a : _b; })
+
+// valte oti nomizetai stin tixi ta vala gia arxi
 #define NUM 20
 #define ROWS 50
 
 struct Component {
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
-	int* includedNodesID; //ids of included nodes
+	List<int> includedNodesID; //ids of included nodes
+	Component() : componentID(-1), nodesSum(0) {}
 };
 
 struct ComponentCursor {
@@ -24,15 +34,21 @@ struct ComponentCursor {
 };
 
 class SCC {
-	Component* components; // Components index - a vector which storesthe components information
+	List<Component*> components; // Components index - a vector which storesthe components information
 	int componentsCount;
 	int componentIDs[NUM]; //inverted index
+	int level;
 public:
-	SCC* EstimateSCC(IndexNode* );
+	SCC();
+	~SCC();
+	SCC* EstimateSCC(Buffer* ,Index* );
 	int FindNodeSCC_ID(ComponentCursor* );
 	bool NextSCC_ID(ComponentCursor* );
 	int EstimateShortestPathSCC(Buffer* ,int ,int );
 	bool DestroySCC();
+	void Tarjan(int ,Stack<int>* ,Index* ,Buffer*);
+
+	void Print();
 };
 
 struct UpdateIndex {

@@ -8,7 +8,6 @@ EXE = exec
 SCRIPT = insert_unitest.script
 	
 all : $(SRCS) $(EXE)
-	chmod +x $(SCRIPT)
 	@echo $(EXE) "HAS BEEN COMPILED" 
 	
 $(EXE): $(OBJS)
@@ -16,6 +15,9 @@ $(EXE): $(OBJS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
+	
+script :
+	chmod +x $(SCRIPT)
 
 clean :
 	@echo "Removing files"

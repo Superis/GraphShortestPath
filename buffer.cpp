@@ -32,7 +32,7 @@ ofstream bufOutput("graph.txt");
 /**************		Node class	 **************/
 
 // Constructor & destructor are never used.
-Node::Node() : id(0) , endPos(0), nextNode(0) {
+Node::Node() : endPos(0), nextNode(0) {
 	maxCapacity = N;
 }
 
@@ -157,14 +157,28 @@ void Index::Insert(int src, int dest, Buffer *buf) {
 	}
 }
 
-/*
+void Index::CheckCap(int src, int dest) {
+	if (src >= dest) {
+		if (src > this->indSize) {
+			cout << "SRC REALLOC" << endl;
+			Reallocate(src);
+		}
+	}
+	else {
+		if (dest > this->indSize) {
+			cout << "DEST REALLOC" << endl;
+			Reallocate(dest);
+		}
+	}
+}
+
  void Index::Reallocate(int newCapacity) {
  IndexNode *tmp = new IndexNode[indSize + newCapacity + 1];
  memcpy(tmp,indexArray,indSize * sizeof(IndexNode));
  delete[] indexArray;
  indexArray = tmp;
  indSize = indSize + newCapacity + 1;
- }*/
+ }
 
 int Index::NeighboursNum(int target, char c, Buffer *buf) {
 	Node* tmpnode = buf->GetListNode(c);
