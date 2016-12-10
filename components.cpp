@@ -58,7 +58,7 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 				cout << "Tarjan found child with subzero value" << endl;
 			}
 			indArr[target].recursive_level++;
-			if (indArr[child].visited == false) {
+			if (indArr[child].index == -1) {
 				indArr[child].index = level;
 				indArr[child].lowlink = level;
 				indArr[child].parentNode = target;
@@ -96,14 +96,22 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 				}
 				comp->nodesSum = size;
 				components.Push(comp);
-			}
-			// "recurse" one level backwards
-			int newTarget = indArr[target].parentNode;
-			if (newTarget != -10) {
-				indArr[newTarget].lowlink = MIN(indArr[newTarget].index,indArr[target].lowlink);
-				target = newTarget;
-			} else // if root ,break while loop.Finished
+				target = indArr[target].parentNode;
+				if (target == -10)
+					break;
+				else
+					continue;
+			} else {
+				// "recurse" one level backwards
+				int newTarget = indArr[target].parentNode;
+				if (newTarget != -10) {
+					indArr[newTarget].lowlink = MIN(indArr[newTarget].index,
+							indArr[target].lowlink);
+					target = newTarget;
+				} else
+					// if root ,break while loop.Finished
 				break;
+			}
 		}
 	}
 

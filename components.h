@@ -56,9 +56,9 @@ struct UpdateIndex {
 };
 
 class CC {
-	uint32_t ccindex[]; //CCIndex
+	int ccindex[ROWS]; //CCIndex
 	UpdateIndex* updateIndex;
-	uint32_t metricVal;
+	int metricVal;
 public:
 	CC* EstimateCC(Buffer* );
 	bool InsertNewEdge(int ,int );
