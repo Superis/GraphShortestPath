@@ -21,8 +21,9 @@ SCC* SCC::EstimateSCC(Buffer* buffer, Index* index) {
 	IndexNode *indArr = index->GetIndexNode();
 	int indexSize = index->GetSize();
 	Stack<int>* stack = new Stack<int>();
-	for (int i = 0 ; i < indexSize ; i++) {
-		if (indArr[i].visited == false) {
+	for (int i = 1 ; i < indexSize ; i++) {
+		// if Node is undefined : Tarjan
+		if (indArr[i].index == -1) {
 			Tarjan(i,stack,index,buffer);
 		}
 	}
@@ -31,25 +32,28 @@ SCC* SCC::EstimateSCC(Buffer* buffer, Index* index) {
 }
 
 void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
+	cout << "Entered node " << target << " tarjan" << endl;
 	IndexNode *indArr = index->GetIndexNode();
 	indArr[target].index = level;
 	indArr[target].lowlink = level;
 	level++;
 	stack->Push(target);
 	indArr[target].visited = true;
-	//indArr[target].parentNode = -10; // root value
+	indArr[target].parentNode = -10; // root value
+	indArr[target].recursive_level = 0;
 	Node *out = buffer->GetListNode('o');
 	if (out == NULL) {
 		cout << "\tERROR!Tarjan failed" << endl;
 		return;
 	}
-	//int count = 0 ;
-	while(1) {
-		//cout << count++ << endl;
+	int size = index->GetSize() ;
+	int neighborSum = 0 ,curlevel = 0 ,child = -1;
+	while(level <= size) {
 		// DFS
-		if (indArr[target].recursive_level < index->NeighboursNum(target,'o',buffer)) {
-			// get src_level-neighbor's ID from target-Node
-			int child = out->GetNeightbor(indArr[target].recursive_level);
+		neighborSum = index->NeighboursNum(target,'o',buffer);
+		curlevel = indArr[target].recursive_level;
+		if ( neighborSum > curlevel ) {
+			child = out[indArr[target].out].GetNeighbor(indArr[target].recursive_level);
 			if (child < 0) {
 				cout << "Tarjan found child with subzero value" << endl;
 			}
@@ -64,7 +68,7 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 				indArr[child].visited = true;
 				target = child;
 			} else if (indArr[child].visited == true) {
-				indArr[child].lowlink = MIN(indArr[child].lowlink,indArr[target].lowlink);
+				indArr[target].lowlink = MIN(indArr[child].lowlink,indArr[target].lowlink);
 			}
 		} else {
 			// found a SCC
@@ -95,10 +99,10 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 			}
 			// "recurse" one level backwards
 			int newTarget = indArr[target].parentNode;
-			if (newTarget > -1) {
+			if (newTarget != -10) {
 				indArr[newTarget].lowlink = MIN(indArr[newTarget].index,indArr[target].lowlink);
 				target = newTarget;
-			} else // if root break while loop.Finished
+			} else // if root ,break while loop.Finished
 				break;
 		}
 	}
@@ -106,7 +110,7 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 }
 
 void SCC::Print() {
-	cout << "Found " << componentsCount << " overall SCC" << endl;
+	cout << "Found " << componentsCount << " overall SCC : " << level << endl;
 	Component *temp;
 	while(!components.isEmpty()) {
 		temp = components.PopHead();

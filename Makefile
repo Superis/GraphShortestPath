@@ -1,7 +1,7 @@
 #Compiler settings
 
 CC = g++
-CFLAGS = -c -Wall -g 
+CFLAGS = -c -Wall -g
 SRCS = main.cpp buffer.cpp components.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = exec
@@ -22,4 +22,7 @@ script :
 clean :
 	@echo "Removing files"
 	rm $(EXE) *.o
-	
+
+rebuild :
+	make clean
+	make

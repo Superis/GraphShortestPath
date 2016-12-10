@@ -2,6 +2,7 @@
 #define _TEMPLATE__STACK_H
 
 #include <iostream>
+#include <stdexcept>
 
 template<class T>
 class Stack {
@@ -13,11 +14,11 @@ class Stack {
 		}
 	};
 
-	StackNode *head, *last;
+	StackNode *head;
 	int size;
 public:
 	Stack() :
-			head(NULL),last(NULL),size(0) {
+			head(NULL),size(0) {
 		//std::cout << "Stack was constructed" << std::endl;
 	}
 	~Stack() {
@@ -52,8 +53,7 @@ T Stack<T>::Pop() {
 		return data;
 	}
 	else {
-		std::cout << "EMPTY STACK" << std::endl;
-		return -1;
+		return NULL;
 	}
 }
 

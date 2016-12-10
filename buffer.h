@@ -44,7 +44,6 @@ public:
 };
 
 class Node {
-	//int id;
 	int neighbor[N]; //the ids of the neighbor nodes
 	int endPos; // pointing to first empty cell of array.
 	int maxCapacity; // maxCapacity of arrays|Needed for reallocation.
@@ -53,9 +52,9 @@ class Node {
 public:
 	Node();
 	~Node();
-	//void SetID(int ID) { id = ID; };
+
 	int GetNextNode();
-	int GetNeightbor(int pos) { return neighbor[pos]; };
+	int GetNeighbor(int pos) { return neighbor[pos]; };
 
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
 	void SetNextNode(int);

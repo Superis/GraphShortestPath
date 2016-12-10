@@ -28,10 +28,6 @@ inline int max(int a, int b) {
 
 int main(int argc, char **argv) {
 	cout << "Program is running " << endl;
-
-	//struct timeval  tv1, tv2;
-	//gettimeofday(&tv1, NULL);
-
 	if (argc != 3) {
 		cerr << "Need TWO(not " << argc << ") input files(Graph & Workload,respectively) as arguments" << endl;
 		exit(EXIT_FAILURE);
@@ -79,18 +75,14 @@ int main(int argc, char **argv) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
 				break;
-			//cout << "Read " << source << " and " << dest << endl;
-			//if (source == 16)
-			//cout << endl;
 			index->Insert(source, dest, buffer);
-			//cout<<"index inserted"<<endl;
 			buffer->InsertBuffer(source, dest, index);
-			//cout<<"buff inserted"<<endl;
 		}
 	}
 	else
 		cerr << "Unable to open Graph file(2)" << endl;
 
+	cout << "Index & Graph were created." << endl;
 	myFile.close();
 	//buffer->PrintBuffer(index); // insert_unitest
 	SCC strongCC;
@@ -113,7 +105,6 @@ int main(int argc, char **argv) {
 			iss >> Command;
 			if (Command == 'Q') {
 				iss >> source >> dest;
-				//buffer->Query(source,dest,index);
 				result << buffer->Query(source, dest, index) << endl;
 			}
 			else if (Command == 'A') {
