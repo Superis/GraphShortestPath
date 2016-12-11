@@ -541,7 +541,7 @@ int Buffer::Find_Components(Node*S,Index *ind){
 	}
 }	
 
-int Buffer::BFS(Index*index,int out_position,in_position,component){
+int Buffer::BFS(Index*index,int out_position,in_position,int component){
 	IndexNode*indarr=index->GetIndexNode();
 	int outTemp;
 	int inTemp;
