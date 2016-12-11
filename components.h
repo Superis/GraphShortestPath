@@ -41,12 +41,12 @@ class SCC {
 public:
 	SCC();
 	~SCC();
-	SCC* EstimateSCC(Buffer* ,Index* );
+	SCC* EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(ComponentCursor* );
 	bool NextSCC_ID(ComponentCursor* );
 	int EstimateShortestPathSCC(Buffer* ,int ,int );
 	bool DestroySCC();
-	void Tarjan(int ,Stack<int>* ,Index* ,Buffer*);
+	void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int);
 
 	void Print();
 };
@@ -56,9 +56,9 @@ struct UpdateIndex {
 };
 
 class CC {
-	uint32_t ccindex[]; //CCIndex
+	int ccindex[ROWS]; //CCIndex
 	UpdateIndex* updateIndex;
-	uint32_t metricVal;
+	int metricVal;
 public:
 	CC* EstimateCC(Buffer* );
 	bool InsertNewEdge(int ,int );

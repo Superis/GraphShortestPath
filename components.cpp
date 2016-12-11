@@ -17,21 +17,21 @@ SCC::~SCC() {
 	//delete components;
 }
 
-SCC* SCC::EstimateSCC(Buffer* buffer, Index* index) {
+SCC* SCC::EstimateSCC(Buffer* buffer, Index* index ,int max) {
 	IndexNode *indArr = index->GetIndexNode();
 	int indexSize = index->GetSize();
 	Stack<int>* stack = new Stack<int>();
-	for (int i = 1 ; i < indexSize ; i++) {
+	for (int i = 0 ; i < indexSize ; i++) {
 		// if Node is undefined : Tarjan
 		if (indArr[i].index == -1) {
-			Tarjan(i,stack,index,buffer);
+			Tarjan(i,stack,index,buffer,max);
 		}
 	}
 	delete stack;
 	return NULL;
 }
 
-void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
+void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int max) {
 	cout << "Entered node " << target << " tarjan" << endl;
 	IndexNode *indArr = index->GetIndexNode();
 	indArr[target].index = level;
@@ -53,12 +53,14 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 		neighborSum = index->NeighboursNum(target,'o',buffer);
 		curlevel = indArr[target].recursive_level;
 		if ( neighborSum > curlevel ) {
-			child = out[indArr[target].out].GetNeighbor(indArr[target].recursive_level);
-			if (child < 0) {
-				cout << "Tarjan found child with subzero value" << endl;
+			cout << curlevel << " @ " << target << " & " << index->NeighboursNum(target,'o',buffer) << endl;
+			child = index->GetNeighbor(target,buffer);//out[indArr[target].out].GetNeighbor(indArr[target].recursive_level,target,index,buffer);
+			if (child < 0 || child > max) {
+				cout << "Tarjan found child with unidentified value :" << child << endl;
+				break;
 			}
 			indArr[target].recursive_level++;
-			if (indArr[child].visited == false) {
+			if (indArr[child].index == -1) {
 				indArr[child].index = level;
 				indArr[child].lowlink = level;
 				indArr[child].parentNode = target;
@@ -96,14 +98,22 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer) {
 				}
 				comp->nodesSum = size;
 				components.Push(comp);
-			}
-			// "recurse" one level backwards
-			int newTarget = indArr[target].parentNode;
-			if (newTarget != -10) {
-				indArr[newTarget].lowlink = MIN(indArr[newTarget].index,indArr[target].lowlink);
-				target = newTarget;
-			} else // if root ,break while loop.Finished
+				target = indArr[target].parentNode;
+				if (target == -10)
+					break;
+				else
+					continue;
+			} else {
+				// "recurse" one level backwards
+				int newTarget = indArr[target].parentNode;
+				if (newTarget != -10) {
+					indArr[newTarget].lowlink = MIN(indArr[newTarget].index,
+							indArr[target].lowlink);
+					target = newTarget;
+				} else
+					// if root ,break while loop.Finished
 				break;
+			}
 		}
 	}
 

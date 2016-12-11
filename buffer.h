@@ -8,7 +8,9 @@
 
 struct IndexNode {
 	int in; // offset of incoming node
+	int inlast; //last offset of incoming neighbors
 	int out; // offset of outcoming node
+	int outlast; // last offset of outcoming neighbors
 	int src_level; // numbers the iteration in which this Node was discovered from source Node
 	int dest_level;
 
@@ -20,7 +22,7 @@ struct IndexNode {
 	int componentID;
 	int parentNode;
 
-	IndexNode() : in(-1), out(-1), src_level(-1), dest_level(-1),
+	IndexNode() : in(-1), inlast(-1), out(-1), outlast(-1), src_level(-1), dest_level(-1),
 		recursive_level(-1),index(-1), lowlink(-1), visited(false), componentID(-1) ,parentNode(-1) {}
 };
 
@@ -35,6 +37,8 @@ public:
 
 	IndexNode* GetIndexNode();
 	int GetSize() { return indSize; };
+	int GetNeighbor(int ,Buffer* );
+
 	int NeighboursNum(int, char, Buffer*);
 	void Insert(int, int, Buffer *);
 	void Reallocate(int); // increase capacity of Index data type till == "int" | Realloc
@@ -45,7 +49,7 @@ public:
 
 class Node {
 	int neighbor[N]; //the ids of the neighbor nodes
-	int endPos; // pointing to first empty cell of array.
+	int endPos; // pointing to first empty cell of array.When full endpos == maxcapcity
 	int maxCapacity; // maxCapacity of arrays|Needed for reallocation.
 	int edgeProperty[N]; //property for each edge
 	int nextNode;
@@ -54,22 +58,20 @@ public:
 	~Node();
 
 	int GetNextNode();
-	int GetNeighbor(int pos) { return neighbor[pos]; };
+	int GetNeighbor(int);
+	int GetCapacity() { return maxCapacity; };
+	int GetEndPos() { return endPos; };
+
+	void SetNextNode(int);
 
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
-	void SetNextNode(int);
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
-	int Get_MaxCap();
-	int Get_endPos();
 	int ShortestPath(Index*, char, int);
 
-	//Part 2
-	//void Tarjan(Stack<int>* stack,int*,IndexNode* indArr);
-
-
-	void PrintNeightbors(int);
+	void PrintNeightbors(int,char);
+	void PrintNeightborsINC(int);
 };
 
 class Buffer {
@@ -85,6 +87,7 @@ public:
 	Node* GetListNode(char);
 	int GetIncEnd();
 	int GetOutEnd();
+
 	void InsertBuffer(int, int, Index*);
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*);

@@ -81,18 +81,27 @@ int main(int argc, char **argv) {
 	}
 	else
 		cerr << "Unable to open Graph file(2)" << endl;
+	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	myFile.close();
-	//buffer->PrintBuffer(index); // insert_unitest
-	SCC strongCC;
-	strongCC.EstimateSCC(buffer,index);
-	strongCC.Print();
+	buffer->PrintBuffer(index); // insert_unitest
+	/* get neighbors unit test
+	int x =index->NeighboursNum(17,'o',buffer);
+	do {
+		index->GetIndexNode()[17].recursive_level++;
+		cout << index->GetIndexNode()[17].recursive_level << " :: "<< index->GetNeighbor(17,buffer) << endl;
+
+	} while(index->GetIndexNode()[17].recursive_level < x);
+	cout << index->GetIndexNode()[17].recursive_level << " & " << x << endl;
 	cout << "Waiting char" << endl;
-	getchar();
+	getchar();*/
+	SCC strongCC;
+	//strongCC.EstimateSCC(buffer,index,maxVal);
+	//strongCC.Print();
+	cout << "Waiting char" << endl;
+	//getchar();
 
-
-	ofstream result("results.txt");
+	ofstream result("results.txt"); //output file for Queries
 
 	/**************		Read from Workload file	 **************/
 	char *workFile = argv[2];

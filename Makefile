@@ -26,3 +26,6 @@ clean :
 rebuild :
 	make clean
 	make
+
+cleanTXT :
+	rm REVERSEDSorted.txt newSorted.txt graphINCOMING_REVERSED.txt graphOUTCOMING.txt results.txt

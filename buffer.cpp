@@ -4,13 +4,7 @@
  *  Created on: Oct 27, 2016
  *      Author: alex
  */
-/*
- * Buffer.cpp
- *
- *  Created on: Oct 27, 2016
- *      Author:
 
- */
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -27,7 +21,8 @@
 
 using namespace std;
 
-ofstream bufOutput("graph.txt");
+ofstream bufOutput("graphOUTCOMING.txt");
+ofstream bufincoming("graphINCOMING_REVERSED.txt");
 
 /**************		Node class	 **************/
 
@@ -43,7 +38,7 @@ Node::~Node() {
 int Node::AddNeighbor(int i) {
 	// mpainei stin arxi o elegxos giati an mpei meta to endPos++
 	// mporei na min exoume kapion extra geitona , opote spatali mnimis
-	if (endPos >= maxCapacity) {
+	if (endPos >= maxCapacity) { // reached max cap
 		//cout << "endPos :" << endPos << " max :" << maxCapacity << endl;
 		return -1;
 	}
@@ -54,6 +49,10 @@ int Node::AddNeighbor(int i) {
 
 int Node::GetNextNode() {
 	return nextNode;
+}
+
+int Node::GetNeighbor(int pos) {
+	return neighbor[pos];
 }
 
 void Node::SetNextNode(int i) {
@@ -75,14 +74,21 @@ int Node::SearchNeighbors(int dest) {
 	return 1;
 }
 
-void Node::PrintNeightbors(int src) {
-	//cout << flush;
-	for (int i = 0; i < endPos; i++) {
-		if (neighbor[i] >= 0) {
-			bufOutput << setw(8) << src << std::left << neighbor[i] << endl;
+void Node::PrintNeightbors(int src ,char c) {
+	if (c == 'o') {
+		for (int i = 0; i < endPos; i++) {
+			if (neighbor[i] >= 0) {
+				bufOutput << setw(8) << std::left << src << neighbor[i] << endl;
+			}
 		}
 	}
-	//cout << endl;
+	else if (c == 'i'){
+		for (int i = 0; i < endPos; i++) {
+			if (neighbor[i] >= 0) {
+				bufincoming << setw(8) << std::left << neighbor[i] << src << endl;
+			}
+		}
+	}
 }
 
 int Node::ShortestPath(Index* index, char direction, int level) {
@@ -109,15 +115,6 @@ int Node::ShortestPath(Index* index, char direction, int level) {
 		return -nextNode;
 	else
 		return 0;
-
-}
-
-int Node::Get_MaxCap() {
-	return maxCapacity;
-}
-
-int Node::Get_endPos() {
-	return endPos;
 }
 
 /**************		Index class 	**************/
@@ -137,11 +134,42 @@ IndexNode* Index::GetIndexNode() {
 	return this->indexArray;
 }
 
+int Index::GetNeighbor(int target, Buffer* buffer) {
+	int cap,pos,endPos,nextNode;
+	Node *out = buffer->GetListNode('o');
+	endPos = out[indexArray[target].out].GetEndPos();
+	pos = indexArray[target].recursive_level;
+	cap = out[indexArray[target].out].GetCapacity();
+	if (cap == 0) {
+		cout << "ZEROOOOOOOOOOOOOO with target : " << target << " @ : " << indexArray[target].out << endl;
+		return -1;
+	}
+	nextNode = out[indexArray[target].out].GetNextNode();
+	// Checking where the requested neighbor is located.
+	if (pos >= endPos ) {
+		if (nextNode == 0) {
+			cout << "Wrong neighbor pos :: out of reach!" << endl;
+			return -1;
+		}
+		//iterate through Nodes that contain the rest neighbors
+		int count = 0,targetNode;
+		targetNode = pos/cap; // = node that the neighbor is located
+		nextNode = indexArray[target].out;
+		do {
+			count++;
+			nextNode = buffer->GetListNode('o')[nextNode].GetNextNode();
+		} while (count != targetNode);
+		int newpos = pos%cap;
+		return out[nextNode].GetNeighbor(newpos);
+	}
+	else // it's located at the first node.
+		return out[indexArray[target].out].GetNeighbor(pos);
+}
+
 void Index::Insert(int src, int dest, Buffer *buf) {
 	if ((indexArray[src].out != -1) && (indexArray[dest].in != -1))
 		// if initialized from previous Insert(s) do nothing -> return
 		return;
-
 	/*
 	 * If it doesn't already exists in Index we insert it in the IndexArray[value] cell
 	 * then we "link" it with Buffer class by setting the offset values to
@@ -149,10 +177,12 @@ void Index::Insert(int src, int dest, Buffer *buf) {
 	 */
 	if (indexArray[src].out == -1) {
 		indexArray[src].out = buf->GetOutEnd();
+		indexArray[src].outlast = buf->GetOutEnd();
 		buf->IncreaseEndPos('o');
 	}
 	if (indexArray[dest].in == -1) {
 		indexArray[dest].in = buf->GetIncEnd();
+		indexArray[dest].inlast = buf->GetIncEnd();
 		buf->IncreaseEndPos('i');
 	}
 }
@@ -173,11 +203,11 @@ void Index::CheckCap(int src, int dest) {
 }
 
  void Index::Reallocate(int newCapacity) {
- IndexNode *tmp = new IndexNode[indSize + newCapacity + 1];
- memcpy(tmp,indexArray,indSize * sizeof(IndexNode));
- delete[] indexArray;
- indexArray = tmp;
- indSize = indSize + newCapacity + 1;
+	 IndexNode *tmp = new IndexNode[indSize + newCapacity + 1];
+	 memcpy(tmp,indexArray,indSize * sizeof(IndexNode));
+	 delete[] indexArray;
+	 indexArray = tmp;
+	 indSize = indSize + newCapacity + 1;
  }
 
 int Index::NeighboursNum(int target, char c, Buffer *buf) {
@@ -189,15 +219,17 @@ int Index::NeighboursNum(int target, char c, Buffer *buf) {
 		pos = indexArray[target].in;
 	int end;
 	int sum = 0;
+	if (pos == -1) // no neighbors
+		return 0;
 	do {
-		end = tmpnode[pos].Get_endPos();
-		if (end < tmpnode[pos].Get_MaxCap())
+		end = tmpnode[pos].GetEndPos();
+		if (end < tmpnode[pos].GetCapacity())
 			return sum + end;
 		else {
 			sum += end;
 			pos = tmpnode[pos].GetNextNode();
 		}
-	} while (pos != 0);
+	} while (pos != 0); // add up the neighbors until there is not NextNode
 	return sum;
 }
 
@@ -250,35 +282,20 @@ void Buffer::InsertBuffer(int src, int dest, Index *index) {
 	if (incEnd >= incSize) {
 		this->Reallocate('i');
 	}
-	if (outcoming[indexA[src].out].AddNeighbor(dest) == -1) { // need another array cell for storing data for this Node
-		int pos = indexA[src].out;
-		while (outcoming[pos].GetNextNode() != 0) { // Find the non-full array cell to add neighbor
-			pos = outcoming[pos].GetNextNode();
-		}
-		if (outcoming[pos].IsFull()) { // if current pos full "allocate" the first available array cell
-			outcoming[pos].SetNextNode(outEnd);
-			if (outcoming[outEnd].AddNeighbor(dest) == -1) {
-				cout << "cannot add neighbor" << endl;
-			}
-			outEnd++;
-		} else {
-			if (outcoming[pos].AddNeighbor(dest) == -1) {
-				cout << "wrong positi[wkl;uion" << endl;
-			}
-		}
+	if (outcoming[indexA[src].outlast].AddNeighbor(dest) == -1) {
+		outcoming[indexA[src].outlast].SetNextNode(outEnd);
+		indexA[src].outlast = outEnd;
+		if (outcoming[indexA[src].outlast].AddNeighbor(dest) == -1)
+			cout << "Wrong insert @ outcoming" << endl;
+		outEnd++;
 	}
-	if (incoming[indexA[dest].in].AddNeighbor(src) == -1) {
-		int pos = indexA[dest].in;
-		while (incoming[pos].GetNextNode() != 0) {
-			pos = incoming[pos].GetNextNode();
-		}
-		if (incoming[pos].IsFull()) {
-			incoming[pos].SetNextNode(incEnd);
-			incoming[incEnd].AddNeighbor(src);
-			incEnd++;
-		} else {
-			incoming[pos].AddNeighbor(src);
-		}
+
+	if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1) {
+		incoming[indexA[dest].inlast].SetNextNode(incEnd);
+		indexA[dest].inlast = incEnd;
+		if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1)
+			cout << "Wrong insert @ incoming" << endl;
+		incEnd++;
 	}
 }
 
@@ -310,10 +327,10 @@ void Buffer::AddNeighbor(int src, int dest, Index *index) {
 int Buffer::Query(int src, int dest, Index *index) {
 	IndexNode *indArray = index->GetIndexNode();
 	int l = index->GetSize();
-	int src_pos;	//= indArray[src].out;
-	Node* src_node;				//=&(outcoming[src_pos]);
-	int dest_pos;				// = indArray[src].in;
-	Node* dest_node;				// = &(incoming[dest_pos]);
+	int src_pos; //= indArray[src].out;
+	Node* src_node; //=&(outcoming[src_pos]);
+	int dest_pos; // = indArray[src].in;
+	Node* dest_node; // = &(incoming[dest_pos]);
 	indArray[src].src_level = 0;
 	indArray[dest].dest_level = 0;
 	int level = 1;
@@ -332,13 +349,8 @@ int Buffer::Query(int src, int dest, Index *index) {
 				if (indArray[i].src_level == level - 1) {
 					counter_s++;
 					src_pos = indArray[i].out;
-					if (src_pos == -1) {
-						for (int p = 0; p < l; p++) {
-							indArray[p].src_level = -1;
-							indArray[p].dest_level = -1;
-						}
-						return -1;
-					}
+					if (src_pos == -1)
+						continue;
 					src_node = &(outcoming[src_pos]);
 					k = this->SearchNodeNeighbours(src_node, index, 's', level);
 					if (k > 0) {
@@ -358,13 +370,8 @@ int Buffer::Query(int src, int dest, Index *index) {
 				if (indArray[i].dest_level == level - 1) {
 					counter_d++;
 					dest_pos = indArray[i].in;
-					if (dest_pos == -1) {
-						for (int p = 0; p < l; p++) {
-							indArray[p].src_level = -1;
-							indArray[p].dest_level = -1;
-						}
-						return -1;
-					}
+					if (dest_pos == -1)
+						continue;
 					dest_node = &(incoming[dest_pos]);
 					k = this->SearchNodeNeighbours(dest_node, index, 'd',
 							level);
@@ -383,20 +390,14 @@ int Buffer::Query(int src, int dest, Index *index) {
 			level++;
 		}
 	} else {
-		//cout << "pame sto dest" << endl;
 		while (1) {
 			counter_d = 0;
 			for (int i = 0; i < l; i++) {
 				if (indArray[i].dest_level == level - 1) {
 					counter_d++;
 					dest_pos = indArray[i].in;
-					if (dest_pos == -1) {
-						for (int p = 0; p < l; p++) {
-							indArray[p].src_level = -1;
-							indArray[p].dest_level = -1;
-						}
-						return -1;
-					}
+					if (dest_pos == -1)
+						continue;
 					dest_node = &(incoming[dest_pos]);
 					k = this->SearchNodeNeighbours(dest_node, index, 'd',
 							level);
@@ -417,13 +418,8 @@ int Buffer::Query(int src, int dest, Index *index) {
 				if (indArray[i].src_level == level - 1) {
 					counter_s++;
 					src_pos = indArray[i].out;
-					if (src_pos == -1) {
-						for (int p = 0; p < l; p++) {
-							indArray[p].src_level = -1;
-							indArray[p].dest_level = -1;
-						}
-						return -1;
-					}
+					if (src_pos == -1)
+						continue;
 					src_node = &(outcoming[src_pos]);
 					k = this->SearchNodeNeighbours(src_node, index, 's', level);
 					if (k > 0) {
@@ -491,28 +487,25 @@ void Buffer::Reallocate(char c) {
 }
 
 void Buffer::PrintBuffer(Index *index) {
-	//index->Print();
 	IndexNode *a = index->GetIndexNode();
 	int size = index->GetSize();
 	for (int i = 0; i < size; i++) {
+
 		int pos = a[i].out;
-		if ((pos == -1))
-			continue;
-		//cout << "Printing outcoming of " << i << endl;
+		if (pos != -1) {
+			do {
+				outcoming[pos].PrintNeightbors(i,'o');
+				pos = outcoming[pos].GetNextNode();
+			} while (pos != 0);
+		}
 
-		do {
-			outcoming[pos].PrintNeightbors(i);
-			pos = outcoming[pos].GetNextNode();
-		} while (pos != 0);
-
-		if ((pos == -1))
-			continue;
-	/*	pos = a[i].in;
-	cout << "Printing incoming of " << i << endl;
-		do {
-			incoming[pos].PrintNeightbors();
-			pos = incoming[pos].GetNextNode();
-		} while (pos != 0);*/
+		pos = a[i].in;
+		if (pos != -1) {
+			do {
+				incoming[pos].PrintNeightbors(i,'i');
+				pos = incoming[pos].GetNextNode();
+			} while (pos != 0);
+		}
 	}
 	if (!fork())
 		execl("/bin/sh", "sh", "-c", "./insert_unitest.script", (char *) 0);
@@ -521,4 +514,3 @@ void Buffer::PrintBuffer(Index *index) {
 	getchar();
 	cout << "Continuing..." << endl;
 }
-
