@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	//buffer->PrintBuffer(index); // insert_unitest
+	buffer->PrintBuffer(index); // insert_unitest
 	/* get neighbors unit test
 	int x =index->NeighboursNum(17,'o',buffer);
 	do {
@@ -95,11 +95,11 @@ int main(int argc, char **argv) {
 	cout << index->GetIndexNode()[17].recursive_level << " & " << x << endl;
 	cout << "Waiting char" << endl;
 	getchar();*/
-	SCC strongCC(20);
-	strongCC.EstimateSCC(buffer,index,maxVal);
-	strongCC.Print();
+	SCC strongCC;
+	//strongCC.EstimateSCC(buffer,index,maxVal);
+	//strongCC.Print();
 	cout << "Waiting char" << endl;
-	getchar();
+	//getchar();
 
 	ofstream result("results.txt"); //output file for Queries
 
@@ -114,7 +114,14 @@ int main(int argc, char **argv) {
 			iss >> Command;
 			if (Command == 'Q') {
 				iss >> source >> dest;
-				result << buffer->Query(source, dest, index) << endl;
+				//buffer->Query(source,dest,index);
+				int k=strongCC.IsReachableGrail(index,source,dest);
+				if (k==0)
+					cout << "-1" << endl;
+				else if (k==1)
+					cout << "Menei h maybe" << endl;
+				else if (k==2)
+					cout <<	buffer->EstimateShortestPathSCC(source,dest,index,'D',index->GetIndexNode()[source].componentID) << endl;
 			}
 			else if (Command == 'A') {
 				iss >> source >> dest;

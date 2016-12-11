@@ -6,6 +6,12 @@
 
 #define N 5
 
+struct Label{
+	int min_rank;
+	int rank;
+	label() :min rank(-1),rank(-1){}
+}
+
 struct IndexNode {
 	int in; // offset of incoming node
 	int inlast; //last offset of incoming neighbors
@@ -68,7 +74,7 @@ public:
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
-	int ShortestPath(Index*, char, int);
+	int ShortestPath(Index*,char , int,int);
 
 	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
@@ -91,8 +97,8 @@ public:
 	void InsertBuffer(int, int, Index*);
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*);
-	int Query(int, int, Index*);
-	int SearchNodeNeighbours(Node*,Index*, char, int);
+	int Query(int , int, Index,char,int);
+	int SearchNodeNeighbours(Node*,Index*, char, int,int);
 	/*
 	* Increase capacity of Buffer data type.
 	* if char == 'i' then realloc incoming array
@@ -100,9 +106,6 @@ public:
 	*/
 	void Reallocate(char);
 	void PrintBuffer(Index *);
-	int Find_First_Unmarked(Index*indarr);
-	int Find_Components(Node*,Index*);
-	int BFS(Index*,int, int,int);
 };
 
 #endif /* BUFFER_H_ */

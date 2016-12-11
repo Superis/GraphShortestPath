@@ -22,7 +22,7 @@ class List {
 	int size;
 public:
 	List() :
-			head(NULL), cur(NULL), last(NULL), size(0) {
+			head(NULL), last(NULL), size(0) {
 		//std::cout << "List was constructed" << std::endl;
 	}
 	~List() {
@@ -36,10 +36,8 @@ public:
 	void Push(const T& object);
 	T PopHead();
 	T PopLast();
-	const T& GetCurData();
 	const T& GetHeadData();
 	bool isEmpty();
-	void ResetCur() { cur = head; };
 
 	void Print();
 };
@@ -49,7 +47,6 @@ void List<T>::Push(const T& obj) {
 	if (size == 0) {
 		head = new ListNode(obj);
 		last = head;
-		cur = head;
 	}
 	else {
 		ListNode* tmp = new ListNode(obj);
@@ -122,6 +119,11 @@ const T& List<T>::GetHeadData() {
 }
 
 template<class T>
+bool List<T>::isEmpty() {
+	return (head == 0);
+}
+
+template<class T>
 const T& List<T>::GetCurData() {
 	T returnVal = cur->data;
 	cur = cur->next;
@@ -129,8 +131,14 @@ const T& List<T>::GetCurData() {
 }
 
 template<class T>
-bool List<T>::isEmpty() {
-	return (head == 0);
+int  List<T>::GetUnvisitedEdge(int visited[]) {
+	ListNode* p= head;
+	while (p!=NULL){
+		if (!visited[p->data])
+			return p->data;
+		p=p->next;
+	}
+	return -1;
 }
 
 template<class T>

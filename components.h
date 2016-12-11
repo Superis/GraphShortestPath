@@ -22,7 +22,16 @@
 #define NUM 20
 #define ROWS 50
 
+enum GRAIL_ANSWER {NO, MAYBE, YES};
+
+struct Label{
+	int min_rank;
+	int rank;
+	label() :min rank(-1),rank(-1){}
+}
+
 struct Component {
+    Label label;  //Gia ton Grail
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
 	List<int> includedNodesID; //ids of included nodes
@@ -34,23 +43,27 @@ struct ComponentCursor {
 };
 
 class SCC {
-	Component** components; // Components index - a vector which storesthe components information
-	int size;
+	Component** components;// Components index - a vector which storesthe components information
 	int componentsCount;
-	int componentIDs[NUM]; //inverted index
+    int size;
+	//int componentIDs[NUM]; //inverted index den to xreiazomaste exoume metavliti sto index
 	int level;
+    List<int>* edges; //oi akmes tou hypergraph
 public:
-	SCC(int );
+	SCC();
 	~SCC();
-	void AddComponentToArray(Component*);
 	SCC* EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(ComponentCursor* );
 	bool NextSCC_ID(ComponentCursor* );
-	int EstimateShortestPathSCC(Buffer* ,int ,int );
+	int EstimateShortestPathSCC(Buffer*,Index*,int,int ,int ,int );
 	bool DestroySCC();
 	void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int);
-
 	void Print();
+    int Subset(Label a,Label b);
+    void BuildHypergraph(Index*,Buffer*);
+    void BuildGrailIndex();
+    void GrailProgress(int,int**,int*,int*);
+    GRAIL_ANSWER IsReachableGrail(Index*,int,int);
 };
 
 struct UpdateIndex {
