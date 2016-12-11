@@ -9,8 +9,8 @@
 
 using namespace std;
 
-SCC::SCC() : componentsCount(0), level(0) {
-	//components = new List();
+SCC::SCC(int _size) : size(_size), componentsCount(0), level(0) {
+	components = new Component*[_size];
 }
 
 SCC::~SCC() {
@@ -48,12 +48,12 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 	}
 	int size = index->GetSize() ;
 	int neighborSum = 0 ,curlevel = 0 ,child = -1;
-	while(level <= size) {
+	while(1) {
 		// DFS
 		neighborSum = index->NeighboursNum(target,'o',buffer);
 		curlevel = indArr[target].recursive_level;
 		if ( neighborSum > curlevel ) {
-			cout << curlevel << " @ " << target << " & " << index->NeighboursNum(target,'o',buffer) << endl;
+			//cout << curlevel << " @ " << target << " & " << index->NeighboursNum(target,'o',buffer) << endl;
 			child = index->GetNeighbor(target,buffer);//out[indArr[target].out].GetNeighbor(indArr[target].recursive_level,target,index,buffer);
 			if (child < 0 || child > max) {
 				cout << "Tarjan found child with unidentified value :" << child << endl;
@@ -76,7 +76,6 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 			// found a SCC
 			if (indArr[target].lowlink == indArr[target].index) {
 				Component* comp = new Component();
-				this->componentsCount++;
 				comp->componentID = this->componentsCount;
 				int top = stack->Pop();
 				if (top == -1) {
@@ -97,7 +96,7 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 					size++;
 				}
 				comp->nodesSum = size;
-				components.Push(comp);
+				this->AddComponentToArray(comp);
 				target = indArr[target].parentNode;
 				if (target == -10)
 					break;
@@ -116,16 +115,35 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 			}
 		}
 	}
+}
 
+void SCC::AddComponentToArray(Component* comp) {
+	if (componentsCount < size) {
+		components[componentsCount] = comp;
+		componentsCount++;
+	} else {
+		Component** newcomp = new Component*[2*size];
+		for (int i = 0 ; i < size ; i++) {
+			newcomp[i] = components[i];
+		}
+		newcomp[componentsCount] = comp;
+		componentsCount++;
+		delete[] components;
+		components = newcomp;
+		size = 2 * size;
+	}
 }
 
 void SCC::Print() {
 	cout << "Found " << componentsCount << " overall SCC : " << level << endl;
-	Component *temp;
-	while(!components.isEmpty()) {
-		temp = components.PopHead();
-		cout << "Printing component #ID : " << temp->componentID << endl;
-		temp->includedNodesID.Print();
+	for (int i = 0 ; i < componentsCount ; i++) {
+		components[i]->includedNodesID.Print();
 	}
+	//Component *temp;
+	//while(!components.isEmpty()) {
+		//temp = components.PopHead();
+		//cout << "Printing component #ID : " << temp->componentID << endl;
+		//temp->includedNodesID.Print();
+	//}
 }
 

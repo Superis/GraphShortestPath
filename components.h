@@ -34,13 +34,15 @@ struct ComponentCursor {
 };
 
 class SCC {
-	List<Component*> components; // Components index - a vector which storesthe components information
+	Component** components; // Components index - a vector which storesthe components information
+	int size;
 	int componentsCount;
 	int componentIDs[NUM]; //inverted index
 	int level;
 public:
-	SCC();
+	SCC(int );
 	~SCC();
+	void AddComponentToArray(Component*);
 	SCC* EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(ComponentCursor* );
 	bool NextSCC_ID(ComponentCursor* );

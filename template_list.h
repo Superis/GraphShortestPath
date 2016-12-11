@@ -18,11 +18,11 @@ class List {
 				data(newData), next(NULL), prev(NULL) {
 		}
 	};
-	ListNode *head,*last;
+	ListNode *head,*cur,*last;
 	int size;
 public:
 	List() :
-			head(NULL), last(NULL), size(0) {
+			head(NULL), cur(NULL), last(NULL), size(0) {
 		//std::cout << "List was constructed" << std::endl;
 	}
 	~List() {
@@ -36,8 +36,10 @@ public:
 	void Push(const T& object);
 	T PopHead();
 	T PopLast();
+	const T& GetCurData();
 	const T& GetHeadData();
 	bool isEmpty();
+	void ResetCur() { cur = head; };
 
 	void Print();
 };
@@ -47,6 +49,7 @@ void List<T>::Push(const T& obj) {
 	if (size == 0) {
 		head = new ListNode(obj);
 		last = head;
+		cur = head;
 	}
 	else {
 		ListNode* tmp = new ListNode(obj);
@@ -116,6 +119,13 @@ const T& List<T>::GetHeadData() {
 	if (!isEmpty()) {
 		return head->data;
 	}
+}
+
+template<class T>
+const T& List<T>::GetCurData() {
+	T returnVal = cur->data;
+	cur = cur->next;
+	return returnVal;
 }
 
 template<class T>
