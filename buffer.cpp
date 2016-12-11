@@ -514,3 +514,100 @@ void Buffer::PrintBuffer(Index *index) {
 	getchar();
 	cout << "Continuing..." << endl;
 }
+
+
+//////////////////////////////////////////////////////////////
+int Buffer::Find_First_Unmarked(Index* indarr){
+	for(int i=0;i<indarr->GetSize();i++){
+		if(indarr[i].visited==false)
+			return i;
+	}
+	return -1;
+}
+
+
+int Buffer::Find_Components(Node*S,Index *ind){
+	int ccounter=0;
+	start_out=ind[Find_First_Unmarked(ind)];
+	start_in=ind[Find_First_Unmarked(ind)];
+	int nodes_visited=0;
+	while(nodes_visited<ind->GetSize()){
+		ind[Find_First_Unmarked(ind)].visited=true;
+  		//ind[Find_First_Unmarked(ind)].visited=true;
+		nodes_visited+=BFS(ind,start_out,start_in,ccounter);
+		start_out=ind[Find_First_Unmarked(ind)];
+		start_in=ind[Find_First_Unmarked(ind)];
+		ccounter++;
+	}
+}	
+
+int Buffer::BFS(Index*index,int out_position,in_position,component){
+	IndexNode*indarr=index->GetIndexNode();
+	int outTemp;
+	int inTemp;
+//	int out_pos=indarr[position].out;
+	//int in_pos=indarr[position].in;
+//	indarr[position].visited=true;
+//	indarr[position].visited=true;
+	//bool* visited=new bool(index->GetSize());
+	int i;
+	//for(i=0;i<index->GetSize();i++
+	
+//	visited[S]=true;
+//	indarr[position].visited=true;
+	indarr[position].componentID=component;
+	//oura gia ekserxomenous`
+	queue Queue_Out(out_position);
+	Queue_Out.push_back(out_position);
+	queue Queue_In(in_position);
+	while(Queue_In.empty==0 || Queue_Out.empty()==0){
+		if(Queue_Out.empty()==0){
+			
+			 outTemp = queue.front();
+			 out_position=index[outTemp].out;
+        //cout << s << " ";w	
+       		 Queue_Out.deque();
+ 
+        // Get all adjacent vertices of the dequeued vertex s
+        // If an adjacent has not been visited, then mark it visited
+        // and enqueue it
+     	   do
+     	   {	
+			//	outcoming[out_pos].Visift_Neighbors();
+     	   		
+     	   		for(int i=0;i<this->outcoming[out_position].Get_endPos();i++){
+					out_position=outcoming[out_position].GetNextNode();
+					neighbor_id=outcoming[out_position].Get_Neighbor(i);
+      	    	  if(ind_arr[neighbor_id].visited==false)
+     	      	 {
+           	   		  ind_arr[neighbor_id].visited = true;
+    	          	  Queue_Out.enque(neighbor_id);	
+    	          	  indarr[neighbor_id].ComponentID=component;
+    	       	 }
+    	       }
+       	 }while(out_position!=0);
+		}
+		if(Queue_In.empty()==0){
+			inTemp=Queue_In.front();
+			 in_position=index[inTemp].in;
+			Queue_In.deque();	
+			do{
+				for(int i=0;i<this->incoming[in_position].Get_endPos();i++){
+					inTemp=incoming[inTemp].GetNextNode();
+					neighbor_id=incoming[inTemp].Get_Neighbor(i);
+      	    	  if(ind_arr[neighbor_id].visited_in==false)
+     	      	 {	ind_arr[neighbor_id].visited_in = true;
+    	          	Queue_In.enque(neighbor_id);
+    	          	indarr[neighbor_id].ComponentID=component;
+    	       	 }
+				}
+			}while(in_position!=0);
+		}
+	}  
+	
+	
+	
+	
+//	while()
+	
+}
