@@ -100,6 +100,9 @@ public:
 	*/
 	void Reallocate(char);
 	void PrintBuffer(Index *);
+	int Find_First_Unmarked(Index*indarr);
+	int Find_Components(Node*,Index*);
+	int BFS(Index*,int, int,int);
 };
 
 #endif /* BUFFER_H_ */
