@@ -120,8 +120,10 @@ int main(int argc, char **argv) {
 					result << "-1" << endl;
 				else if (k==1)
 					result << "Menei h maybe" << endl;
-				else if (k==2)
-					result << buffer->EstimateShortestPathSCC(source,dest,index,'D',index->GetIndexNode()[source].componentID) << endl;
+				else if (k==2){
+					IndexNode* p=index->GetIndexNode();
+					result << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+				}
 			}
 			else if (Command == 'A') {
 				iss >> source >> dest;

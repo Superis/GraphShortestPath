@@ -15,7 +15,7 @@ class List {
 		T data;
 		ListNode *next,*prev;
 		ListNode(const T& newData) :
-				data(newData), next(NULL),cur(NULL), prev(NULL) {
+				data(newData), next(NULL), prev(NULL) {
 		}
 	};
 	ListNode *head,*cur,*last;

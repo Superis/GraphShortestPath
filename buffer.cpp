@@ -17,6 +17,7 @@
 
 
 #include "buffer.h"
+#include "components.h"
 #include "queue.h"
 
 using namespace std;
@@ -74,10 +75,11 @@ int Node::SearchNeighbors(int dest) {
 	return 1;
 }
 
-int Node::SearchDiffComponent(int target,SCC* strongc){
+int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
+	IndexNode* indArray=index->GetIndexNode();
 	for (int i = 0; i < endPos; i++) {
-		if (componentIds[neighbor[i]] != target)
-			strongc->GetStrongEdges()[target]->Push(componentIds[neighbor[i]]); //
+		if (indArray[neighbor[i]].componentID != target)
+			strongc->GetStrongEdges()[target].Push(indArray[neighbor[i]].componentID); //
 	}
 	if (this->IsFull() && nextNode != 0)
 		return nextNode;
@@ -349,7 +351,7 @@ void Buffer::AddNeighbor(int src, int dest, Index *index) {
 }
 
 int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
-	index_node *indArray = index->GetIndexNode();
+	IndexNode *indArray = index->GetIndexNode();
 	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
 				//cout <<"pos"<< src_pos << endl;
@@ -379,7 +381,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 				if (indArray[i].src_level == level - 1) {
 					counter_s++;
 					src_pos = indArray[i].out;
-					if (src_pos == -1)
+					if (src_pos == -1){
 						counter_s--;
 						continue;
 					}
@@ -454,7 +456,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 				if (indArray[i].src_level == level - 1) {
 					counter_s++;
 					src_pos = indArray[i].out;
-					if (src_pos == -1)
+					if (src_pos == -1){
 						counter_s--;
 						continue;
 					}

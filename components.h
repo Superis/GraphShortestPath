@@ -27,8 +27,8 @@ enum GRAIL_ANSWER {NO, MAYBE, YES};
 struct Label{
 	int min_rank;
 	int rank;
-	label() :min rank(-1),rank(-1){}
-}
+	Label() :min_rank(-1),rank(-1){}
+};
 
 struct Component {
     Label label;  //Gia ton Grail
@@ -52,9 +52,10 @@ class SCC {
 public:
 	SCC(int);
 	~SCC();
+    List<int>* GetStrongEdges(){ return edges;};
     void AddComponentToArray(Component*);
 	SCC* EstimateSCC(Buffer* ,Index* ,int);
-	int FindNodeSCC_ID(ComponentCursor* );
+	int FindNodeSCC_ID(int,Index*);
 	bool NextSCC_ID(ComponentCursor* );
 	int EstimateShortestPathSCC(Buffer*,Index*,int,int ,int ,int );
 	bool DestroySCC();
@@ -63,7 +64,7 @@ public:
     int Subset(Label a,Label b);
     void BuildHypergraph(Index*,Buffer*);
     void BuildGrailIndex();
-    void GrailProgress(int,int**,int*,int*);
+    void GrailProgress(int,int*,int*,int*);
     GRAIL_ANSWER IsReachableGrail(Index*,int,int);
 };
 

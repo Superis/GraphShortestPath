@@ -28,6 +28,7 @@ struct IndexNode {
 };
 
 class Buffer;
+class SCC;
 
 class Index {
 	IndexNode *indexArray; // Dynamic array of graph indices
@@ -64,7 +65,7 @@ public:
 	int GetEndPos() { return endPos; };
 
 	void SetNextNode(int);
-
+	int SearchDiffComponent(int, SCC*,Index*);
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
@@ -92,7 +93,7 @@ public:
 	void InsertBuffer(int, int, Index*);
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*);
-	int Query(int , int, Index,char,int);
+	int Query(int , int, Index*,char,int);
 	int SearchNodeNeighbours(Node*,Index*, char, int,int);
 	/*
 	* Increase capacity of Buffer data type.

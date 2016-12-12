@@ -9,6 +9,13 @@
 
 using namespace std;
 
+int min(int a,int b){
+	if (a<b)
+		return a;
+	else
+		return b;
+}
+
 SCC::SCC(int _size) : size(_size), componentsCount(0), level(0) {
 	components = new Component*[_size];
 }
@@ -294,17 +301,16 @@ void SCC::Print() {
 }*/
 
 void  SCC::BuildHypergraph(Index* index,Buffer* buffer){
-		int node_pos,int current_component;
-		index_node* k=index->GetIndexNode();
-			Node* G=buffer->GetListNode('o');
+		int node_pos,current_component,temp;
+		IndexNode* k=index->GetIndexNode();
+		Node* G=buffer->GetListNode('o');
 		for (int i=0;i<componentsCount;i++){
-			current_component=this->components[i]->component_id;
-			int current_node=k[components[i]->includedNodesID.GetCurData()].out
-			while (current_node != NULL){
-				node_pos=k[components[i]->includedNodesID[j]].out;
+			current_component=this->components[i]->componentID;
+			while ((temp=components[i]->includedNodesID.GetCurData()) != NULL){
+				node_pos=k[temp].out;
 				if (node_pos!=-1)
 				do{
-					node_pos=G[node_pos].SearchDiffComponent(current_component);
+					node_pos=G[node_pos].SearchDiffComponent(current_component,this,index);
 				}while(node_pos);
 			}
 			components[i]->includedNodesID.ResetCur();
@@ -317,20 +323,20 @@ void SCC::BuildGrailIndex(){
 	srand(time(NULL));
 	int visit_number=0;
 	int visited[componentsCount]={-1};
-	r=1;
+	int r=1;
 	int i;
-	int k=rand() % componentsCount;
+	//int k=rand() % componentsCount;
 	while (visit_number < componentsCount){
-		for (i =0;i<componentsCount;i++;)
+		for (i =0;i<componentsCount;i++)
 			if (visited[i]==0)
 				break;
-		this->GrailProgress(i,&visited,&r,&num);
+		this->GrailProgress(i,visited,&r,&visit_number);
 	}
 }
 
 
 
-void SCC::GrailProgress(int i,int* visited[],int* r,int* num){
+void SCC::GrailProgress(int i,int visited[],int* r,int* num){
 	int min_rank=2; //timi wste me tin prwti na paroume mikrotero min_rank
 	int flag[componentsCount]={0};
 	int new_progress;
@@ -345,32 +351,32 @@ void SCC::GrailProgress(int i,int* visited[],int* r,int* num){
 			StackProgress.Pop();
 			continue;
 		}
-		while ((new_progress=this->edges[i]->GetUnvisitedEdge(visited))!=-1){
+		while ((new_progress=this->edges[i].GetUnvisitedEdge(visited))!=-1){
 			flag[i]=1;
 			i=new_progress;
 			StackProgress.Push(i);
 		}
-		components[i].label.rank=r;
-		if (!flag){
-			components[i].label.min_rank=r;
-			min_rank=min(min_rank,r);
+		components[i]->label.rank=*r;
+		if (!flag[i]){
+			components[i]->label.min_rank = *r;
+			min_rank=min(min_rank,*r);
 		}
 		else
-			components[i].label.min_rank=min_rank;
+			components[i]->label.min_rank=min_rank;
 		visited[i]=1;
-		num*++;
-		r*++;
+		*num++;
+		*r++;
 	  StackProgress.Pop();
 	}
 
 }
 
 GRAIL_ANSWER SCC::IsReachableGrail(Index* index,int source,int dest){
-	index_node* indArray=index->GetIndexNode();
+	IndexNode* indArray=index->GetIndexNode();
 	if (indArray[source].componentID == indArray[dest].componentID)
 		return YES;
 	else{  // ELEGXOUME TO EURETIRIO GRAIL
-		if (this->Subset(components[indArray[dest].componentID].label,components[indArray[source].componentID].label))
+		if (this->Subset(components[indArray[dest].componentID]->label,components[indArray[source].componentID]->label))
 			return MAYBE;
 		else
 			return NO;
