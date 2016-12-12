@@ -15,7 +15,7 @@ class List {
 		T data;
 		ListNode *next,*prev;
 		ListNode(const T& newData) :
-				data(newData), next(NULL), prev(NULL) {
+				data(newData), next(NULL),cur(NULL), prev(NULL) {
 		}
 	};
 	ListNode *head,*cur,*last;
@@ -36,9 +36,11 @@ public:
 	void Push(const T& object);
 	T PopHead();
 	T PopLast();
+	const T& GetCurData();
 	const T& GetHeadData();
+	int GetUnvisitedEdge(int*);
 	bool isEmpty();
-
+	void ResetCur() { cur = head; };
 	void Print();
 };
 

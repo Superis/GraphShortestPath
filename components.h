@@ -50,8 +50,9 @@ class SCC {
 	int level;
     List<int>* edges; //oi akmes tou hypergraph
 public:
-	SCC();
+	SCC(int);
 	~SCC();
+    void AddComponentToArray(Component*);
 	SCC* EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(ComponentCursor* );
 	bool NextSCC_ID(ComponentCursor* );

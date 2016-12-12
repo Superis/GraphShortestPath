@@ -9,7 +9,7 @@
 
 using namespace std;
 
-SCC::SCC() : componentsCount(0), level(0) {
+SCC::SCC(int _size) : size(_size), componentsCount(0), level(0) {
 	components = new Component*[_size];
 }
 
@@ -160,7 +160,7 @@ void SCC::Print() {
 
 
 
-int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int compsrc_arg,int compdest_arg,int src ,int dest){
+/*int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int compsrc_arg,int compdest_arg,int src ,int dest){
 	index_node *indArray = index->GetIndexNode();
 	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
@@ -291,23 +291,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int compsrc_arg,int
 	return -1;
 
 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}*/
 
 void  SCC::BuildHypergraph(Index* index,Buffer* buffer){
 		int node_pos,int current_component;
@@ -323,6 +307,7 @@ void  SCC::BuildHypergraph(Index* index,Buffer* buffer){
 					node_pos=G[node_pos].SearchDiffComponent(current_component);
 				}while(node_pos);
 			}
+			components[i]->includedNodesID.ResetCur();
 		}
 }
 

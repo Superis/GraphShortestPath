@@ -6,11 +6,6 @@
 
 #define N 5
 
-struct Label{
-	int min_rank;
-	int rank;
-	label() :min rank(-1),rank(-1){}
-}
 
 struct IndexNode {
 	int in; // offset of incoming node
@@ -106,6 +101,9 @@ public:
 	*/
 	void Reallocate(char);
 	void PrintBuffer(Index *);
+	int Find_First_Unmarked(Index*);
+	int Find_Components(Node*,Index*);
+	int BFS(Index*,int, int,int);
 };
 
 #endif /* BUFFER_H_ */
