@@ -22,7 +22,7 @@ public:
 		//std::cout << "Stack was constructed" << std::endl;
 	}
 	~Stack() {
-		std::cout << "Stack was destructed" << std::endl;
+		//std::cout << "Stack was destructed" << std::endl;
 		while (!isEmpty()) {
 			Pop();
 		}

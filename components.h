@@ -34,8 +34,8 @@ struct Component {
     Label label;  //Gia ton Grail
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
-	List<int> includedNodesID; //ids of included nodes
-	Component() : componentID(-1), nodesSum(0) {}
+	List<int>* includedNodesID; //ids of included nodes
+	Component() : componentID(-1), nodesSum(0) { includedNodesID=new List<int>;}
 };
 
 struct ComponentCursor {
@@ -48,11 +48,11 @@ class SCC {
     int size;
 	//int componentIDs[NUM]; //inverted index den to xreiazomaste exoume metavliti sto index
 	int level;
-    List<int>* edges; //oi akmes tou hypergraph
+    List<int>** edges; //oi akmes tou hypergraph
 public:
 	SCC(int);
 	~SCC();
-    List<int>* GetStrongEdges(){ return edges;};
+    List<int>** GetStrongEdges(){ return edges;};
     void AddComponentToArray(Component*);
 	SCC* EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(int,Index*);
@@ -64,7 +64,7 @@ public:
     int Subset(Label a,Label b);
     void BuildHypergraph(Index*,Buffer*);
     void BuildGrailIndex();
-    void GrailProgress(int,int*,int*,int*);
+    void GrailProgress(int,int**,int*,int*);
     GRAIL_ANSWER IsReachableGrail(Index*,int,int);
 };
 

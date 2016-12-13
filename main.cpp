@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 	getchar();*/
 	SCC strongCC(20);
 	strongCC.EstimateSCC(buffer,index,maxVal);
-	strongCC.Print();
+	//strongCC.Print();
 	cout << "Waiting char" << endl;
 	getchar();
 
@@ -109,6 +109,9 @@ int main(int argc, char **argv) {
 	if (myFile.is_open()) {
 		char Command;
 		int source, dest;
+		IndexNode* p=index->GetIndexNode();
+		strongCC.BuildHypergraph(index,buffer);
+		strongCC.BuildGrailIndex();
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			iss >> Command;
@@ -117,12 +120,12 @@ int main(int argc, char **argv) {
 				//buffer->Query(source,dest,index);
 				int k=strongCC.IsReachableGrail(index,source,dest);
 				if (k==0)
-					result << "-1" << endl;
+					cout << "-1 GRAIL" << endl;
 				else if (k==1)
-					result << "Menei h maybe" << endl;
+					cout << "Menei h maybe" << endl;
 				else if (k==2){
-					IndexNode* p=index->GetIndexNode();
-					result << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+					cout << "YES" << endl;
+					//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
 				}
 			}
 			else if (Command == 'A') {

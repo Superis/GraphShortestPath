@@ -4,7 +4,9 @@
  *  Created on: Dec 1, 2016
  *      Author: alex
  */
-
+#include <stdio.h>
+#include <fstream>
+#include <sstream>
 #include "components.h"
 
 using namespace std;
@@ -21,7 +23,12 @@ SCC::SCC(int _size) : size(_size), componentsCount(0), level(0) {
 }
 
 SCC::~SCC() {
-	//delete components;
+	for (int i=0;i<componentsCount;i++){
+		delete components[i];
+		delete edges[i];
+	}
+	delete[] components;
+	delete[] edges;
 }
 
 SCC* SCC::EstimateSCC(Buffer* buffer, Index* index ,int max) {
@@ -90,8 +97,9 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 					cout << "top(1) pop empty" << endl;
 					break;
 				}
+				indArr[top].componentID = this->componentsCount;
 				indArr[top].visited = false;
-				comp->includedNodesID.Push(top);
+				comp->includedNodesID->Push(top);
 				int size = 1;
 				while (top != target) {
 					top = stack->Pop();
@@ -99,7 +107,8 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 						cout << "top(2) pop empty" << endl;
 						break;
 					}
-					comp->includedNodesID.Push(top);
+					indArr[top].componentID = this->componentsCount;
+					comp->includedNodesID->Push(top);
 					indArr[top].visited = false;
 					size++;
 				}
@@ -154,8 +163,9 @@ bool SCC::DestroySCC() {
 
 void SCC::Print() {
 	cout << "Found " << componentsCount << " overall SCC : " << level << endl;
+	//getchar();
 	for (int i = 0 ; i < componentsCount ; i++) {
-		components[i]->includedNodesID.Print();
+		components[i]->includedNodesID->Print();
 	}
 	//Component *temp;
 	//while(!components.isEmpty()) {
@@ -304,70 +314,91 @@ void  SCC::BuildHypergraph(Index* index,Buffer* buffer){
 		int node_pos,current_component,temp;
 		IndexNode* k=index->GetIndexNode();
 		Node* G=buffer->GetListNode('o');
+		this->edges=new List<int>*[componentsCount];
 		for (int i=0;i<componentsCount;i++){
+			edges[i]=new List<int>;
 			current_component=this->components[i]->componentID;
-			while ((temp=components[i]->includedNodesID.GetCurData()) != NULL){
+			//components[i]->includedNodesID.Print();
+			components[i]->includedNodesID->ResetCur();
+			while (!components[i]->includedNodesID->IsOut()){
+				cout << i<< endl;
+				temp=components[i]->includedNodesID->GetCurData();
 				node_pos=k[temp].out;
 				if (node_pos!=-1)
 				do{
 					node_pos=G[node_pos].SearchDiffComponent(current_component,this,index);
 				}while(node_pos);
 			}
-			components[i]->includedNodesID.ResetCur();
+			components[i]->includedNodesID->ResetCur();
 		}
 }
 
 
 
 void SCC::BuildGrailIndex(){
-	srand(time(NULL));
+	//srand(time(NULL));
 	int visit_number=0;
-	int visited[componentsCount]={-1};
+	int** visited=new int*[componentsCount];
+	for (int p=0;p<componentsCount;p++){
+		visited[p]= new int;
+		(*(visited[p]))=0;
+	}
 	int r=1;
 	int i;
 	//int k=rand() % componentsCount;
 	while (visit_number < componentsCount){
 		for (i =0;i<componentsCount;i++)
-			if (visited[i]==0)
+			if ((*(visited[i]))==0)
 				break;
 		this->GrailProgress(i,visited,&r,&visit_number);
+		for (i =0;i<componentsCount;i++)
+			cout << (*(visited[i])) << endl;
 	}
 }
 
 
 
-void SCC::GrailProgress(int i,int visited[],int* r,int* num){
+void SCC::GrailProgress(int i,int** visited,int* r,int* num){
 	int min_rank=2; //timi wste me tin prwti na paroume mikrotero min_rank
+	int myrank=*r;
+	int mynum=*num;
 	int flag[componentsCount]={0};
 	int new_progress;
 	Stack<int> StackProgress;
 	StackProgress.Push(i);
-
+	ofstream somefile("some.txt");
 	//i=StackProgress.Pop();
 	while (!StackProgress.isEmpty()){
 		//i=StackProgress.Pop();
-		if (visited[i]){
+		if ((*(visited[i]))==1){
 			min_rank=min(min_rank,components[i]->label.min_rank);
 			StackProgress.Pop();
 			continue;
 		}
-		while ((new_progress=this->edges[i].GetUnvisitedEdge(visited))!=-1){
+		while ((new_progress=this->edges[i]->GetUnvisitedEdge(visited))!=-1){
+			cout << new_progress << " new progresss" << endl;
 			flag[i]=1;
 			i=new_progress;
 			StackProgress.Push(i);
 		}
-		components[i]->label.rank=*r;
+		//cout << i << " to i" << endl;
+		somefile << myrank << "to r" << endl;
+		//cout  << componentsCount << " components with  array size " << size  << endl;
+
+		components[i]->label.rank=myrank;
 		if (!flag[i]){
-			components[i]->label.min_rank = *r;
-			min_rank=min(min_rank,*r);
+			components[i]->label.min_rank = myrank;
+			min_rank=min(min_rank,myrank);
 		}
 		else
 			components[i]->label.min_rank=min_rank;
-		visited[i]=1;
-		*num++;
-		*r++;
-	  StackProgress.Pop();
+		(*(visited[i]))=1;
+		mynum++;
+		myrank++;
+	  	StackProgress.Pop();
 	}
+	r=&myrank;
+	num=&mynum;
 
 }
 

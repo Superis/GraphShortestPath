@@ -79,7 +79,7 @@ int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
 	IndexNode* indArray=index->GetIndexNode();
 	for (int i = 0; i < endPos; i++) {
 		if (indArray[neighbor[i]].componentID != target)
-			strongc->GetStrongEdges()[target].Push(indArray[neighbor[i]].componentID); //
+			strongc->GetStrongEdges()[target]->Push(indArray[neighbor[i]].componentID); //
 	}
 	if (this->IsFull() && nextNode != 0)
 		return nextNode;
@@ -560,7 +560,7 @@ void Buffer::PrintBuffer(Index *index) {
 
 
 
-
+/*
 
 int Buffer::Find_First_Unmarked(Index* indarr){
 	for(int i=0;i<indarr->GetSize();i++){
@@ -652,3 +652,4 @@ int Buffer::BFS(Index*index,int out_position,in_position,int component){
 	}
  //	while()
 }
+*/
