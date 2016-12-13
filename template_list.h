@@ -42,6 +42,7 @@ public:
 	int GetUnvisitedEdge(int**);
 	bool isEmpty();
 	void ResetCur() { cur = head; };
+	bool IncCur();
 	void Print();
 };
 
@@ -83,7 +84,7 @@ T List<T>::PopHead() {
 		return data;
 	} else {
 		std::cout << "\t Pophead : EMPTY LIST" << std::endl;
-		return NULL;
+		return 0;
 	}
 }
 
@@ -110,7 +111,7 @@ T List<T>::PopLast() {
 		return data;
 	} else {
 		std::cout << "\tPopLast : EMPTY LIST" << std::endl;
-		return NULL;
+		return 0;
 	}
 }
 
@@ -124,8 +125,10 @@ const T& List<T>::GetHeadData() {
 template<class T>
 bool List<T>::IsOut() {
 	if (!isEmpty()) {
-		return (cur==NULL);
+		return (cur == NULL);
 	}
+	std::cout << "Return false LIST::ISOUT" << std::endl;
+	return false;
 }
 
 template<class T>
@@ -135,9 +138,16 @@ bool List<T>::isEmpty() {
 
 template<class T>
 const T& List<T>::GetCurData() {
-	T returnVal = cur->data;
-	cur = cur->next;
-	return returnVal;
+	return cur->data;
+}
+
+template<class T>
+bool List<T>::IncCur() {
+	if ( (cur->next) != NULL ) {
+		cur = cur->next;
+		return true;
+	} else
+		return false;
 }
 
 template<class T>

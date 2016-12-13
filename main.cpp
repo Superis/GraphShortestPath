@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	char *graphFile = argv[1];
 	ifstream myFile;
 	myFile.open(graphFile);
-	string line;
+	string line,specifier;
 	int maxVal = 0;
 	/*
 	* Find :
@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
 	*/
 	if (myFile.is_open()) {
 		int source, dest;
+		//getline(myFile, specifier); // DYNAMIC || STATIC
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
@@ -71,6 +72,7 @@ int main(int argc, char **argv) {
 
 	if (myFile.is_open()) {
 		int source, dest;
+		//getline(myFile, specifier);
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))

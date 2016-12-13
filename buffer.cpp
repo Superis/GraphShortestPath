@@ -18,7 +18,7 @@
 
 #include "buffer.h"
 #include "components.h"
-#include "queue.h"
+#include "template_queue.h"
 
 using namespace std;
 

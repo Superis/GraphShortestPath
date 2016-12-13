@@ -53,7 +53,7 @@ T Stack<T>::Pop() {
 		return data;
 	}
 	else {
-		return NULL;
+		return 0;
 	}
 }
 
