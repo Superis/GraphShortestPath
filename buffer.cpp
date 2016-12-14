@@ -22,9 +22,6 @@
 
 using namespace std;
 
-ofstream bufOutput("graphOUTCOMING.txt");
-ofstream bufincoming("graphINCOMING_REVERSED.txt");
-
 /**************		Node class	 ***************/
 
 // Constructor & destructor are never used.
@@ -89,6 +86,8 @@ int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
 }
 
 void Node::PrintNeightbors(int src ,char c) {
+	ofstream bufOutput("graphOUTCOMING.txt", ios::app);
+	ofstream bufincoming("graphINCOMING_REVERSED.txt", ios::app);
 	if (c == 'o') {
 		for (int i = 0; i < endPos; i++) {
 			if (neighbor[i] >= 0) {
@@ -313,16 +312,23 @@ void Buffer::InsertBuffer(int src, int dest, Index *index) {
 		indexA[src].outlast = outEnd;
 		if (outcoming[indexA[src].outlast].AddNeighbor(dest) == -1)
 			cout << "Wrong insert @ outcoming" << endl;
+		else
+			indexA[src].outNeighbors += 1;
 		outEnd++;
-	}
+	} else
+		indexA[src].outNeighbors += 1;
+
 
 	if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1) {
 		incoming[indexA[dest].inlast].SetNextNode(incEnd);
 		indexA[dest].inlast = incEnd;
 		if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1)
 			cout << "Wrong insert @ incoming" << endl;
+		else
+			indexA[dest].inNeighbors += 1;
 		incEnd++;
-	}
+	} else
+		indexA[dest].inNeighbors += 1;
 }
 
 void Buffer::IncreaseEndPos(char c) {
@@ -373,7 +379,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 		indArray[dest].dest_level = -1;
 		return -1;
 		}
-	if (index->NeighboursNum(src, 'o', this) <= index->NeighboursNum(dest, 'i', this)) {
+	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
 		//cout << "pame source" <<endl;
 		while (1) {
 			counter_s = 0;

@@ -10,8 +10,10 @@
 struct IndexNode {
 	int in; // offset of incoming node
 	int inlast; //last offset of incoming neighbors
+	int inNeighbors;
 	int out; // offset of outcoming node
 	int outlast; // last offset of outcoming neighbors
+	int outNeighbors;
 	int src_level; // numbers the iteration in which this Node was discovered from source Node
 	int dest_level;
 
@@ -23,8 +25,10 @@ struct IndexNode {
 	int componentID;
 	int parentNode;
 
-	IndexNode() : in(-1), inlast(-1), out(-1), outlast(-1), src_level(-1), dest_level(-1),
-		recursive_level(-1),index(-1), lowlink(-1), visited(false), componentID(-1) ,parentNode(-1) {}
+	IndexNode() :
+			in(-1), inlast(-1), inNeighbors(0), out(-1), outlast(-1),
+			outNeighbors(0), src_level(-1), dest_level(-1), recursive_level(-1),
+			index(-1), lowlink(-1), visited(false), componentID(-1), parentNode(-1) {}
 };
 
 class Buffer;

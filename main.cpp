@@ -86,22 +86,17 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	//buffer->PrintBuffer(index); // insert_unitest
-	/* get neighbors unit test
-	int x =index->NeighboursNum(17,'o',buffer);
-	do {
-		index->GetIndexNode()[17].recursive_level++;
-		cout << index->GetIndexNode()[17].recursive_level << " :: "<< index->GetNeighbor(17,buffer) << endl;
-
-	} while(index->GetIndexNode()[17].recursive_level < x);
-	cout << index->GetIndexNode()[17].recursive_level << " & " << x << endl;
+	/*buffer->PrintBuffer(index); // insert_unitest
 	cout << "Waiting char" << endl;
 	getchar();*/
-	SCC strongCC(20);
+	int estimatedComponentsAmount = maxVal / 2;
+	if (estimatedComponentsAmount == 0)
+		estimatedComponentsAmount = 50;
+	SCC strongCC(estimatedComponentsAmount);
 	strongCC.EstimateSCC(buffer,index,maxVal);
-	//strongCC.Print();
-	cout << "Waiting char" << endl;
-	getchar();
+	strongCC.Print();
+	//cout << "Waiting char" << endl;
+	//getchar();
 
 	ofstream result("results.txt"); //output file for Queries
 

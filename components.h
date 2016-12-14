@@ -39,7 +39,7 @@ struct Component {
 };
 
 struct ComponentCursor {
-	Component* component_ptr;
+	int cursor;
 };
 
 class SCC {
