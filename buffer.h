@@ -33,7 +33,7 @@ struct IndexNode {
 
 class Buffer;
 class SCC;
-
+class CC;
 class Index {
 	IndexNode *indexArray; // Dynamic array of graph indices
 	int indSize;
