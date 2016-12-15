@@ -107,8 +107,8 @@ public:
 	void Reallocate(char);
 	void PrintBuffer(Index *);
 	int Find_First_Unmarked(Index*);
-	int Find_Components(Node*,Index*);
-	int BFS(Index*,int, int,int);
+	CC* estimateConnectedComponents(Index*);
+	int BFS(Index*,int,int,CC*);
 };
 
 #endif /* BUFFER_H_ */
