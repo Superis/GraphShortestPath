@@ -42,24 +42,33 @@ struct ComponentCursor {
 	int cursor;
 };
 
+struct TarzanInfoStruct {
+	int recursive_level; // numbers the iteration this node was discovered.Mporw na xrisimopoihsw kai src_level kai na to thetw pali -1 sto telos
+	int index; // numbers the nodes consecutively in the order in which they are discovered
+	int lowlink; // smallest index of any node known to be reachable this->Node,this included
+	int parentNode; // node_id which this->node has been called from.
+	bool visited;
+	TarzanInfoStruct() : recursive_level(0), index(-1),
+						 lowlink(-1), parentNode(-1),visited(false) {}
+};
+
 class SCC {
 	Component** components;// Components index - a vector which storesthe components information
 	int componentsCount;
     int size;
 	//int componentIDs[NUM]; //inverted index den to xreiazomaste exoume metavliti sto index
-	int level;
     List<int>** edges; //oi akmes tou hypergraph
 public:
 	SCC(int);
 	~SCC();
     List<int>** GetStrongEdges(){ return edges;};
     void AddComponentToArray(Component*);
-	SCC* EstimateSCC(Buffer* ,Index* ,int);
+	void EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(int,Index*);
 	bool NextSCC_ID(ComponentCursor* );
 	int EstimateShortestPathSCC(Buffer*,Index*,int,int ,int ,int );
 	bool DestroySCC();
-	void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int);
+	void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int, TarzanInfoStruct[], int*);
 	void Print();
     int Subset(Label a,Label b);
     void BuildHypergraph(Index*,Buffer*);

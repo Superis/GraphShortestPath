@@ -78,7 +78,7 @@ int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
 		if (indArray[neighbor[i]].componentID != target)
 			strongc->GetStrongEdges()[target]->Push(indArray[neighbor[i]].componentID); //
 	}
-	if (this->IsFull() && nextNode != 0)
+	if ((this->IsFull()) && (nextNode != 0))
 		return nextNode;
 	else
 		return 0;
@@ -108,7 +108,7 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 	int i;
 	IndexNode* indArray=index->GetIndexNode();
 	  // an exoume dwsei pliroforia component tote comp>=0 diladi gia strongly-connected-alliws dinoume -1
-	if (direction=='s'){
+	if (direction == 's'){
 		for (i = 0; i < endPos; i++) {
 			if (comp>=0 && indArray[neighbor[i]].componentID!=comp)//an den paizoume sto idio component
 			 	continue;
@@ -119,11 +119,11 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 					indArray[neighbor[i]].src_level = level;
 		}
 	}
-	else if (direction=='d'){
+	else if (direction == 'd'){
 		for (i = 0; i < endPos; i++) {
-			if (comp>=0 && indArray[neighbor[i]].componentID!=comp)//an den paizoume sto idio component
+			if (comp>=0 && indArray[neighbor[i]].componentID != comp)//an den paizoume sto idio component
 			 	continue;
-			if (indArray[neighbor[i]].componentID==comp){
+			if (indArray[neighbor[i]].componentID == comp){
 				if (indArray[neighbor[i]].src_level >= 0)
 					return level + indArray[neighbor[i]].src_level;
 				else
@@ -132,7 +132,7 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 			}
 		}
 	}
-	if (i==maxCapacity && nextNode != 0)
+	if ( (i == maxCapacity) && (nextNode != 0) )
 		return -nextNode;
 	else
 		return 0;
@@ -159,11 +159,10 @@ IndexNode* Index::GetIndexNode() {
 	return this->indexArray;
 }
 
-int Index::GetNeighbor(int target, Buffer* buffer) {
-	int cap,pos,endPos,nextNode;
+int Index::GetNeighbor(int target, Buffer* buffer ,int pos) {
+	int cap,endPos,nextNode;
 	Node *out = buffer->GetListNode('o');
 	endPos = out[indexArray[target].out].GetEndPos();
-	pos = indexArray[target].recursive_level;
 	cap = out[indexArray[target].out].GetCapacity();
 	if (cap == 0) {
 		cout << "ZEROOOOOOOOOOOOOO with target : " << target << " @ : " << indexArray[target].out << endl;
@@ -360,7 +359,6 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 	IndexNode *indArray = index->GetIndexNode();
 	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
-				//cout <<"pos"<< src_pos << endl;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
@@ -564,7 +562,7 @@ void Buffer::PrintBuffer(Index *index) {
 	cout << "Continuing..." << endl;
 }
 
-
+/*
 CC* Buffer::estimateConnectedComponents(Index *ind){
 	int ccounter=0;	
 	CC* compIndex=new CC;
@@ -668,3 +666,4 @@ int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 	
 }
 
+*/

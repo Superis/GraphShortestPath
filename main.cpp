@@ -89,14 +89,15 @@ int main(int argc, char **argv) {
 	/*buffer->PrintBuffer(index); // insert_unitest
 	cout << "Waiting char" << endl;
 	getchar();*/
-	int estimatedComponentsAmount = maxVal / 2;
+	int estimatedComponentsAmount = maxVal / 5;
 	if (estimatedComponentsAmount == 0)
 		estimatedComponentsAmount = 50;
 	SCC strongCC(estimatedComponentsAmount);
 	strongCC.EstimateSCC(buffer,index,maxVal);
-	strongCC.Print();
 	//cout << "Waiting char" << endl;
 	//getchar();
+	delete index;
+	delete buffer;
 
 	ofstream result("results.txt"); //output file for Queries
 
@@ -114,6 +115,8 @@ int main(int argc, char **argv) {
 			iss >> Command;
 			if (Command == 'Q') {
 				iss >> source >> dest;
+				cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+/*
 				//buffer->Query(source,dest,index);
 				int k=strongCC.IsReachableGrail(index,source,dest);
 				if (k==0)
@@ -122,8 +125,7 @@ int main(int argc, char **argv) {
 					cout << "Menei h maybe" << endl;
 				else if (k==2){
 					cout << "YES" << endl;
-					//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
-				}
+				}*/
 			}
 			else if (Command == 'A') {
 				iss >> source >> dest;

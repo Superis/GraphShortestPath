@@ -19,7 +19,7 @@ int min(int a,int b){
 		return b;
 }
 
-SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(1) {
+SCC::SCC(int _size) : componentsCount(0) ,size(_size) {
 	components = new Component*[_size];
 	edges = NULL;
 }
@@ -27,34 +27,37 @@ SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(1) {
 SCC::~SCC() {
 	for (int i=0;i<componentsCount;i++){
 		delete components[i];
-		delete edges[i];
+		//delete edges[i];
 	}
 	delete[] components;
-	delete[] edges;
+	//delete[] edges;
 }
 
-SCC* SCC::EstimateSCC(Buffer* buffer, Index* index ,int max) {
-	IndexNode *indArr = index->GetIndexNode();
+void SCC::EstimateSCC(Buffer* buffer, Index* index ,int max) {
 	int indexSize = index->GetSize();
 	Stack<int>* stack = new Stack<int>();
+	int *level = new int(); // tarjan's level of search | Allocate and initialize () .
+	TarzanInfoStruct *tis = new TarzanInfoStruct[max + 1];
 	for (int i = 0 ; i < indexSize ; i++) {
 		// if Node is undefined : Tarjan
-		if (indArr[i].index == -1) {
-			Tarjan(i,stack,index,buffer,max);
+		if (tis[i].index == -1) {
+			Tarjan(i,stack,index,buffer,max,tis,level);
 		}
 	}
+	delete level;
+	delete[] tis;
 	delete stack;
-	return NULL;
+	this->Print();
 }
 
-void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int max) {
+void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int max ,TarzanInfoStruct tis[],int *level) {
 	IndexNode *indArr = index->GetIndexNode();
-	indArr[target].index = level;
-	indArr[target].lowlink = level;
-	level++;
+	tis[target].index = *level;
+	tis[target].lowlink = *level;
+	(*level)++;
 	stack->Push(target);
-	indArr[target].visited = true;
-	indArr[target].recursive_level = 0;
+	tis[target].visited = true;
+	tis[target].recursive_level = 0;
 	Node *out = buffer->GetListNode('o');
 	if (out == NULL) {
 		cout << "\tERROR!Tarjan failed" << endl;
@@ -64,29 +67,29 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 	while(1) {
 		// DFS
 		neighborSum = indArr[target].outNeighbors;
-		if ( neighborSum > indArr[target].recursive_level ) {
-			child = index->GetNeighbor(target,buffer);//out[indArr[target].out].GetNeighbor(indArr[target].recursive_level,target,index,buffer);
+		if ( neighborSum > tis[target].recursive_level ) {
+			child = index->GetNeighbor(target,buffer,tis[target].recursive_level);//out[indArr[target].out].GetNeighbor(indArr[target].recursive_*level,target,index,buffer);
 
 			if (child < 0 || child > max) {
 				cout << "Tarjan found child with unidentified value :" << child << endl;
 				break;
 			}
-			indArr[target].recursive_level++;
-			if (indArr[child].index == -1) {
-				indArr[child].index = level;
-				indArr[child].lowlink = level;
-				indArr[child].parentNode = target;
-				indArr[child].recursive_level = 0;
-				level++;
+			tis[target].recursive_level++;
+			if (tis[child].index == -1) {
+				tis[child].index = *level;
+				tis[child].lowlink = *level;
+				tis[child].parentNode = target;
+				tis[child].recursive_level = 0;
+				(*level)++;
 				stack->Push(child);
-				indArr[child].visited = true;
+				tis[child].visited = true;
 				target = child;
-			} else if (indArr[child].visited == true) {
-				indArr[target].lowlink = MIN(indArr[child].lowlink,indArr[target].lowlink);
+			} else if (tis[child].visited == true) {
+				tis[target].lowlink = MIN(tis[child].index,tis[target].lowlink);
 			}
 		} else {
 			// found a SCC
-			if (indArr[target].lowlink == indArr[target].index) {
+			if (tis[target].lowlink == tis[target].index) {
 				Component* comp = new Component();
 				comp->componentID = this->componentsCount;
 				int top = stack->Pop();
@@ -95,7 +98,7 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 					break;
 				}
 				indArr[top].componentID = this->componentsCount;
-				indArr[top].visited = false;
+				tis[top].visited = false;
 				comp->includedNodesID->Push(top);
 				int size = 1;
 				while (top != target) {
@@ -106,23 +109,18 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 					}
 					indArr[top].componentID = this->componentsCount;
 					comp->includedNodesID->Push(top);
-					indArr[top].visited = false;
+					tis[top].visited = false;
 					size++;
 				}
 				comp->nodesSum = size;
-				//if ( size < 2) {
-					//delete comp;
-			//	} else {
-					this->AddComponentToArray(comp);
-					//components[componentsCount - 1]->includedNodesID->Print();
-				//}
+				this->AddComponentToArray(comp);
 			}
 
 			// "recurse" one level backwards
-			int newTarget = indArr[target].parentNode;
+			int newTarget = tis[target].parentNode;
 			if (newTarget >= 0) {
-				indArr[newTarget].lowlink = MIN(indArr[newTarget].lowlink,
-						indArr[target].lowlink);
+				tis[newTarget].lowlink = MIN(tis[newTarget].lowlink,
+						tis[target].lowlink);
 				target = newTarget;
 			} else
 				// if root ,break while loop.Finished
@@ -161,11 +159,11 @@ bool SCC::DestroySCC() {
 }
 
 void SCC::Print() {
-	cout << "Found " << componentsCount << " overall SCC : " << level << endl;
+	cout << "Found " << componentsCount << " overall SCC" <<  endl;
 	//getchar();
-	for (int i = 0 ; i < componentsCount ; i++) {
+	//for (int i = 0 ; i < componentsCount ; i++) {
 		//components[i]->includedNodesID->Print();
-	}
+	//}
 	//Component *temp;
 	//while(!components.isEmpty()) {
 		//temp = components.PopHead();
@@ -323,14 +321,14 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 			cout << i << endl;
 			temp = components[i]->includedNodesID->GetCurData();
 			node_pos = k[temp].out;
-			if (node_pos != -1) // NE TI????
+			if (node_pos != -1)
 				do {
 					node_pos = G[node_pos].SearchDiffComponent(
 							current_component, this, index);
 				} while (node_pos);
 
 			if (!components[i]->includedNodesID->IncCur()) {
-				cout << "NEXT IS NULL BRA" << endl;
+				cout << "NEXT IS NULL" << endl;
 				break;
 			}
 		}
