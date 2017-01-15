@@ -1,13 +1,8 @@
-/*
- * template_list.h
- *
- *  Created on: Dec 8, 2016
- *      Author: alex
- */
-
 #ifndef TEMPLATE_LIST_H_
 #define TEMPLATE_LIST_H_
 #include <iostream>
+#include "components.h"
+
 
 template<class T>
 class List {
@@ -26,7 +21,7 @@ public:
 		//std::cout << "List was constructed" << std::endl;
 	}
 	~List() {
-		std::cout << "List is destructed" << std::endl;
+		//std::cout << "List is destructed" << std::endl;
 		while (!isEmpty()) {
 			PopLast();
 		}
@@ -34,12 +29,12 @@ public:
 	}
 
 	void Push(const T& object);
+	void PushAfterCheck(const T& object,int);
 	T PopHead();
 	T PopLast();
 	bool IsOut();
 	const T& GetCurData();
 	const T& GetHeadData();
-	int GetUnvisitedEdge(int**);
 	bool isEmpty();
 	void ResetCur() { cur = head; };
 	bool IncCur();
@@ -60,6 +55,28 @@ void List<T>::Push(const T& obj) {
 	}
 	size++;
 }
+
+template<class T>
+void List<T>::PushAfterCheck(const T& obj,int number) {
+	if (size == 0) {
+		head = new ListNode(obj);
+		last = head;
+	}
+	else {
+		ListNode* p=head;
+		while (p!=NULL){
+			if (p->data == number)
+				return;
+			p=p->next;
+		}
+		ListNode* tmp = new ListNode(obj);
+		tmp->prev = last;
+		last->next = tmp;
+		last = tmp;
+	}
+	size++;
+}
+
 
 template<class T>
 T List<T>::PopHead() {
@@ -122,13 +139,14 @@ const T& List<T>::GetHeadData() {
 	}
 }
 
+
 template<class T>
 bool List<T>::IsOut() {
 	if (!isEmpty()) {
 		return (cur == NULL);
 	}
-	std::cout << "Return false LIST::ISOUT" << std::endl;
-	return false;
+	//std::cout << "Return false LIST::ISOUT" << std::endl;
+	return true;
 }
 
 template<class T>
@@ -150,16 +168,7 @@ bool List<T>::IncCur() {
 		return false;
 }
 
-template<class T>
-int  List<T>::GetUnvisitedEdge(int** visited) {
-	ListNode* p= head;
-	while (p!=NULL){
-		if ((*(visited[p->data]))==0)
-			return p->data;
-		p=p->next;
-	}
-	return -1;
-}
+
 
 template<class T>
 void List<T>::Print() {
@@ -169,7 +178,8 @@ void List<T>::Print() {
 		std::cout << cur->data << " ";
 		cur = cur->next;
 	}
-	std::cout <<cur->data << std::endl;
+	if (size)
+		std::cout <<cur->data << std::endl;
 }
 
 #endif

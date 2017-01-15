@@ -27,7 +27,9 @@ enum GRAIL_ANSWER {NO, MAYBE, YES};
 struct Label{
 	int min_rank;
 	int rank;
-	Label() :min_rank(-1),rank(-1){}
+    int visited;
+    int flag;
+	Label() :min_rank(-1),rank(-1),visited(0),flag(0){}
 };
 
 struct Component {
@@ -37,6 +39,7 @@ struct Component {
 	List<int>* includedNodesID; //ids of included nodes
 	Component() : componentID(-1), nodesSum(0) { includedNodesID=new List<int>;}
 };
+
 
 struct ComponentCursor {
 	int cursor;
@@ -57,23 +60,27 @@ class SCC {
 	int componentsCount;
     int size;
 	//int componentIDs[NUM]; //inverted index den to xreiazomaste exoume metavliti sto index
+	int level;
     List<int>** edges; //oi akmes tou hypergraph
 public:
 	SCC(int);
 	~SCC();
     List<int>** GetStrongEdges(){ return edges;};
+    Component** GetComponent(){ return components;};
+    int GetCompCount(){ return componentsCount;};
     void AddComponentToArray(Component*);
-	void EstimateSCC(Buffer* ,Index* ,int);
+    void EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(int,Index*);
 	bool NextSCC_ID(ComponentCursor* );
 	int EstimateShortestPathSCC(Buffer*,Index*,int,int ,int ,int );
 	bool DestroySCC();
-	void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int, TarzanInfoStruct[], int*);
+    void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int, TarzanInfoStruct[], int*);
 	void Print();
     int Subset(Label a,Label b);
     void BuildHypergraph(Index*,Buffer*);
     void BuildGrailIndex();
-    void GrailProgress(int,int**,int*,int*);
+    int GetUnvisitedEdge(int);
+    void GrailProgress(int,int*);
     GRAIL_ANSWER IsReachableGrail(Index*,int,int);
 };
 

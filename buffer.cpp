@@ -76,7 +76,7 @@ int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
 	IndexNode* indArray=index->GetIndexNode();
 	for (int i = 0; i < endPos; i++) {
 		if (indArray[neighbor[i]].componentID != target)
-			strongc->GetStrongEdges()[target]->Push(indArray[neighbor[i]].componentID); //
+			strongc->GetStrongEdges()[target]->PushAfterCheck(indArray[neighbor[i]].componentID,indArray[neighbor[i]].componentID); //
 	}
 	if ((this->IsFull()) && (nextNode != 0))
 		return nextNode;
@@ -564,7 +564,7 @@ void Buffer::PrintBuffer(Index *index) {
 
 /*
 CC* Buffer::estimateConnectedComponents(Index *ind){
-	int ccounter=0;	
+	int ccounter=0;
 	CC* compIndex=new CC;
 	IndexNode *indarr = ind->GetIndexNode();
 	int pos=Find_First_Unmarked(ind);
@@ -581,9 +581,9 @@ CC* Buffer::estimateConnectedComponents(Index *ind){
 		ccounter++;
 	}
 	cout<<"nodes visited: "<<nodes_visited<<endl;
-	
+
 	return compIndex;
-}	
+}
 
 int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 	IndexNode*indarr=index->GetIndexNode();
@@ -593,21 +593,21 @@ int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 	int in_position;
 	int neighbor_id;
 	int i;
-	
+
 	//oura gia ekserxomenous`
 	Queue<int> Queue_Out;
 	Queue_Out.Enqueue(pos);
-	Queue <int>Queue_In;	
+	Queue <int>Queue_In;
 	Queue_In.Enqueue(pos);
 	cindex->Set_Comp(pos,component);
-	cout<<"BFS"<<endl;	
+	cout<<"BFS"<<endl;
 	out_position=indarr[pos].out;
 	in_position=indarr[pos].in;
 	cout<<"outpos: "<<out_position<<endl;
 	cout<<"inpos: "<<in_position<<endl;
 	while(Queue_In.isEmpty()==0 || Queue_Out.isEmpty()==0){
 		if(Queue_Out.isEmpty()==0){
-			
+
 			 outTemp = Queue_Out.GetfrontData();
 		//	 cout<<"ok"<<endl;
 			 cout<<"outmemp: "<<outTemp<<endl;
@@ -617,18 +617,18 @@ int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 			 }
        		cout<<"out_deque: "<< Queue_Out.Dequeue()<<endl;
      	   do
-     	   {	
+     	   {
 			//	outcoming[out_pos].Visift_Neighbors();
-     	   	
+
      	   		for(int i=0;i<this->outcoming[out_position].GetEndPos();i++){
-					
+
 					neighbor_id=outcoming[out_position].GetNeighbor(i);
 					cout<<"neighbor: "<<neighbor_id<<endl;
       	    	  if(indarr[neighbor_id].visited==false)
      	      	 {
            	   		  indarr[neighbor_id].visited = true;
            	   		  //cout<<"node: "<<o"neighbor:: "<<
-    	          	  Queue_Out.Enqueue(neighbor_id);	
+    	          	  Queue_Out.Enqueue(neighbor_id);
     	          	  	cindex->Set_Comp(neighbor_id,component);
     	          	  nodes_count++;
     	          	  indarr[neighbor_id].componentID=component;
@@ -641,10 +641,10 @@ int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 		if(Queue_In.isEmpty()==0){
 		int	inTemp=Queue_In.GetfrontData();
 			 in_position=indarr[inTemp].in;
-			cout<<Queue_In.Dequeue()<<endl;	
+			cout<<Queue_In.Dequeue()<<endl;
 			do{
 				for(int i=0;i<this->incoming[in_position].GetEndPos();i++){
-				
+
 					neighbor_id=incoming[in_position].GetNeighbor(i);
       	    	  if(indarr[neighbor_id].visited==false)
      	      	 {	indarr[neighbor_id].visited = true;
@@ -662,8 +662,8 @@ int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 	}
 	cout<<"function end"<<endl;
 	return nodes_count;
-	 
-	
+
+
 }
 
 */

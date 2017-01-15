@@ -86,7 +86,15 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	/*buffer->PrintBuffer(index); // insert_unitest
+	//buffer->PrintBuffer(index); // insert_unitest
+	/* get neighbors unit test
+	int x =index->NeighboursNum(17,'o',buffer);
+	do {
+		index->GetIndexNode()[17].recursive_level++;
+		cout << index->GetIndexNode()[17].recursive_level << " :: "<< index->GetNeighbor(17,buffer) << endl;
+
+	} while(index->GetIndexNode()[17].recursive_level < x);
+	cout << index->GetIndexNode()[17].recursive_level << " & " << x << endl;
 	cout << "Waiting char" << endl;
 	getchar();*/
 	int estimatedComponentsAmount = maxVal / 5;
@@ -94,13 +102,13 @@ int main(int argc, char **argv) {
 		estimatedComponentsAmount = 50;
 	SCC strongCC(estimatedComponentsAmount);
 	strongCC.EstimateSCC(buffer,index,maxVal);
+	//strongCC.Print();
 	//cout << "Waiting char" << endl;
 	//getchar();
-	delete index;
-	delete buffer;
+	//return 1;
 
 	ofstream result("results.txt"); //output file for Queries
-
+	result << strongCC.GetCompCount();
 	/**************		Read from Workload file	 **************/
 	char *workFile = argv[2];
 	myFile.open(workFile);
@@ -109,14 +117,24 @@ int main(int argc, char **argv) {
 		int source, dest;
 		IndexNode* p=index->GetIndexNode();
 		strongCC.BuildHypergraph(index,buffer);
+		/*int** visited;
+		visited = new int*[500000];
+		for (int i=0;i<500000;i++){
+			visited[i]=new int;
+			*visited[i]=0;
+		}
+		List<int> mylist;
+		mylist.Push(5);
+		mylist.Push(7);
+		result << mylist.GetUnvisitedEdge(visited) << endl;
+		getchar();*/
+		cout << "finish" << endl;
 		strongCC.BuildGrailIndex();
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			iss >> Command;
 			if (Command == 'Q') {
 				iss >> source >> dest;
-				cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
-/*
 				//buffer->Query(source,dest,index);
 				int k=strongCC.IsReachableGrail(index,source,dest);
 				if (k==0)
@@ -125,7 +143,8 @@ int main(int argc, char **argv) {
 					cout << "Menei h maybe" << endl;
 				else if (k==2){
 					cout << "YES" << endl;
-				}*/
+					//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+				}
 			}
 			else if (Command == 'A') {
 				iss >> source >> dest;
@@ -133,10 +152,11 @@ int main(int argc, char **argv) {
 				index->Insert(source, dest, buffer);
 				buffer->AddNeighbor(source, dest, index);
 			}
-			else if (Command == 'F') {
+			else //if (Command == 'F') {
 				continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
 
-			}
+			//}
+
 		}
 	}
 	else
