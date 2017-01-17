@@ -26,6 +26,17 @@ inline int max(int a, int b) {
 	return((a>b) ? (a) : (b));
 }
 
+// perror_function for threads.
+void Psystem_error(char *message) {
+	perror(message);
+	exit(1);
+}
+
+void Puser_error(char *message, char *detail) {
+	fprintf(stderr, "%s: %s\n", message, detail);
+	exit(1);
+}
+
 int main(int argc, char **argv) {
 	cout << "Program is running " << endl;
 	if (argc != 3) {

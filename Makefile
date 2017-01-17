@@ -1,17 +1,18 @@
 #Compiler settings
 
 CC = g++
-CFLAGS = -c -Wall -g -O2
-SRCS = main.cpp buffer.cpp components.cpp
+CFLAGS = -c -Wall -g -O2 -std=c++11
+SRCS = main.cpp buffer.cpp components.cpp job_scheduler.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = exec
+LIBS = -pthread
 SCRIPT = insert_unitest.script
 	
 all : $(SRCS) $(EXE)
 	@echo $(EXE) "HAS BEEN COMPILED" 
 	
 $(EXE): $(OBJS)
-	$(CC) $(OBJS) -o $@
+	$(CC) $(OBJS) -o $@ $(LIBS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
