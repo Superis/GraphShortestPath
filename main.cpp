@@ -113,6 +113,7 @@ int main(int argc, char **argv) {
 	//buffer->PrintBuffer(index); // insert_unitest
 
 	/**************		Read from Workload file	 **************/
+
 	char *workFile = argv[2];
 	myFile.open(workFile);
 
@@ -122,16 +123,14 @@ int main(int argc, char **argv) {
 		estimatedComponentsAmount = 50;
 	SCC strongCC(estimatedComponentsAmount);
 	strongCC.EstimateSCC(buffer,index,maxVal);
-	//cout << "Waiting char" << endl;
-	//getchar();
 
 	ofstream result("results.txt"); //output file for Queries
-	result << strongCC.GetCompCount();
+	//result << strongCC.GetCompCount();
+
 	if (myFile.is_open()) {
 		char command;
 		int source, dest;
 		strongCC.BuildHypergraph(index,buffer);
-		cout << "finish" << endl;
 		strongCC.BuildGrailIndex();
 		while (getline(myFile, line)) {
 			istringstream iss(line);
@@ -139,14 +138,16 @@ int main(int argc, char **argv) {
 			if (command == 'Q') {
 				iss >> source >> dest;
 				//buffer->Query(source,dest,index);
-				int k = strongCC.IsReachableGrail(index, source, dest);
-				if (k == 0)
-					cout << "-1 GRAIL" << endl;
-				else if (k == 1)
-					cout << "Menei h maybe" << endl;
-				else if (k == 2) {
-					cout << "YES" << endl;
-					//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+				int k=strongCC.IsReachableGrail(index,source,dest);
+				if (k==0)
+					result << "-1" << endl;
+				else if (k==1){
+					//result << "MAYBE";
+					result << strongCC.EstimateShortestPathSCC(buffer,index,source,dest) << endl;
+				}
+				else if (k==2){
+					//result << "YES";
+					result << buffer->Query(source,dest,index,'S',p[source].componentID) << endl;
 				}
 			}
 			else if (command == 'A') {
@@ -165,6 +166,7 @@ int main(int argc, char **argv) {
 	else
 		cerr << "Unable to open Workload file" << endl;
 
+	exit(1);
 	int currentSystemCores = sysconf(_SC_NPROCESSORS_ONLN);
 	JobScheduler *js = new JobScheduler(currentSystemCores);
 	if (specifier == "DYNAMIC") {

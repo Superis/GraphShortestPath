@@ -34,6 +34,7 @@ struct Label{
 
 struct Component {
     Label label;  //Gia ton Grail
+    int* connectedComponents;
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
 	List<int>* includedNodesID; //ids of included nodes
@@ -59,6 +60,7 @@ class SCC {
 	Component** components;// Components index - a vector which storesthe components information
 	int componentsCount;
     int size;
+    int* PushChecker;
 	//int componentIDs[NUM]; //inverted index den to xreiazomaste exoume metavliti sto index
 	int level;
     List<int>** edges; //oi akmes tou hypergraph
@@ -68,18 +70,21 @@ public:
     List<int>** GetStrongEdges(){ return edges;};
     Component** GetComponent(){ return components;};
     int GetCompCount(){ return componentsCount;};
+    int* GetPushChecker(){ return PushChecker;};
     void AddComponentToArray(Component*);
     void EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(int,Index*);
 	bool NextSCC_ID(ComponentCursor* );
-	int EstimateShortestPathSCC(Buffer*,Index*,int,int ,int ,int );
+	int EstimateShortestPathSCC(Buffer*,Index*,int ,int );
 	bool DestroySCC();
     void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int, TarzanInfoStruct[], int*);
 	void Print();
     int Subset(Label a,Label b);
     void BuildHypergraph(Index*,Buffer*);
     void BuildGrailIndex();
+    void ResetEdges();
     int GetUnvisitedEdge(int);
+    int GetNextEdge(int);
     void GrailProgress(int,int*);
     GRAIL_ANSWER IsReachableGrail(Index*,int,int);
 };

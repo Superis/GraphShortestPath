@@ -84,8 +84,13 @@ int Node::SearchNeighbors(int dest) {
 int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
 	IndexNode* indArray=index->GetIndexNode();
 	for (int i = 0; i < endPos; i++) {
-		if (indArray[neighbor[i]].componentID != target)
-			strongc->GetStrongEdges()[target]->PushAfterCheck(indArray[neighbor[i]].componentID,indArray[neighbor[i]].componentID); //
+		if (indArray[neighbor[i]].componentID != target){
+			if (strongc->GetPushChecker()[indArray[neighbor[i]].componentID] != target){
+					strongc->GetStrongEdges()[target]->Push(indArray[neighbor[i]].componentID);
+					strongc->GetPushChecker()[indArray[neighbor[i]].componentID] = target;
+			}
+		}
+			//strongc->GetStrongEdges()[target]->PushAfterCheck(indArray[neighbor[i]].componentID,indArray[neighbor[i]].componentID); //
 	}
 	if ((this->IsFull()) && (nextNode != 0))
 		return nextNode;
@@ -131,14 +136,12 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 	else if (direction == 'd'){
 		for (i = 0; i < endPos; i++) {
 			if (comp>=0 && indArray[neighbor[i]].componentID != comp)//an den paizoume sto idio component
-			 	continue;
-			if (indArray[neighbor[i]].componentID == comp){
-				if (indArray[neighbor[i]].src_level >= 0)
-					return level + indArray[neighbor[i]].src_level;
-				else
-					if (indArray[neighbor[i]].dest_level < 0)
-						indArray[neighbor[i]].dest_level = level;
-			}
+				continue;
+			if (indArray[neighbor[i]].src_level >= 0)
+				return level + indArray[neighbor[i]].src_level;
+			else
+				if (indArray[neighbor[i]].dest_level < 0)
+					indArray[neighbor[i]].dest_level = level;
 		}
 	}
 	if (i == -1) {
@@ -149,12 +152,7 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 		return -nextNode;
 	else
 		return 0;
-
-
 }
-
-
-
 /**************		Index class 	**************/
 
 Index::Index(int maxSize) :
@@ -425,9 +423,9 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
 	int comp;
-	if (c=='S')
+	if (c=='D')
 		comp=-1;
-	else if (c=='D')
+	else if (c=='S')
 		comp=comparg;
 	indArray[src].src_level = 0;
 	indArray[dest].dest_level = 0;
@@ -438,7 +436,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 		indArray[src].src_level = -1;
 		indArray[dest].dest_level = -1;
 		return -1;
-		}
+	}
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
 		//cout << "pame source" <<endl;
 		while (1) {
@@ -623,109 +621,3 @@ void Buffer::PrintBuffer(Index *index) {
 	getchar();
 	cout << "Continuing..." << endl;
 }
-
-/*
-CC* Buffer::estimateConnectedComponents(Index *ind){
-	int ccounter=0;
-	CC* compIndex=new CC;
-	IndexNode *indarr = ind->GetIndexNode();
-	int pos=Find_First_Unmarked(ind);
-	int start_out=indarr[pos].out;
-	int start_in=indarr[pos].in;
-	int nodes_visited=1;
-	while(nodes_visited<ind->GetSize()){
-		indarr[Find_First_Unmarked(ind)].visited=true;
-  		//ind[Find_First_Unmarked(ind)].visited=true;
-		nodes_visited+=BFS(ind,pos,ccounter,compIndex);
-		pos=Find_First_Unmarked(ind);
-		start_out=indarr[pos].out;
-		start_in=indarr[pos].in;
-		ccounter++;
-	}
-	cout<<"nodes visited: "<<nodes_visited<<endl;
-
-	return compIndex;
-}
-
-int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
-	IndexNode*indarr=index->GetIndexNode();
-	int outTemp;
-	int nodes_count=0;
-	int out_position;
-	int in_position;
-	int neighbor_id;
-	int i;
-
-	//oura gia ekserxomenous`
-	Queue<int> Queue_Out;
-	Queue_Out.Enqueue(pos);
-	Queue <int>Queue_In;
-	Queue_In.Enqueue(pos);
-	cindex->Set_Comp(pos,component);
-	cout<<"BFS"<<endl;
-	out_position=indarr[pos].out;
-	in_position=indarr[pos].in;
-	cout<<"outpos: "<<out_position<<endl;
-	cout<<"inpos: "<<in_position<<endl;
-	while(Queue_In.isEmpty()==0 || Queue_Out.isEmpty()==0){
-		if(Queue_Out.isEmpty()==0){
-
-			 outTemp = Queue_Out.GetfrontData();
-		//	 cout<<"ok"<<endl;
-			 cout<<"outmemp: "<<outTemp<<endl;
-			 out_position=indarr[outTemp].out;
-			 if(out_position==-1){
-			 	break;
-			 }
-       		cout<<"out_deque: "<< Queue_Out.Dequeue()<<endl;
-     	   do
-     	   {
-			//	outcoming[out_pos].Visift_Neighbors();
-
-     	   		for(int i=0;i<this->outcoming[out_position].GetEndPos();i++){
-
-					neighbor_id=outcoming[out_position].GetNeighbor(i);
-					cout<<"neighbor: "<<neighbor_id<<endl;
-      	    	  if(indarr[neighbor_id].visited==false)
-     	      	 {
-           	   		  indarr[neighbor_id].visited = true;
-           	   		  //cout<<"node: "<<o"neighbor:: "<<
-    	          	  Queue_Out.Enqueue(neighbor_id);
-    	          	  	cindex->Set_Comp(neighbor_id,component);
-    	          	  nodes_count++;
-    	          	  indarr[neighbor_id].componentID=component;
-    	          //	ccindex[neighbor_id]=component;
-    	       	 }
-    	       }
-    	     	out_position=outcoming[out_position].GetNextNode();
-       	 }while(out_position!=0);
-		}
-		if(Queue_In.isEmpty()==0){
-		int	inTemp=Queue_In.GetfrontData();
-			 in_position=indarr[inTemp].in;
-			cout<<Queue_In.Dequeue()<<endl;
-			do{
-				for(int i=0;i<this->incoming[in_position].GetEndPos();i++){
-
-					neighbor_id=incoming[in_position].GetNeighbor(i);
-      	    	  if(indarr[neighbor_id].visited==false)
-     	      	 {	indarr[neighbor_id].visited = true;
-    	          	Queue_In.Enqueue(neighbor_id);
-    	          	cindex->Set_Comp(neighbor_id,component);
-    	          	cout<<neighbor_id<<endl;
-    	          	nodes_count++;
-    	          	indarr[neighbor_id].componentID=component;
-    	       	 }
-				}
-				in_position=incoming[in_position].GetNextNode();
-			}while(in_position!=0);
-			cout<<"ouf of while 2"<<endl;
-		}
-	}
-	cout<<"function end"<<endl;
-	return nodes_count;
-
-
-}
-
-*/

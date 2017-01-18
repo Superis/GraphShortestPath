@@ -7,16 +7,16 @@ OBJS = $(SRCS:.cpp=.o)
 EXE = exec
 LIBS = -pthread
 SCRIPT = insert_unitest.script
-	
+
 all : $(SRCS) $(EXE)
-	@echo $(EXE) "HAS BEEN COMPILED" 
-	
+	@echo $(EXE) "HAS BEEN COMPILED"
+
 $(EXE): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LIBS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
-	
+
 script :
 	chmod +x $(SCRIPT)
 
