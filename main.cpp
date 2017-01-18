@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
 	if (myFile.is_open()) {
 		char command;
 		int source, dest;
+		IndexNode* p=index->GetIndexNode();
 		strongCC.BuildHypergraph(index,buffer);
 		strongCC.BuildGrailIndex();
 		while (getline(myFile, line)) {
