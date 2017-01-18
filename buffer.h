@@ -10,25 +10,25 @@
 struct IndexNode {
 	int in; // offset of incoming node
 	int inlast; //last offset of incoming neighbors
+	int inNeighbors;
 	int out; // offset of outcoming node
 	int outlast; // last offset of outcoming neighbors
+	int outNeighbors;
 	int src_level; // numbers the iteration in which this Node was discovered from source Node
 	int dest_level;
 
 	// Part 2 Additions :
-	int recursive_level; // numbers the iteration this node was discovered.Mporw na xrisimopoihsw kai src_level kai na to thetw pali -1 sto telos
-	int index; // numbers the nodes consecutively in the order in which they are discovered
-	int lowlink; // smallest index of any node known to be reachable this->Node,this included
-	bool visited;
 	int componentID;
-	int parentNode;
 
-	IndexNode() : in(-1), inlast(-1), out(-1), outlast(-1), src_level(-1), dest_level(-1),
-		recursive_level(-1),index(-1), lowlink(-1), visited(false), componentID(-1) ,parentNode(-1) {}
+	IndexNode() :
+			in(-1), inlast(-1), inNeighbors(0), out(-1), outlast(-1),
+			outNeighbors(0), src_level(-1), dest_level(-1), componentID(-1) {}
 };
 
 class Buffer;
+// Avoiding Circular Dependencies of header files
 class SCC;
+class CC;
 
 class Index {
 	IndexNode *indexArray; // Dynamic array of graph indices
@@ -39,7 +39,7 @@ public:
 
 	IndexNode* GetIndexNode();
 	int GetSize() { return indSize; };
-	int GetNeighbor(int ,Buffer* );
+	int GetNeighbor(int ,Buffer* ,int);
 
 	int NeighboursNum(int, char, Buffer*);
 	void Insert(int, int, Buffer *);
@@ -72,7 +72,7 @@ public:
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
 	int ShortestPath(Index*,char , int,int);
 
-	void PrintNeightbors(int,char);
+	int PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
 };
 
@@ -103,8 +103,8 @@ public:
 	void Reallocate(char);
 	void PrintBuffer(Index *);
 	int Find_First_Unmarked(Index*);
-	int Find_Components(Node*,Index*);
-	int BFS(Index*,int, int,int);
+	CC* estimateConnectedComponents(Index*);
+	int BFS(Index*,int,int,CC*);
 };
 
 #endif /* BUFFER_H_ */

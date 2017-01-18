@@ -1,7 +1,7 @@
 #Compiler settings
 
 CC = g++
-CFLAGS = -c -Wall -g
+CFLAGS = -c -Wall -g -O2
 SRCS = main.cpp buffer.cpp components.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = exec

@@ -97,14 +97,18 @@ int main(int argc, char **argv) {
 	cout << index->GetIndexNode()[17].recursive_level << " & " << x << endl;
 	cout << "Waiting char" << endl;
 	getchar();*/
-	SCC strongCC(20);
+	int estimatedComponentsAmount = maxVal / 5;
+	if (estimatedComponentsAmount == 0)
+		estimatedComponentsAmount = 50;
+	SCC strongCC(estimatedComponentsAmount);
 	strongCC.EstimateSCC(buffer,index,maxVal);
 	//strongCC.Print();
-	cout << "Waiting char" << endl;
-	getchar();
+	//cout << "Waiting char" << endl;
+	//getchar();
+	//return 1;
 
 	ofstream result("results.txt"); //output file for Queries
-
+	//result << strongCC.GetCompCount();
 	/**************		Read from Workload file	 **************/
 	char *workFile = argv[2];
 	myFile.open(workFile);
@@ -113,7 +117,30 @@ int main(int argc, char **argv) {
 		int source, dest;
 		IndexNode* p=index->GetIndexNode();
 		strongCC.BuildHypergraph(index,buffer);
+		/*int** visited;
+		visited = new int*[500000];
+		for (int i=0;i<500000;i++){
+			visited[i]=new int;
+			*visited[i]=0;
+		}
+		List<int> mylist;
+		mylist.Push(5);
+		mylist.Push(7);
+		result << mylist.GetUnvisitedEdge(visited) << endl;
+		getchar();*/
+		/*cout << "finish" << endl;
+		strongCC.GetComponent()[p[816992].componentID]->includedNodesID->Print();
+		int temp=p[816992].out;
+		do{
+			temp=buffer->GetListNode('o')[temp].PrintNeightbors(816992,'o');
+		} while (temp);*/
+		//result << p[816992].componentID << endl;
+		//result << p[1188172].componentID << endl;
 		strongCC.BuildGrailIndex();
+		//result << strongCC.GetComponent()[p[816992].componentID]->label.min_rank << " " << strongCC.GetComponent()[p[816992].componentID]->label.rank << " " << strongCC.GetComponent()[p[816992].componentID]->label.flag << strongCC.GetComponent()[p[816992].componentID]->label.visited << endl;
+		//result << strongCC.GetComponent()[p[1188172].componentID]->label.min_rank << " " << strongCC.GetComponent()[p[1188172].componentID]->label.rank << " " << strongCC.GetComponent()[p[1188172].componentID]->label.flag << strongCC.GetComponent()[p[1188172].componentID]->label.visited << endl;
+		//getchar();
+		//cout << strongCC.IsReachableGrail(index,816992,497813) << endl;
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			iss >> Command;
@@ -122,12 +149,15 @@ int main(int argc, char **argv) {
 				//buffer->Query(source,dest,index);
 				int k=strongCC.IsReachableGrail(index,source,dest);
 				if (k==0)
-					cout << "-1 GRAIL" << endl;
-				else if (k==1)
-					cout << "Menei h maybe" << endl;
+					result << "-1" << endl;
+				else if (k==1){
+					//result << "MAYBE";
+					//if (source==816992)
+					result << strongCC.EstimateShortestPathSCC(buffer,index,source,dest) << endl;
+				}
 				else if (k==2){
-					cout << "YES" << endl;
-					//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+					//result << "YES";
+					result << buffer->Query(source,dest,index,'S',p[source].componentID) << endl;
 				}
 			}
 			else if (Command == 'A') {
@@ -136,10 +166,11 @@ int main(int argc, char **argv) {
 				index->Insert(source, dest, buffer);
 				buffer->AddNeighbor(source, dest, index);
 			}
-			else if (Command == 'F') {
+			else //if (Command == 'F') {
 				continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
 
-			}
+			//}
+
 		}
 	}
 	else
