@@ -5,6 +5,9 @@
 #include <stdexcept>
 
 template<class T>
+struct item_return{ typedef T type; };
+
+template<class T>
 class Stack {
 	struct StackNode {
 		T data;
@@ -31,7 +34,7 @@ public:
 
 	void Push(const T& object);
 	T Pop();
-	const T& GetHeadData();
+	const T GetHeadData();
 	bool isEmpty();
 	void Print();
 };
@@ -53,15 +56,16 @@ T Stack<T>::Pop() {
 		return data;
 	}
 	else {
-		return 0;
+		return static_cast<T>(NULL);
 	}
 }
 
 template<class T>
-const T& Stack<T>::GetHeadData() {
+const T Stack<T>::GetHeadData() {
 	if (!isEmpty()) {
 		return head->data;
 	}
+	return static_cast<T>(NULL);
 }
 
 template<class T>
