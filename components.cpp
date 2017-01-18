@@ -362,13 +362,6 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 }
 
 void SCC::BuildGrailIndex() {
-	/*for(int o=0;o<componentsCount;o++){
-		edges[816992]->Print();
-		if (o==489861)
-			getchar();
-	}*/
-	//edges[881783]->Print();
-	//getchar();
 	this->ResetEdges();
 	int r = 1;
 	int i=componentsCount-1;
@@ -378,15 +371,9 @@ void SCC::BuildGrailIndex() {
 			this->GrailProgress(i,&r);}
 		i--;
 	}
-	/*for (int j=0;j<40;j++){
-		cout << j << " is " << components[j]->label.visited << " and " << components[j]->label.flag << endl;
-		edges[j]->Print();
-	}*/
-	//getchar();
 }
 
 void SCC::GrailProgress(int i, int* r) {
-	//ofstream somefile("some.txt");
 	int min_rank = componentsCount; //timi wste me tin prwti na paroume mikrotero min_rank
 	int myrank = *r;
 	int new_progress;
@@ -404,10 +391,6 @@ void SCC::GrailProgress(int i, int* r) {
 			i = new_progress;
 			StackProgress.Push(i);
 		}
-		//cout << i << " to i" << endl;
-		//somefile << myrank << "to r" << endl;
-		//cout  << componentsCount << " components with  array size " << size  << endl;
-
 		components[i]->label.rank = myrank;
 		if (!components[i]->label.flag) {
 			components[i]->label.min_rank = myrank;
@@ -421,7 +404,6 @@ void SCC::GrailProgress(int i, int* r) {
 		StackProgress.Pop();
 	}
 	*r = myrank;
-	//somefile.close();
 }
 
 
@@ -430,7 +412,7 @@ void SCC::ResetEdges(){
 		this->edges[i]->ResetCur();
 }
 
-int SCC::GetUnvisitedEdge(int i){
+/*int SCC::GetUnvisitedEdge(int i){
 	int temp;
 	if (!this->edges[i]->IsOut()) {
 		do{
@@ -446,7 +428,7 @@ int SCC::GetUnvisitedEdge(int i){
 		return -1;
 	else
 		return -2;
-}
+}*/
 
 int SCC::GetNextEdge(int i){
 	int temp;
@@ -455,6 +437,7 @@ int SCC::GetNextEdge(int i){
 		this->edges[i]->IncreaseCur();
 		return temp;
 	}
+
 	return -1;
 }
 

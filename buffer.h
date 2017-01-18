@@ -72,7 +72,7 @@ public:
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
 	int ShortestPath(Index*,char , int,int);
 
-	int PrintNeightbors(int,char);
+	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
 };
 

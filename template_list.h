@@ -169,6 +169,7 @@ bool List<T>::IncCur() {
 		return false;
 }
 
+
 template<class T>
 bool List<T>::IncreaseCur() {
 	if ( (cur->next) != NULL ) {

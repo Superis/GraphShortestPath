@@ -18,14 +18,21 @@ class Queue {
 		QueueNode(const T& newData, QueueNode *nextNode) :
 				data(newData), next(nextNode) {
 		}
+		QueueNode(QueueNode*nextNode):next(nextNode){
+		}
 	};
 
 	QueueNode *front, *rear;
 	int size;
 public:
-	Queue() :
-			front(NULL) ,rear(NULL), size(0) {
-		//std::cout << "Queue was constructed" << std::endl;
+	Queue(){
+	
+		//	front=new QueueNode(NULL);
+			front=NULL;
+			 rear=new QueueNode(NULL); 
+			 size=0; 
+				
+		std::cout << "Queue was constructed" << std::endl;
 	}
 	~Queue() {
 		std::cout << "Queue was destructed" << std::endl;
@@ -44,37 +51,44 @@ public:
 
 template<class T>
 void Queue<T>::Enqueue(const T& obj) {
-	if (size == 1) {
+	if (size == 0) {
 		front = new QueueNode(obj,rear);
+		rear=front;
 	}
 	else {
+		std::cout<<"queue insert"<<std::endl;
 		QueueNode* tmp = new QueueNode(obj,NULL);
+	//	std::cout<<"node created"<<std::endl;
 		rear->next = tmp;
 		rear = tmp;
 	}
 	size++;
+	std::cout<<"exiting"<<std::endl;
 }
 
 template<class T>
 T Queue<T>::Dequeue() {
-	if (!isEmpty()) {
+	if (this->isEmpty()==0) {
 		QueueNode *frontNode = front;
+		T tdata = frontNode->data;
 		front = front->next;
-		T data = frontNode->data;
+//	std::cout<<"front data: "<<front->data<<std::endl;
 		delete frontNode;
+		frontNode=NULL;
 		size--;
-		return data;
+		return tdata;
 	}
 	else {
-		return 0;
+		return NULL;
 	}
 }
 
 template<class T>
 const T& Queue<T>::GetfrontData() {
-	if (!isEmpty()) {
+	if (this->isEmpty()==0) {
 		return front->data;
 	}
+	return -1;
 }
 
 template<class T>
