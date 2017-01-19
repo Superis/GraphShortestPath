@@ -178,7 +178,7 @@ void SCC::Print() {
 
 
 
-int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
+int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,int repeat){
 	IndexNode *indArray = index->GetIndexNode();
 	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
@@ -186,24 +186,22 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
+	indArray[src].src_visited = repeat;
 	indArray[src].src_level = 0;
+	indArray[dest].dest_visited = repeat;
 	indArray[dest].dest_level = 0;
 	int compsrc=indArray[src].componentID;
 	int compdest=indArray[dest].componentID;
 	int level = 1;
 	int k,n;
 	int counter_s, counter_d;
-	if (indArray[src].out == -1 || indArray[dest].in == -1){
-		indArray[src].src_level = -1;
-		indArray[dest].dest_level = -1;
+	if (indArray[src].out == -1 || indArray[dest].in == -1)
 		return -1;
-	}
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
-		//cout << "pame source" <<endl;
 		while (1) {
 			counter_s = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].src_level == level - 1) {
+				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					if (indArray[i].componentID != compsrc){
 						n=this->IsReachableGrail(index,i,dest);
 						if (n==0)
@@ -216,14 +214,9 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 						continue;
 					}
 					src_node = &(buffer->GetListNode('o')[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;
-						}
+					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -232,7 +225,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 				break;
 			counter_d = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].dest_level == level - 1) {
+				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					if (indArray[i].componentID != compdest){
 						n=this->IsReachableGrail(index,src,i);
 						if (n==0)
@@ -245,13 +238,9 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 						continue;
 					}
 					dest_node = &(buffer->GetListNode('i')[dest_pos]);
-					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -266,7 +255,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 		while (1) {
 			counter_d = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].dest_level == level - 1) {
+				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					if (indArray[i].componentID != compdest){
 						n=this->IsReachableGrail(index,src,i);
 						if (n==0)
@@ -279,13 +268,9 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 						continue;
 					}
 					dest_node = &(buffer->GetListNode('i')[dest_pos]);
-					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -294,7 +279,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 				break;
 			counter_s = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].src_level == level - 1) {
+				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					if (indArray[i].componentID != compsrc){
 						n=this->IsReachableGrail(index,i,dest);
 						if (n==0)
@@ -307,13 +292,9 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 						continue;
 					}
 					src_node = &(buffer->GetListNode('o')[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -323,9 +304,6 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest){
 			level++;
 		}
 	}
-	for (int p = 0; p<l; p++) {
-		indArray[p].src_level=-1;
-		indArray[p].dest_level=-1;}
 	return -1;
 
 

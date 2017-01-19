@@ -118,7 +118,7 @@ void Node::PrintNeightbors(int src ,char c) {
 	}
 }
 
-int Node::ShortestPath(Index* index,char direction , int level,int comp) {
+int Node::ShortestPath(Index* index,char direction , int level,int comp,int repeat) {
 	int i = -1;
 	IndexNode* indArray=index->GetIndexNode();
 	  // an exoume dwsei pliroforia component tote comp>=0 diladi gia strongly-connected-alliws dinoume -1
@@ -126,22 +126,26 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 		for (i = 0; i < endPos; i++) {
 			if (comp>=0 && indArray[neighbor[i]].componentID!=comp)//an den paizoume sto idio component
 			 	continue;
-			if (indArray[neighbor[i]].dest_level >= 0)
+			if (indArray[neighbor[i]].dest_visited == repeat)
 					return level + indArray[neighbor[i]].dest_level;
 			else
-				if (indArray[neighbor[i]].src_level < 0)
+				if (indArray[neighbor[i]].src_visited != repeat){
+					indArray[neighbor[i]].src_visited = repeat;
 					indArray[neighbor[i]].src_level = level;
+				}
 		}
 	}
 	else if (direction == 'd'){
 		for (i = 0; i < endPos; i++) {
 			if (comp>=0 && indArray[neighbor[i]].componentID != comp)//an den paizoume sto idio component
 				continue;
-			if (indArray[neighbor[i]].src_level >= 0)
+			if (indArray[neighbor[i]].src_visited == repeat)
 				return level + indArray[neighbor[i]].src_level;
 			else
-				if (indArray[neighbor[i]].dest_level < 0)
+				if (indArray[neighbor[i]].dest_visited != repeat){
+					indArray[neighbor[i]].dest_visited = repeat;
 					indArray[neighbor[i]].dest_level = level;
+				}
 		}
 	}
 	if (i == -1) {
@@ -415,26 +419,21 @@ void Buffer::AddEdge(int src, int dest, Index *index) {
 
 }
 
-int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
+int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 	IndexNode *indArray = index->GetIndexNode();
 	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
-	int comp;
-	if (c=='D')
-		comp=-1;
-	else if (c=='S')
-		comp=comparg;
+	indArray[src].src_visited = repeat;
 	indArray[src].src_level = 0;
+	indArray[dest].dest_visited = repeat;
 	indArray[dest].dest_level = 0;
 	int level = 1;
 	int k;
 	int counter_s, counter_d;
 	if (indArray[src].out == -1 || indArray[dest].in == -1){
-		indArray[src].src_level = -1;
-		indArray[dest].dest_level = -1;
 		return -1;
 	}
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
@@ -442,7 +441,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 		while (1) {
 			counter_s = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].src_level == level - 1) {
+				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					counter_s++;
 					src_pos = indArray[i].out;
 					if (src_pos == -1){
@@ -450,13 +449,9 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 						continue;
 					}
 					src_node = &(outcoming[src_pos]);
-					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -465,7 +460,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 				break;
 			counter_d = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].dest_level == level - 1) {
+				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					counter_d++;
 					dest_pos = indArray[i].in;
 					if (dest_pos == -1){
@@ -473,13 +468,9 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 						continue;
 					}
 					dest_node = &(incoming[dest_pos]);
-					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -492,9 +483,9 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 	else {
 		//cout << "pame sto dest" << endl;
 		while (1) {
-			counter_d = 0;
+			counter_d=0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].dest_level == level - 1) {
+				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					counter_d++;
 					dest_pos = indArray[i].in;
 					if (dest_pos == -1){
@@ -502,13 +493,9 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 						continue;
 					}
 					dest_node = &(incoming[dest_pos]);
-					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -517,7 +504,7 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 				break;
 			counter_s = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].src_level == level - 1) {
+				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					counter_s++;
 					src_pos = indArray[i].out;
 					if (src_pos == -1){
@@ -525,13 +512,9 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 						continue;
 					}
 					src_node = &(outcoming[src_pos]);
-					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -541,18 +524,15 @@ int Buffer::Query(int src, int dest, Index *index,char c,int comparg) {
 			level++;
 		}
 	}
-	for (int p = 0; p<l; p++) {
-		indArray[p].src_level=-1;
-		indArray[p].dest_level=-1;}
 	return -1;
 }
 
 
-int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c, int level,int comp) {
+int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c, int level,int comp,int repeat) {
 	int k;
 	if (c == 's') {
 		do {
-			k = node->ShortestPath(index, c, level,comp);
+			k = node->ShortestPath(index, c, level,comp,repeat);
 			if (k > 0)
 				return k;
 			else if (k < 0)
@@ -564,7 +544,7 @@ int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c, int level,int 
 	}
 	else if (c == 'd') {
 		do {
-			k = node->ShortestPath(index, c, level,comp);
+			k = node->ShortestPath(index, c, level,comp,repeat);
 			if (k > 0)
 				return k;
 			else if (k < 0)

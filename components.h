@@ -75,7 +75,7 @@ public:
     void EstimateSCC(Buffer* ,Index* ,int);
 	int FindNodeSCC_ID(int,Index*);
 	bool NextSCC_ID(ComponentCursor* );
-	int EstimateShortestPathSCC(Buffer*,Index*,int ,int );
+	int EstimateShortestPathSCC(Buffer*,Index*,int ,int,int );
 	bool DestroySCC();
     void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int, TarzanInfoStruct[], int*);
 	void Print();

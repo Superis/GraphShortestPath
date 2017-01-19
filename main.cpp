@@ -128,6 +128,7 @@ int main(int argc, char **argv) {
 	//result << strongCC.GetCompCount();
 
 	if (myFile.is_open()) {
+		int repeat=0;
 		char command;
 		int source, dest;
 		IndexNode* p=index->GetIndexNode();
@@ -144,11 +145,13 @@ int main(int argc, char **argv) {
 					result << "-1" << endl;
 				else if (k==1){
 					//result << "MAYBE";
-					result << strongCC.EstimateShortestPathSCC(buffer,index,source,dest) << endl;
+					result << strongCC.EstimateShortestPathSCC(buffer,index,source,dest,repeat) << endl;
+					repeat++;
 				}
 				else if (k==2){
 					//result << "YES";
-					result << buffer->Query(source,dest,index,'S',p[source].componentID) << endl;
+					result << buffer->Query(source,dest,index,p[source].componentID,repeat) << endl;
+					repeat++;
 				}
 			}
 			else if (command == 'A') {
