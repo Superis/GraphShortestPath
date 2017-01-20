@@ -44,6 +44,14 @@ int Node::AddNeighbor(int i) {
 	endPos++;
 	return 0;
 }
+int Node::AddNeighbor(int i,int version) {
+	if (endPos >= maxCapacity) { // reached max cap
+		return -1;
+	}
+	neighbor[endPos] = i;
+	endPos++;
+	return 0;
+}
 
 int Node::GetNextNode() {
 	return nextNode;
@@ -105,7 +113,7 @@ void Node::PrintNeightbors(int src ,char c) {
 }
 
 int Node::ShortestPath(Index* index,char direction , int level,int comp) {
-	int i;
+	int i = -1;
 	IndexNode* indArray=index->GetIndexNode();
 	  // an exoume dwsei pliroforia component tote comp>=0 diladi gia strongly-connected-alliws dinoume -1
 	if (direction == 's'){
@@ -131,6 +139,10 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp) {
 						indArray[neighbor[i]].dest_level = level;
 			}
 		}
+	}
+	if (i == -1) {
+		cout << "ERROR @ Node::ShortestPath.Variable i was used uninitialized!Exiting." << endl;
+		exit(1);
 	}
 	if ( (i == maxCapacity) && (nextNode != 0) )
 		return -nextNode;
@@ -165,7 +177,7 @@ int Index::GetNeighbor(int target, Buffer* buffer ,int pos) {
 	endPos = out[indexArray[target].out].GetEndPos();
 	cap = out[indexArray[target].out].GetCapacity();
 	if (cap == 0) {
-		cout << "ZEROOOOOOOOOOOOOO with target : " << target << " @ : " << indexArray[target].out << endl;
+		cout << "ZERO with target : " << target << " @ : " << indexArray[target].out << endl;
 		return -1;
 	}
 	nextNode = out[indexArray[target].out].GetNextNode();
@@ -236,7 +248,7 @@ void Index::CheckCap(int src, int dest) {
 
 int Index::NeighboursNum(int target, char c, Buffer *buf) {
 	Node* tmpnode = buf->GetListNode(c);
-	int pos;
+	int pos = 0;
 	if (c == 'o')
 		pos = indexArray[target].out;
 	else if (c == 'i')
@@ -322,6 +334,37 @@ void Buffer::InsertBuffer(int src, int dest, Index *index) {
 		incoming[indexA[dest].inlast].SetNextNode(incEnd);
 		indexA[dest].inlast = incEnd;
 		if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1)
+			cout << "Wrong insert @ incoming" << endl;
+		else
+			indexA[dest].inNeighbors += 1;
+		incEnd++;
+	} else
+		indexA[dest].inNeighbors += 1;
+}
+void Buffer::InsertBuffer(int src, int dest, Index *index,int version) {
+	IndexNode *indexA = index->GetIndexNode();
+	if (outEnd >= outSize) { // must realloc
+		this->Reallocate('o');
+	}
+	if (incEnd >= incSize) {
+		this->Reallocate('i');
+	}
+	if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1) {
+		outcoming[indexA[src].outlast].SetNextNode(outEnd);
+		indexA[src].outlast = outEnd;
+		if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1)
+			cout << "Wrong insert @ outcoming" << endl;
+		else
+			indexA[src].outNeighbors += 1;
+		outEnd++;
+	} else
+		indexA[src].outNeighbors += 1;
+
+
+	if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1) {
+		incoming[indexA[dest].inlast].SetNextNode(incEnd);
+		indexA[dest].inlast = incEnd;
+		if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1)
 			cout << "Wrong insert @ incoming" << endl;
 		else
 			indexA[dest].inNeighbors += 1;

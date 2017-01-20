@@ -1,7 +1,7 @@
 #Compiler settings
 
 CC = g++
-CFLAGS = -c -Wall -g -O2 -std=c++11
+CFLAGS = -c -Wall -g -O2 -std=gnu++11
 SRCS = main.cpp buffer.cpp components.cpp job_scheduler.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = exec

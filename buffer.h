@@ -50,8 +50,8 @@ public:
 };
 
 class Node {
-	int neighbor[N]; //the ids of the neighbor nodes
-	int endPos; // pointing to first empty cell of array.When full endpos == maxcapcity
+	int neighbor[N], //the ids of the neighbor nodes
+	endPos; // pointing to first empty cell of array.When full endpos == maxcapcity
 	int maxCapacity; // maxCapacity of arrays|Needed for reallocation.
 	int edgeProperty[N]; //property for each edge
 	int nextNode;
@@ -67,6 +67,7 @@ public:
 	void SetNextNode(int);
 	int SearchDiffComponent(int, SCC*,Index*);
 	int AddNeighbor(int); // return 0 for ok and -1 for needing extra setting a nextNode from buffer class.
+	int AddNeighbor(int,int); // add neighbor & update version
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
@@ -91,6 +92,7 @@ public:
 	int GetOutEnd();
 
 	void InsertBuffer(int, int, Index*);
+	void InsertBuffer(int, int, Index*,int);
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*);
 	int Query(int , int, Index*,char,int);

@@ -17,8 +17,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "buffer.h"
-#include "components.h"
+#include "buffer.h" // Part 1
+#include "components.h" // Part 2
+#include "job_scheduler.h" // Part 3
 
 using namespace std;
 
@@ -37,6 +38,30 @@ void Puser_error(char *message, char *detail) {
 	exit(1);
 }
 
+void CreateGraph(Buffer *buffer,Index *index,ifstream myFile,string specifier) {
+	int source, dest;
+	string line;
+	if (specifier == "STATIC") {
+		while (getline(myFile, line)) {
+			istringstream iss(line);
+			if (!(iss >> source >> dest))
+				break;
+			index->Insert(source, dest, buffer);
+			buffer->InsertBuffer(source, dest, index);
+		}
+	} else if (specifier == "DYNAMIC") {
+		istringstream iss(line);
+		if (!(iss >> source >> dest))
+			break;
+		index->Insert(source, dest, buffer);
+		buffer->InsertBuffer(source, dest, index,0);
+	} else {
+		cerr << "Wrong specifier @ workload file(neither 'STATIC' nor 'DYNAMIC'."
+				"Check spelling.Program exiting." << endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
 int main(int argc, char **argv) {
 	cout << "Program is running " << endl;
 	if (argc != 3) {
@@ -44,11 +69,26 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	/*
+	 * Read workload file 1st line to see the kind of graph,
+	 * so to avoid initializing edgeProperty.
+	 */
+	ifstream workload;
+	char *workFile = argv[2];
+	workload.open(workFile);
+	string specifier;
+	if (workload.is_open()) {
+		getline(workload,specifier); // DYNAMIC || STATIC
+	} else {
+		cerr << "Workload-file couldn't be opened!Aborting graph creation & exitting" << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	/**************		Read from Graph file 	 **************/
 	char *graphFile = argv[1];
 	ifstream myFile;
 	myFile.open(graphFile);
-	string line,specifier;
+	string line;
 	int maxVal = 0;
 	/*
 	* Find :
@@ -57,7 +97,6 @@ int main(int argc, char **argv) {
 	*/
 	if (myFile.is_open()) {
 		int source, dest;
-		//getline(myFile, specifier); // DYNAMIC || STATIC
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
@@ -83,7 +122,6 @@ int main(int argc, char **argv) {
 
 	if (myFile.is_open()) {
 		int source, dest;
-		//getline(myFile, specifier);
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
@@ -97,86 +135,112 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	//buffer->PrintBuffer(index); // insert_unitest
-	/* get neighbors unit test
-	int x =index->NeighboursNum(17,'o',buffer);
-	do {
-		index->GetIndexNode()[17].recursive_level++;
-		cout << index->GetIndexNode()[17].recursive_level << " :: "<< index->GetNeighbor(17,buffer) << endl;
 
-	} while(index->GetIndexNode()[17].recursive_level < x);
-	cout << index->GetIndexNode()[17].recursive_level << " & " << x << endl;
-	cout << "Waiting char" << endl;
-	getchar();*/
-	int estimatedComponentsAmount = maxVal / 5;
-	if (estimatedComponentsAmount == 0)
-		estimatedComponentsAmount = 50;
-	SCC strongCC(estimatedComponentsAmount);
-	strongCC.EstimateSCC(buffer,index,maxVal);
-	//strongCC.Print();
-	//cout << "Waiting char" << endl;
-	//getchar();
-	//return 1;
+	//buffer->PrintBuffer(index); // insert_unitest
+
+	/**************		Read from Workload file	 **************/
 
 	ofstream result("results.txt"); //output file for Queries
-	result << strongCC.GetCompCount();
-	/**************		Read from Workload file	 **************/
-	char *workFile = argv[2];
-	myFile.open(workFile);
-	if (myFile.is_open()) {
-		char Command;
-		int source, dest;
-		IndexNode* p=index->GetIndexNode();
-		strongCC.BuildHypergraph(index,buffer);
-		/*int** visited;
-		visited = new int*[500000];
-		for (int i=0;i<500000;i++){
-			visited[i]=new int;
-			*visited[i]=0;
-		}
-		List<int> mylist;
-		mylist.Push(5);
-		mylist.Push(7);
-		result << mylist.GetUnvisitedEdge(visited) << endl;
-		getchar();*/
-		cout << "finish" << endl;
-		strongCC.BuildGrailIndex();
-		while (getline(myFile, line)) {
-			istringstream iss(line);
-			iss >> Command;
-			if (Command == 'Q') {
-				iss >> source >> dest;
-				//buffer->Query(source,dest,index);
-				int k=strongCC.IsReachableGrail(index,source,dest);
-				if (k==0)
-					cout << "-1 GRAIL" << endl;
-				else if (k==1)
-					cout << "Menei h maybe" << endl;
-				else if (k==2){
-					cout << "YES" << endl;
-					//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+
+	if (specifier == "STATIC") {
+		cout << "Graph is labeled as STATIC.Perfoming Tarjan algorithm." << endl;
+		int estimatedComponentsAmount = maxVal / 5;
+		if (estimatedComponentsAmount == 0)
+			estimatedComponentsAmount = 50;
+		SCC strongCC(estimatedComponentsAmount);
+		strongCC.EstimateSCC(buffer,index,maxVal);
+		result << strongCC.GetCompCount();
+
+		if (workload.is_open()) {
+			char command;
+			int source, dest;
+			//IndexNode* p=index->GetIndexNode();
+			strongCC.BuildHypergraph(index,buffer);
+			strongCC.BuildGrailIndex();
+			while (getline(workload, line)) {
+				istringstream iss(line);
+				iss >> command;
+				if (command == 'Q') {
+					iss >> source >> dest;
+					//buffer->Query(source,dest,index);
+					int k = strongCC.IsReachableGrail(index, source, dest);
+					if (k == 0)
+						cout << "-1 GRAIL" << endl;
+					else if (k == 1)
+						cout << "Menei h maybe" << endl;
+					else if (k == 2) {
+						cout << "YES" << endl;
+						//cout << buffer->Query(source,dest,index,'D',p[source].componentID) << endl;
+					}
 				}
-			}
-			else if (Command == 'A') {
-				iss >> source >> dest;
-				index->CheckCap(source,dest); // Checking if reallocation is needed for Index
-				index->Insert(source, dest, buffer);
-				buffer->AddNeighbor(source, dest, index);
-			}
-			else //if (Command == 'F') {
-				continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
+				else if (command == 'A') {
+					iss >> source >> dest;
+					index->CheckCap(source,dest); // Checking if reallocation is needed for Index
+					index->Insert(source, dest, buffer);
+					buffer->AddNeighbor(source, dest, index);
+				}
+				else //if (command == 'F') {
+					continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
 
-			//}
+				//}
 
+			}
 		}
+		else
+			cerr << "Unable to open Workload file" << endl;
 	}
-	else
-		cerr << "Unable to open Workload file" << endl;
-	myFile.close();
+
+	exit(0);
+
+	int currentSystemCores = sysconf(_SC_NPROCESSORS_ONLN);
+	JobScheduler *js = new JobScheduler(currentSystemCores);
+	if (specifier == "DYNAMIC") {
+		int version = 0;
+		if (workload.is_open()) {
+			Job *job = new Job();
+			char command,lastCommand;
+			int source, dest,commandCounter = 0;
+			while (getline(workload, line)) {
+				istringstream iss(line);
+				iss >> command;
+				if (command == 'Q') {
+					iss >> source >> dest;
+					job->src = source;
+					job->dest = dest;
+					job->command = 'Q';
+					job->id = commandCounter++;
+					buffer->Query(source,dest,index,'p',1);
+				}
+				else if (command == 'A') {
+					if (lastCommand == 'Q')
+						version++;
+					iss >> source >> dest;
+					job->src = source;
+					job->dest = dest;
+					job->command = 'A';
+					job->id = commandCounter++;
+					index->CheckCap(source,dest); // Checking if reallocation is needed for Index
+					index->Insert(source, dest, buffer);
+					buffer->AddNeighbor(source, dest, index);
+				}
+				else if (command == 'F') {
+					commandCounter = 0;
+					continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
+
+				}
+				lastCommand = command;
+			}
+		}
+		else
+			cerr << "Unable to open Workload file" << endl;
+	}
+	delete js;
+	workload.close();
 	result.close();
 
 	delete buffer;
 	delete index;
+
 	cout << "Program terminated successfully!" << endl;
 	return 0;
 }

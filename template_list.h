@@ -108,7 +108,7 @@ T List<T>::PopHead() {
 template<class T>
 T List<T>::PopLast() {
 	if (!isEmpty()) {
-		T data;
+		T data = static_cast<T>(NULL);
 		if (size == 1) {
 			head->next = NULL;
 			head->prev = NULL;
