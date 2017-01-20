@@ -70,7 +70,7 @@ const T Stack<T>::GetHeadData() {
 
 template<class T>
 bool Stack<T>::isEmpty() {
-	return (head == 0);
+	return (head == NULL);
 }
 
 #endif

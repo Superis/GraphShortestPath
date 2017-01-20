@@ -1,5 +1,6 @@
 #ifndef TEMPLATE_LIST_H_
 #define TEMPLATE_LIST_H_
+
 #include <iostream>
 #include "components.h"
 
@@ -38,6 +39,7 @@ public:
 	bool isEmpty();
 	void ResetCur() { cur = head; };
 	bool IncCur();
+	bool IncreaseCur();
 	void Print();
 };
 
@@ -168,6 +170,18 @@ bool List<T>::IncCur() {
 		return false;
 }
 
+
+template<class T>
+bool List<T>::IncreaseCur() {
+	if ( (cur->next) != NULL ) {
+		cur = cur->next;
+		return true;
+	}
+	else {
+		cur=cur->next;
+		return false;
+	}
+}
 
 
 template<class T>

@@ -7,22 +7,23 @@ OBJS = $(SRCS:.cpp=.o)
 EXE = exec
 LIBS = -pthread
 SCRIPT = insert_unitest.script
-	
+OUTPUT_FILE = results.txt
+
 all : $(SRCS) $(EXE)
-	@echo $(EXE) "HAS BEEN COMPILED" 
-	
+	@echo $(EXE) "HAS BEEN COMPILED"
+
 $(EXE): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LIBS)
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
-	
+
 script :
 	chmod +x $(SCRIPT)
 
 clean :
 	@echo "Removing files"
-	rm $(EXE) *.o
+	rm $(EXE) $(OUTPUT_FILE) *.o
 
 rebuild :
 	make clean

@@ -1,3 +1,4 @@
+
 /*
  * components.cpp
  *
@@ -5,6 +6,7 @@
  *      Author: alex
  */
 #include <stdio.h>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 
@@ -21,6 +23,7 @@ int min(int a,int b){
 }
 
 SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(0) {
+	PushChecker = NULL;
 	components = new Component*[_size];
 	edges = NULL;
 }
@@ -176,47 +179,44 @@ void SCC::Print() {
 
 
 
-/*int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int compsrc_arg,int compdest_arg,int src ,int dest){
-	index_node *indArray = index->GetIndexNode();
+int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,int repeat){
+	IndexNode *indArray = index->GetIndexNode();
 	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
-				//cout <<"pos"<< src_pos << endl;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
+	indArray[src].src_visited = repeat;
 	indArray[src].src_level = 0;
+	indArray[dest].dest_visited = repeat;
 	indArray[dest].dest_level = 0;
-	compsrc=compsrc_arg;
-	compdest=compdest_arg;
+	int compsrc=indArray[src].componentID;
+	int compdest=indArray[dest].componentID;
 	int level = 1;
-	int k;
+	int k,n;
 	int counter_s, counter_d;
-	if (indArray[src].out == -1 || indArray[dest].in == -1){
-		indArray[src].src_level = -1;
-		indArray[dest].dest_level = -1;
+	if (indArray[src].out == -1 || indArray[dest].in == -1)
 		return -1;
-		}
-	if (index->NeighboursNum(src, 'o', this) <= index->NeighboursNum(dest, 'i', this)) {
-		//cout << "pame source" <<endl;
+	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
 		while (1) {
 			counter_s = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].src_level == level - 1) {
+				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
+					if (indArray[i].componentID != compsrc){
+						n=this->IsReachableGrail(index,i,dest);
+						if (n==0)
+							continue;
+					}
 					counter_s++;
-					if (indArray[i].componentID != compsrc)
 					src_pos = indArray[i].out;
-					if (src_pos == -1)
+					if (src_pos == -1){
 						counter_s--;
 						continue;
 					}
-					src_node = &(buffer->outcoming[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					src_node = &(buffer->GetListNode('o')[src_pos]);
+					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -225,21 +225,22 @@ void SCC::Print() {
 				break;
 			counter_d = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].dest_level == level - 1) {
+				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
+					if (indArray[i].componentID != compdest){
+						n=this->IsReachableGrail(index,src,i);
+						if (n==0)
+							continue;
+					}
 					counter_d++;
 					dest_pos = indArray[i].in;
 					if (dest_pos == -1){
 						counter_d--;
 						continue;
 					}
-					dest_node = &(incoming[dest_pos]);
-					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,compID);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					dest_node = &(buffer->GetListNode('i')[dest_pos]);
+					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -254,21 +255,22 @@ void SCC::Print() {
 		while (1) {
 			counter_d = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].dest_level == level - 1) {
+				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
+					if (indArray[i].componentID != compdest){
+						n=this->IsReachableGrail(index,src,i);
+						if (n==0)
+							continue;
+					}
 					counter_d++;
 					dest_pos = indArray[i].in;
 					if (dest_pos == -1){
 						counter_d--;
 						continue;
 					}
-					dest_node = &(incoming[dest_pos]);
-					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,compID);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					dest_node = &(buffer->GetListNode('i')[dest_pos]);
+					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -277,21 +279,22 @@ void SCC::Print() {
 				break;
 			counter_s = 0;
 			for (int i = 0; i < l; i++) {
-				if (indArray[i].src_level == level - 1) {
+				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
+					if (indArray[i].componentID != compsrc){
+						n=this->IsReachableGrail(index,i,dest);
+						if (n==0)
+							continue;
+					}
 					counter_s++;
 					src_pos = indArray[i].out;
 					if (src_pos == -1){
 						counter_s--;
 						continue;
 					}
-					src_node = &(outcoming[src_pos]);
-					k = this->SearchNodeNeighbours(src_node,index, 's', level,compID);
-					if (k > 0) {
-						for (int p = 0; p<l; p++) {
-							indArray[p].src_level=-1;
-							indArray[p].dest_level=-1;}
+					src_node = &(buffer->GetListNode('o')[src_pos]);
+					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat);
+					if (k > 0)
 						return k;
-					}
 					else
 						continue;
 				}
@@ -301,15 +304,15 @@ void SCC::Print() {
 			level++;
 		}
 	}
-	for (int p = 0; p<l; p++) {
-		indArray[p].src_level=-1;
-		indArray[p].dest_level=-1;}
 	return -1;
 
 
-}*/
+}
 
 void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
+	PushChecker = new int[componentsCount];
+	for (int j=0;j<componentsCount;j++)
+		PushChecker[j]=-1;
 	int node_pos, current_component, temp;
 	IndexNode* k = index->GetIndexNode();
 	Node* G = buffer->GetListNode('o');
@@ -319,64 +322,53 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 		current_component = this->components[i]->componentID;
 		//components[i]->includedNodesID.Print();
 		components[i]->includedNodesID->ResetCur();
-		while (!components[i]->includedNodesID->IsOut()) {
-			cout << i << endl;
-			temp = components[i]->includedNodesID->GetCurData();
-			node_pos = k[temp].out;
-			if (node_pos != -1) {
-				do {
-					node_pos = G[node_pos].SearchDiffComponent(
-							current_component, this, index);
-				} while (node_pos);
-			}
-			if (!components[i]->includedNodesID->IncCur()) {
-				cout << "NEXT IS NULL BRA" << endl;
-				break;
-			}
+		if  (!components[i]->includedNodesID->IsOut()) {
+			do{
+				//cout << i << endl;
+				temp = components[i]->includedNodesID->GetCurData();
+				node_pos = k[temp].out;
+				if (node_pos != -1) {
+					do {
+						node_pos = G[node_pos].SearchDiffComponent(
+								current_component, this, index);
+					} while (node_pos);
+				}
+			} while(components[i]->includedNodesID->IncCur());
 		}
 		components[i]->includedNodesID->ResetCur();
 	}
 }
 
 void SCC::BuildGrailIndex() {
-	for(int o=0;o<componentsCount;o++){
-		edges[o]->Print();
-		if (o==489861)
-			getchar();
-	}
+	this->ResetEdges();
 	int r = 1;
-	int i=0;
-	while (i < componentsCount) {
-		if (components[i]->label.visited == 0)
-			this->GrailProgress(i,&r);
-		i++;
+	int i=componentsCount-1;
+	while (i >= 0 ) {
+		if (components[i]->label.visited == 0){
+			//cout << i << " to i" << endl;
+			this->GrailProgress(i,&r);}
+		i--;
 	}
 }
 
 void SCC::GrailProgress(int i, int* r) {
-	int min_rank = 2; //timi wste me tin prwti na paroume mikrotero min_rank
+	int min_rank = componentsCount; //timi wste me tin prwti na paroume mikrotero min_rank
 	int myrank = *r;
 	int new_progress;
 	Stack<int> StackProgress;
 	StackProgress.Push(i);
-	ofstream somefile("some.txt");
 	while (!StackProgress.isEmpty()) {
 		i=StackProgress.GetHeadData();
-		if (components[i]->label.visited == 1) {
-			min_rank = min(min_rank, components[i]->label.min_rank);
-			StackProgress.Pop();
-			continue;
-		}
-		while ((new_progress = this->GetUnvisitedEdge(i)) != -1) {
-			cout << new_progress << " new progresss" << endl;
+		while ((new_progress = this->GetNextEdge(i)) != -1) {
+			//somefile << new_progress << " new progresss";
 			components[i]->label.flag = 1;
+			if (components[new_progress]->label.visited == 1) {
+				min_rank = min(min_rank, components[new_progress]->label.min_rank);
+				continue;
+			}
 			i = new_progress;
 			StackProgress.Push(i);
 		}
-		//cout << i << " to i" << endl;
-		somefile << myrank << "to r" << endl;
-		//cout  << componentsCount << " components with  array size " << size  << endl;
-
 		components[i]->label.rank = myrank;
 		if (!components[i]->label.flag) {
 			components[i]->label.min_rank = myrank;
@@ -392,16 +384,38 @@ void SCC::GrailProgress(int i, int* r) {
 	*r = myrank;
 }
 
-int SCC::GetUnvisitedEdge(int i){
+
+void SCC::ResetEdges(){
+	for (int i=0;i<componentsCount;i++)
+		this->edges[i]->ResetCur();
+}
+
+/*int SCC::GetUnvisitedEdge(int i){
 	int temp;
-	this->edges[i]->ResetCur();
 	if (!this->edges[i]->IsOut()) {
 		do{
 			temp = this->edges[i]->GetCurData();
-			if (components[temp]->label.visited == 0)
+			if (components[temp]->label.visited == 0){
+				this->edges[i]->IncCur();
 				return temp;
+			}
 		} while(this->edges[i]->IncCur());
 	}
+	int k=this->edges[i]->GetHeadData();
+	if (k==NULL)
+		return -1;
+	else
+		return -2;
+}*/
+
+int SCC::GetNextEdge(int i){
+	int temp;
+	if (!this->edges[i]->IsOut()) {
+		temp=this->edges[i]->GetCurData();
+		this->edges[i]->IncreaseCur();
+		return temp;
+	}
+
 	return -1;
 }
 

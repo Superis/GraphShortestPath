@@ -13,13 +13,14 @@
 #include <unistd.h>
 
 #include "buffer.h"
+#include "components.h"
 #include "template_queue.h"
 
 // finding the cores of the system
 //#define EFFECTIVE_THREAD_NUMBER sysconf(_SC_NPROCESSORS_ONLN);
 
 struct Job {
-	int (*adressToFunction)(int src,int dest,Index *index);
+	int (*adressToFunction)(int src,int dest,Index *index,SCC *strongCC,std::ofstream &result);
 	char command;
 	int src,dest,
 	version,id;

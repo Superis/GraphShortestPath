@@ -1,13 +1,25 @@
-/*
- * job_scheduler.cpp
- *
- *  Created on: Jan 17, 2017
- *      Author: alex
- */
-
 #include "job_scheduler.h"
 
 using namespace std;
+
+void StaticQuery(int source,int dest,Index *index,Buffer *buffer
+		,SCC *strongCC,int jobID,int *printArray,int *repeat) {
+	IndexNode* p = index->GetIndexNode();
+	int k = strongCC->IsReachableGrail(index, source, dest);
+	if (k == 0)
+		printArray[jobID] = -1;
+	else if (k == 1) {
+		//result << "MAYBE";
+		printArray[jobID] =
+				strongCC->EstimateShortestPathSCC(buffer,index,source,dest,*repeat);
+		(*repeat)++;
+	} else if (k == 2) {
+		//result << "YES";
+		printArray[jobID] = buffer->Query(source, dest, index,
+						p[source].componentID,*repeat);
+		(*repeat)++;
+	}
+}
 
 JobScheduler::JobScheduler(int threadpool) {
 	executionThreads = threadpool;
@@ -32,6 +44,7 @@ void JobScheduler::ExecuteJobs() {
 	for( int i = 0; i < executionThreads; i++) {
 		Job *j = queue->Dequeue();
 		//pthread_create(&tids[i],NULL,process_request,&bank);
+		delete j;
 	}
 
 }
