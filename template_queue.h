@@ -33,7 +33,7 @@ public:
 		rear = new QueueNode(NULL);
 		size = 0;
 
-		std::cout << "Queue was constructed" << std::endl;
+		//std::cout << "Queue was constructed" << std::endl;
 	}
 	~Queue() {
 		std::cout << "Queue was destructed" << std::endl;
@@ -46,6 +46,7 @@ public:
 	void Enqueue(const T& object);
 	T Dequeue();
 	const T& GetfrontData();
+	int GetSize();
 	bool isEmpty();
 	void Print();
 };
@@ -56,14 +57,12 @@ void Queue<T>::Enqueue(const T& obj) {
 		front = new QueueNode(obj, rear);
 		rear = front;
 	} else {
-		std::cout << "queue insert" << std::endl;
 		QueueNode* tmp = new QueueNode(obj, NULL);
-		//	std::cout<<"node created"<<std::endl;
 		rear->next = tmp;
 		rear = tmp;
 	}
 	size++;
-	std::cout << "exiting" << std::endl;
+	//std::cout << "enqueued succefully! #" << size << std::endl;
 }
 
 template<class T>
@@ -72,7 +71,6 @@ T Queue<T>::Dequeue() {
 		QueueNode *frontNode = front;
 		T tdata = frontNode->data;
 		front = front->next;
-//	std::cout<<"front data: "<<front->data<<std::endl;
 		delete frontNode;
 		frontNode = NULL;
 		size--;
@@ -80,6 +78,8 @@ T Queue<T>::Dequeue() {
 	} else {
 		return static_cast<T>(NULL);
 	}
+	std::cout << "Dequeued succefully! #" << size << std::endl;
+
 }
 
 template<class T>
@@ -93,6 +93,11 @@ const T& Queue<T>::GetfrontData() {
 template<class T>
 bool Queue<T>::isEmpty() {
 	return (size == 0);
+}
+
+template<class T>
+int Queue<T>::GetSize() {
+	return size;
 }
 
 #endif /* TEMPLATE_QUEUE_H_ */

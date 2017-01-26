@@ -20,17 +20,6 @@ inline int max(int a, int b) {
 	return((a>b) ? (a) : (b));
 }
 
-// perror_function for threads.
-void Psystem_error(char *message) {
-	perror(message);
-	exit(1);
-}
-
-void Puser_error(char *message, char *detail) {
-	fprintf(stderr, "%s: %s\n", message, detail);
-	exit(1);
-}
-
 void CreateGraph(Buffer *buffer,Index *index,ifstream &myFile,string specifier) {
 	int source, dest;
 	string line;
@@ -74,6 +63,7 @@ int main(int argc, char **argv) {
 	string specifier;
 	if (workload.is_open()) {
 		getline(workload,specifier); // DYNAMIC || STATIC
+		cout << "Graph is " << specifier << endl;
 	} else {
 		cerr << "Workload-file couldn't be opened!Aborting graph creation & exitting" << endl;
 		exit(EXIT_FAILURE);
@@ -132,91 +122,74 @@ int main(int argc, char **argv) {
 	// Creating a threadpool equal to the system cores
 	int currentSystemCores = sysconf(_SC_NPROCESSORS_ONLN);
 	JobScheduler *js = new JobScheduler(currentSystemCores);
-
+	cout << "Job Scheduler created" << endl;
+	int source, dest;
+	int *version = new int();
+	char command;
 	if (specifier == "STATIC") {
-		cout << "Graph is labeled as STATIC.Perfoming Tarjan algorithm." << endl;
-		cout << maxVal << endl;
+		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
+		cout << "Maximum value of graph : " << maxVal << endl;
 		int estimatedComponentsAmount = maxVal / 5;
 		if (estimatedComponentsAmount == 0)
 			estimatedComponentsAmount = 50;
 		SCC strongCC(estimatedComponentsAmount);
 		strongCC.EstimateSCC(buffer,index,maxVal);
 
+		cout << "Building Hyper Graph & Grail Index." << endl;
+		strongCC.BuildHypergraph(index, buffer);
+		strongCC.BuildGrailIndex();
+
 		//result << strongCC.GetCompCount();
 
 		if (workload.is_open()) {
-			int repeat = 0;
-			char command;
-			int source, dest;
-			IndexNode* p = index->GetIndexNode();
-			strongCC.BuildHypergraph(index, buffer);
-			strongCC.BuildGrailIndex();
 			while (getline(workload, line)) {
+				Job *job = new Job();
 				istringstream iss(line);
 				iss >> command;
 				if (command == 'Q') {
 					iss >> source >> dest;
-					int k = strongCC.IsReachableGrail(index, source, dest);
-					if (k == 0)
-						result << "-1" << endl;
-					else if (k == 1) {
-						//result << "MAYBE";
-						result
-								<< strongCC.EstimateShortestPathSCC(buffer,
-										index, source, dest, repeat) << endl;
-						repeat++;
-					} else if (k == 2) {
-						//result << "YES";
-						result
-								<< buffer->Query(source, dest, index,
-										p[source].componentID, repeat) << endl;
-						repeat++;
-					}
+					JobInit(job,StaticQuery,source,dest,version,index,buffer);
+					js->SubmitJob(job);
+				} else if (command == 'F') {
+					js->ExecuteJobs(); // Execute whole queue of jobs and wait till finished.
+					js->PrintResults(result);
+					continue;
 				} else if (command == 'A') {
 					cout << "Found additions on static graph.Exiting" << endl;
 					break;
-				} else if (command == 'F') {
-					continue;
 				}
 			}
 		}
 	} else if (specifier == "DYNAMIC") {
-		int version = 0;
 		if (workload.is_open()) {
-			Job *job = new Job();
-			char command,lastCommand;
-			int source, dest,commandCounter = 0;
+			char lastCommand;
 			while (getline(workload, line)) {
+				Job *job = new Job();
 				istringstream iss(line);
 				iss >> command;
 				if (command == 'Q') {
 					iss >> source >> dest;
-					job->src = source;
-					job->dest = dest;
-					job->command = 'Q';
-					job->id = commandCounter++;
+					//JobInit();
 					buffer->Query(source,dest,index,'p',1);
 				}
 				else if (command == 'A') {
 					if (lastCommand == 'Q')
 						version++;
 					iss >> source >> dest;
-					job->src = source;
-					job->dest = dest;
-					job->command = 'A';
-					job->id = commandCounter++;
+					//JobInit();
 					index->CheckCap(source,dest); // Checking if reallocation is needed for Index
 					index->Insert(source, dest, buffer);
 					buffer->AddNeighbor(source, dest, index);
 				}
 				else if (command == 'F') {
-					commandCounter = 0;
-					continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
-
+					js->ExecuteJobs();
+					js->PrintResults(result);
 				}
 				lastCommand = command;
 			}
 		}
+		else
+			cout << "Wrong specifier for WORKLOAD file." << endl;
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;
@@ -224,6 +197,7 @@ int main(int argc, char **argv) {
 	workload.close();
 	result.close();
 
+	delete version;
 	delete js;
 	delete buffer;
 	delete index;

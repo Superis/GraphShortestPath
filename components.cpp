@@ -181,17 +181,17 @@ void SCC::Print() {
 
 int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,int repeat){
 	IndexNode *indArray = index->GetIndexNode();
-	int l=index->GetSize();
-	int src_pos;//= indArray[src].out;
-	Node* src_node;//=&(outcoming[src_pos]);
-	int dest_pos;// = indArray[src].in;
-	Node* dest_node;// = &(incoming[dest_pos]);
+	int l = index->GetSize();
+	int src_pos;	//= indArray[src].out;
+	Node* src_node;	//=&(outcoming[src_pos]);
+	int dest_pos;	// = indArray[src].in;
+	Node* dest_node;	// = &(incoming[dest_pos]);
 	indArray[src].src_visited = repeat;
 	indArray[src].src_level = 0;
 	indArray[dest].dest_visited = repeat;
 	indArray[dest].dest_level = 0;
-	int compsrc=indArray[src].componentID;
-	int compdest=indArray[dest].componentID;
+	int compsrc = indArray[src].componentID;
+	int compdest = indArray[dest].componentID;
 	int level = 1;
 	int k,n;
 	int counter_s, counter_d;

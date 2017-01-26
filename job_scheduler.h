@@ -16,35 +16,64 @@
 #include "components.h"
 #include "template_queue.h"
 
-// finding the cores of the system
-//#define EFFECTIVE_THREAD_NUMBER sysconf(_SC_NPROCESSORS_ONLN);
+// perror_function for threads.
+inline void Psystem_error(const char *message) {
+	perror(message);
+	exit(1);
+}
+
+inline void Puser_error(const char *message, char *detail) {
+	fprintf(stderr, "%s: %s\n", message, detail);
+	exit(1);
+}
+
+class JobScheduler;
 
 struct Job {
-	int (*adressToFunction)(int src,int dest,Index *index,SCC *strongCC,std::ofstream &result);
-	char command;
-	int src,dest,
-	version,id;
+	void* (*adressToFunction)(void *job);
+	int src,dest,id,
+	*version, // repeat for STATIC || version for DYNAMIC
+	*printArr; // pointer to dynamic Array for results
+	void *componentsPointer; // points to SCC or CC
+	Index *index;
+	Buffer *buffer;
+	JobScheduler *js;
 };
 
-void StaticQuery(int src,int dest,Index *index,Buffer *buffer);
-void DynamicQuery(int src,int dest,Index *index,Buffer *buffer);
-void EdgeAddition(int src,int dest,Index *index,Buffer *buffer);
+void JobInit(Job *job,
+		void* (*adressToFunction)(void *job),
+		int source,int dest,int *version,Index *index,Buffer *buffer);
+
+void *StaticQuery(void *j);
+void *DynamicQuery(void *j);
+void *EdgeAddition(void *j);
+
 
 class JobScheduler {
-	int executionThreads;
-	Queue<Job*>* queue;
-	pthread_t *tids;
-
+	int executionThreads; // poolsize
+	Queue<Job*>* queue; // job/task queue
+	pthread_t *tids; // array of threads_id
 	pthread_mutex_t mtx;
 	pthread_cond_t cond;
+
+	int lastFinishedThreadID;
+	int queue_size;
+
+	int *printArray;
+
 
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
 
+	pthread_mutex_t* GetMtx() { return &(this->mtx); };
+	pthread_cond_t *GetCond() { return &(this->cond); };
+	void SetLastThread(int id) { this->lastFinishedThreadID = id; };
+
 	void SubmitJob(Job *j);
 	void ExecuteJobs();
 	void WaitAll(); // waits all submitted tasks to finish
+	void PrintResults(std::ofstream&);
 };
 
 #endif /* JOB_SCHEDULER_H_ */
