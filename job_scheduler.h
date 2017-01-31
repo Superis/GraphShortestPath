@@ -11,6 +11,7 @@
 //#include <thread>
 #include <pthread.h>
 #include <unistd.h>
+#include <fstream>
 
 #include "buffer.h"
 #include "components.h"
@@ -33,7 +34,7 @@ struct Job {
 	void* (*adressToFunction)(void *job);
 	int src,dest,id,
 	*version, // repeat for STATIC || version for DYNAMIC
-	*printArr; // pointer to dynamic Array for results
+	*printArr,printPos; // pointer to dynamic Array for results
 	void *componentsPointer; // points to SCC or CC
 	Index *index;
 	Buffer *buffer;
@@ -42,8 +43,10 @@ struct Job {
 
 void JobInit(Job *job,
 		void* (*adressToFunction)(void *job),
-		int source,int dest,int *version,Index *index,Buffer *buffer);
+		int source,int dest,int ccounter,int *version,
+		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js);
 
+void *ExecuteTask(void *j);
 void *StaticQuery(void *j);
 void *DynamicQuery(void *j);
 void *EdgeAddition(void *j);
@@ -52,28 +55,31 @@ void *EdgeAddition(void *j);
 class JobScheduler {
 	int executionThreads; // poolsize
 	Queue<Job*>* queue; // job/task queue
-	pthread_t *tids; // array of threads_id
-	pthread_mutex_t mtx;
-	pthread_cond_t cond;
 
+	pthread_t *tids; // array of threads_id
 	int lastFinishedThreadID;
 	int queue_size;
+	std::ofstream result;
 
 	int *printArray;
+	int runningThreads;
 
 
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
 
-	pthread_mutex_t* GetMtx() { return &(this->mtx); };
-	pthread_cond_t *GetCond() { return &(this->cond); };
+	//pthread_mutex_t GetMtx() { return this->mtx; };
+	//pthread_cond_t GetCond() { return this->cond; };
 	void SetLastThread(int id) { this->lastFinishedThreadID = id; };
-
+	void ThreadFinished() { runningThreads--;};
+	Queue<Job*>* GetQueue() { return this->queue; };
+	int* GetArray() { return this->printArray; };
 	void SubmitJob(Job *j);
 	void ExecuteJobs();
+	static void* ExecuteThread(void *j);
 	void WaitAll(); // waits all submitted tasks to finish
-	void PrintResults(std::ofstream&);
+	void PrintResults();
 };
 
 #endif /* JOB_SCHEDULER_H_ */

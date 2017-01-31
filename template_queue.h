@@ -74,11 +74,11 @@ T Queue<T>::Dequeue() {
 		delete frontNode;
 		frontNode = NULL;
 		size--;
+		std::cout << "Dequeued succefully! #" << size << std::endl;
 		return tdata;
 	} else {
 		return static_cast<T>(NULL);
 	}
-	std::cout << "Dequeued succefully! #" << size << std::endl;
 
 }
 

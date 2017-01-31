@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 			/*if (source != srcompare) {
 				uniqueNodes++;
 				srcompare = source;
-			}
+			}ψδ ./
 			linesCounter++;*/
 		}
 		//optimalCellValue = ceil(linesCounter / (float)uniqueNodes);
@@ -117,42 +117,45 @@ int main(int argc, char **argv) {
 	//buffer->PrintBuffer(index); // insert_unitest
 
 	/**************		Read from Workload file	 **************/
-	ofstream result("results.txt"); //output file for Queries
+	//ofstream result("results.txt"); //output file for Queries
 
 	// Creating a threadpool equal to the system cores
 	int currentSystemCores = sysconf(_SC_NPROCESSORS_ONLN);
 	JobScheduler *js = new JobScheduler(currentSystemCores);
 	cout << "Job Scheduler created" << endl;
-	int source, dest;
+	int source, dest,commandCounter = - 1;
 	int *version = new int();
 	char command;
 	if (specifier == "STATIC") {
 		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
 		cout << "Maximum value of graph : " << maxVal << endl;
-		int estimatedComponentsAmount = maxVal / 5;
+		int estimatedComponentsAmount = maxVal / 5 ;
 		if (estimatedComponentsAmount == 0)
 			estimatedComponentsAmount = 50;
-		SCC strongCC(estimatedComponentsAmount);
-		strongCC.EstimateSCC(buffer,index,maxVal);
+		SCC* strongCC = new SCC(estimatedComponentsAmount);
+		strongCC->EstimateSCC(buffer,index,maxVal);
 
 		cout << "Building Hyper Graph & Grail Index." << endl;
-		strongCC.BuildHypergraph(index, buffer);
-		strongCC.BuildGrailIndex();
+		strongCC->BuildHypergraph(index, buffer);
+		strongCC->BuildGrailIndex();
 
 		//result << strongCC.GetCompCount();
 
 		if (workload.is_open()) {
 			while (getline(workload, line)) {
-				Job *job = new Job();
 				istringstream iss(line);
 				iss >> command;
+				commandCounter++;
 				if (command == 'Q') {
+					Job *job = new Job();
+					commandCounter++;
 					iss >> source >> dest;
-					JobInit(job,StaticQuery,source,dest,version,index,buffer);
+					JobInit(job,StaticQuery,source,dest,commandCounter,version,
+							index,buffer,(void *)strongCC,js);
 					js->SubmitJob(job);
 				} else if (command == 'F') {
+					commandCounter = -1;
 					js->ExecuteJobs(); // Execute whole queue of jobs and wait till finished.
-					js->PrintResults(result);
 					continue;
 				} else if (command == 'A') {
 					cout << "Found additions on static graph.Exiting" << endl;
@@ -183,7 +186,7 @@ int main(int argc, char **argv) {
 				}
 				else if (command == 'F') {
 					js->ExecuteJobs();
-					js->PrintResults(result);
+					//js->PrintResults(result);
 				}
 				lastCommand = command;
 			}
@@ -195,13 +198,14 @@ int main(int argc, char **argv) {
 		cerr << "Unable to open Workload file" << endl;
 
 	workload.close();
-	result.close();
+	//result.close();
 
 	delete version;
 	delete js;
 	delete buffer;
 	delete index;
 
-	cout << "Program terminated!" << endl;
+	cout << "Program terminated!" << endl
+			<< "Results can be found on results.txt file" << endl;
 	return 0;
 }
