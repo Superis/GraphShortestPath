@@ -145,7 +145,6 @@ int main(int argc, char **argv) {
 			while (getline(workload, line)) {
 				istringstream iss(line);
 				iss >> command;
-				commandCounter++;
 				if (command == 'Q') {
 					Job *job = new Job();
 					commandCounter++;

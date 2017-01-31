@@ -30,7 +30,7 @@ void* StaticQuery(void *job) {
 	Job *j = ((Job*) job);
 	Index *index = j->index;
 	Buffer *buffer = j->buffer;
-	int *printArray = j->printArr;
+	int *printArray = j->js->GetArray();
 	SCC* strongCC = static_cast<SCC*>(j->componentsPointer);
 	int source = j->src;
 	int dest = j->dest;
@@ -38,8 +38,8 @@ void* StaticQuery(void *job) {
 	IndexNode* p = index->GetIndexNode();
 
 	pthread_mutex_lock(&mtx);
-	cout << "\tThread #" << j->id << " started "
-	 << "S::" << j->src << "   D::" << j->dest << endl;
+	//cout << "\tThread #" << j->id << " started "
+	// << "S::" << j->src << "   D::" << j->dest << endl;
 
 	pthread_mutex_unlock(&mtx);
 
@@ -47,7 +47,9 @@ void* StaticQuery(void *job) {
 	//pthread_cond_t cond = j->js->GetCond();
 	int k = strongCC->IsReachableGrail(index, source, dest);
 	if (k == 0) {
+		pthread_mutex_lock(&mtx);
 		printArray[j->printPos] = -1;
+		pthread_mutex_unlock(&mtx);
 	}
 	else if (k == 1) {
 		//result << "MAYBE";
@@ -137,19 +139,19 @@ void* JobScheduler::ExecuteThread(void *job) {
 		if (!queue->isEmpty()) {
 			j = queue->Dequeue();
 			if (j == NULL) {
-				cout << "NULL::Thread #" << threadID << " exiting!" << endl;
+				//cout << "NULL::Thread #" << threadID << " exiting!" << endl;
 				if (pthread_mutex_unlock(&mtx) != 0)
 					Psystem_error("mtx unlock @ JobScheduler::SubmitJob ");
 				break;
 			}
 			j->id = threadID;
-			j->printArr = j->js->GetArray();
+			//j->printArr = j->js->GetArray();
 			//cout << "\tThread #" << threadID << " dequeue" << endl;
 			if (pthread_mutex_unlock(&mtx) != 0)
 				Psystem_error("mtx unlock @ JobScheduler::SubmitJob ");
 		}
 		else {
-			cout << "\tThread #" << threadID << " exiting!" << endl;
+			//cout << "\tThread #" << threadID << " exiting!" << endl;
 			if (pthread_mutex_unlock(&mtx) != 0)
 				Psystem_error("mtx unlock @ JobScheduler::SubmitJob ");
 			break;
@@ -162,14 +164,14 @@ void* JobScheduler::ExecuteThread(void *job) {
 		j->adressToFunction((void*) j);
 	}
 	pthread_mutex_lock(&mtx);
-	cout << "Thread #" << threadID << " FINISHED" << endl;
+	//cout << "Thread #" << threadID << " FINISHED" << endl;
 	j->js->ThreadFinished();
 	pthread_mutex_unlock(&mtx);
 	return NULL;
 }
 
 void JobScheduler::ExecuteJobs() {
-	cout << "Executing whole queue of jobs." << endl;
+	//cout << "Executing whole queue of jobs." << endl;
 	queue_size = this->queue->GetSize();
 	if (printArray == NULL)
 		this->printArray = new int[queue_size];
@@ -186,17 +188,17 @@ void JobScheduler::ExecuteJobs() {
 			// ta threads 0-2 kanoun oli tin douleia kai ola ta alla tpt
 			pthread_mutex_lock(&mtx);
 			this->ThreadFinished();
-			cout << "MAIN::NULL::Thread #" << i << " wont even start!" << endl;
+			//cout << "MAIN::NULL::Thread #" << i << " wont even start!" << endl;
 			pthread_mutex_unlock(&mtx);
 			continue;
 		}
-		j->printArr = this->printArray;
+		//j->printArr = this->printArray;
 		j->id = i;
 		//cout << "Assigning job to thread #" << i << endl;
 		if (pthread_create(&tids[i],NULL,this->ExecuteThread,j) != 0)
 			Psystem_error("pthread_create ");
 	}
-	cout << "Waiting threads to finish" << endl;
+	//cout << "Waiting threads to finish" << endl;
 	this->WaitAll();
 }
 
@@ -247,7 +249,7 @@ void JobScheduler::WaitAll() {
 	while(1) if (runningThreads == 0) break;
 	runningThreads = 8;
 	this->PrintResults();
-	cout << "ALL THREADS FINISHED NEXT RIPH" << endl;
+	//cout << "ALL THREADS FINISHED NEXT RIPH" << endl;
 }
 
 void JobScheduler::PrintResults() {
