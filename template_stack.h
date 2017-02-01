@@ -36,6 +36,7 @@ public:
 	T Pop();
 	const T GetHeadData();
 	bool isEmpty();
+	int GetSize();
 	void Print();
 };
 
@@ -71,6 +72,11 @@ const T Stack<T>::GetHeadData() {
 template<class T>
 bool Stack<T>::isEmpty() {
 	return (head == NULL);
+}
+
+template<class T>
+int Stack<T>::GetSize() {
+	return size;
 }
 
 #endif

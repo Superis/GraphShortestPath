@@ -186,6 +186,10 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
+	Queue<int>* src_queue=new Queue<int>;
+	Queue<int>* dest_queue=new Queue<int>;
+	src_queue->Enqueue(src);
+	dest_queue->Enqueue(dest);
 	indArray[src].src_visited = repeat;
 	indArray[src].src_level = 0;
 	indArray[dest].dest_visited = repeat;
@@ -193,14 +197,18 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 	int compsrc=indArray[src].componentID;
 	int compdest=indArray[dest].componentID;
 	int level = 1;
-	int k,n;
+	int k,n,i,_size,count;
 	int counter_s, counter_d;
 	if (indArray[src].out == -1 || indArray[dest].in == -1)
 		return -1;
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
 		while (1) {
 			counter_s = 0;
-			for (int i = 0; i < l; i++) {
+			_size=src_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=src_queue->Dequeue();
+				count++;
 				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					if (indArray[i].componentID != compsrc){
 						n=this->IsReachableGrail(index,i,dest);
@@ -214,7 +222,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 						continue;
 					}
 					src_node = &(buffer->GetListNode('o')[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat);
+					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat,src_queue);
 					if (k > 0)
 						return k;
 					else
@@ -224,7 +232,11 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			if (counter_s == 0)
 				break;
 			counter_d = 0;
-			for (int i = 0; i < l; i++) {
+			_size=dest_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=dest_queue->Dequeue();
+				count++;
 				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					if (indArray[i].componentID != compdest){
 						n=this->IsReachableGrail(index,src,i);
@@ -238,7 +250,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 						continue;
 					}
 					dest_node = &(buffer->GetListNode('i')[dest_pos]);
-					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat);
+					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat,dest_queue);
 					if (k > 0)
 						return k;
 					else
@@ -254,7 +266,11 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 		//cout << "pame sto dest" << endl;
 		while (1) {
 			counter_d = 0;
-			for (int i = 0; i < l; i++) {
+			_size=dest_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=dest_queue->Dequeue();
+				count++;
 				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					if (indArray[i].componentID != compdest){
 						n=this->IsReachableGrail(index,src,i);
@@ -268,7 +284,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 						continue;
 					}
 					dest_node = &(buffer->GetListNode('i')[dest_pos]);
-					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat);
+					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat,dest_queue);
 					if (k > 0)
 						return k;
 					else
@@ -278,7 +294,11 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			if (counter_d == 0)
 				break;
 			counter_s = 0;
-			for (int i = 0; i < l; i++) {
+			_size=src_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=src_queue->Dequeue();
+				count++;
 				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					if (indArray[i].componentID != compsrc){
 						n=this->IsReachableGrail(index,i,dest);
@@ -292,7 +312,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 						continue;
 					}
 					src_node = &(buffer->GetListNode('o')[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat);
+					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat,src_queue);
 					if (k > 0)
 						return k;
 					else

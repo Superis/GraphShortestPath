@@ -118,7 +118,7 @@ void Node::PrintNeightbors(int src ,char c) {
 	}
 }
 
-int Node::ShortestPath(Index* index,char direction , int level,int comp,int repeat) {
+int Node::ShortestPath(Index* index,char direction , int level,int comp,int repeat,Queue<int>* myqueue) {
 	int i = -1;
 	IndexNode* indArray=index->GetIndexNode();
 	  // an exoume dwsei pliroforia component tote comp>=0 diladi gia strongly-connected-alliws dinoume -1
@@ -130,6 +130,7 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp,int repe
 					return level + indArray[neighbor[i]].dest_level;
 			else
 				if (indArray[neighbor[i]].src_visited != repeat){
+					myqueue->Enqueue(neighbor[i]);
 					indArray[neighbor[i]].src_visited = repeat;
 					indArray[neighbor[i]].src_level = level;
 				}
@@ -143,6 +144,7 @@ int Node::ShortestPath(Index* index,char direction , int level,int comp,int repe
 				return level + indArray[neighbor[i]].src_level;
 			else
 				if (indArray[neighbor[i]].dest_visited != repeat){
+					myqueue->Enqueue(neighbor[i]);
 					indArray[neighbor[i]].dest_visited = repeat;
 					indArray[neighbor[i]].dest_level = level;
 				}
@@ -426,12 +428,16 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
+	Queue<int>* src_queue=new Queue<int>;
+	Queue<int>* dest_queue=new Queue<int>;
+	src_queue->Enqueue(src);
+	dest_queue->Enqueue(dest);
 	indArray[src].src_visited = repeat;
 	indArray[src].src_level = 0;
 	indArray[dest].dest_visited = repeat;
 	indArray[dest].dest_level = 0;
 	int level = 1;
-	int k;
+	int k,i,_size,count;
 	int counter_s, counter_d;
 	if (indArray[src].out == -1 || indArray[dest].in == -1){
 		return -1;
@@ -440,7 +446,11 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 		//cout << "pame source" <<endl;
 		while (1) {
 			counter_s = 0;
-			for (int i = 0; i < l; i++) {
+			_size=src_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=src_queue->Dequeue();
+				count++;
 				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					counter_s++;
 					src_pos = indArray[i].out;
@@ -449,7 +459,7 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 						continue;
 					}
 					src_node = &(outcoming[src_pos]);
-					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp,repeat);
+					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp,repeat,src_queue);
 					if (k > 0)
 						return k;
 					else
@@ -459,7 +469,11 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 			if (counter_s == 0)
 				break;
 			counter_d = 0;
-			for (int i = 0; i < l; i++) {
+			_size=dest_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=dest_queue->Dequeue();
+				count++;
 				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					counter_d++;
 					dest_pos = indArray[i].in;
@@ -468,7 +482,7 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 						continue;
 					}
 					dest_node = &(incoming[dest_pos]);
-					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp,repeat);
+					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp,repeat,dest_queue);
 					if (k > 0)
 						return k;
 					else
@@ -484,7 +498,11 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 		//cout << "pame sto dest" << endl;
 		while (1) {
 			counter_d=0;
-			for (int i = 0; i < l; i++) {
+			_size=dest_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=dest_queue->Dequeue();
+				count++;
 				if (indArray[i].dest_visited == repeat && indArray[i].dest_level==level-1) {
 					counter_d++;
 					dest_pos = indArray[i].in;
@@ -493,7 +511,7 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 						continue;
 					}
 					dest_node = &(incoming[dest_pos]);
-					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp,repeat);
+					k = this->SearchNodeNeighbours(dest_node,index, 'd', level,comp,repeat,dest_queue);
 					if (k > 0)
 						return k;
 					else
@@ -503,7 +521,11 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 			if (counter_d == 0)
 				break;
 			counter_s = 0;
-			for (int i = 0; i < l; i++) {
+			_size=src_queue->GetSize();
+			count=0;
+			while (count < _size) {
+				i=src_queue->Dequeue();
+				count++;
 				if (indArray[i].src_visited == repeat && indArray[i].src_level==level-1) {
 					counter_s++;
 					src_pos = indArray[i].out;
@@ -512,7 +534,7 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 						continue;
 					}
 					src_node = &(outcoming[src_pos]);
-					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp,repeat);
+					k = this->SearchNodeNeighbours(src_node,index, 's', level,comp,repeat,src_queue);
 					if (k > 0)
 						return k;
 					else
@@ -528,11 +550,11 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 }
 
 
-int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c, int level,int comp,int repeat) {
+int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c, int level,int comp,int repeat,Queue<int>* myqueue) {
 	int k;
 	if (c == 's') {
 		do {
-			k = node->ShortestPath(index, c, level,comp,repeat);
+			k = node->ShortestPath(index, c, level,comp,repeat,myqueue);
 			if (k > 0)
 				return k;
 			else if (k < 0)
@@ -544,7 +566,7 @@ int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c, int level,int 
 	}
 	else if (c == 'd') {
 		do {
-			k = node->ShortestPath(index, c, level,comp,repeat);
+			k = node->ShortestPath(index, c, level,comp,repeat,myqueue);
 			if (k > 0)
 				return k;
 			else if (k < 0)

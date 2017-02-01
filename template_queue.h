@@ -5,8 +5,7 @@
  *      Author: alex
  */
 
-#ifndef TEMPLATE_QUEUE_H_
-#define TEMPLATE_QUEUE_H_
+#pragma once
 
 #include <iostream>
 
@@ -33,10 +32,10 @@ public:
 		rear = new QueueNode(NULL);
 		size = 0;
 
-		std::cout << "Queue was constructed" << std::endl;
+		//std::cout << "Queue was constructed" << std::endl;
 	}
 	~Queue() {
-		std::cout << "Queue was destructed" << std::endl;
+		//std::cout << "Queue was destructed" << std::endl;
 		while (!isEmpty()) {
 			Dequeue();
 		}
@@ -48,6 +47,7 @@ public:
 	const T& GetfrontData();
 	bool isEmpty();
 	void Print();
+	int GetSize();
 };
 
 template<class T>
@@ -56,14 +56,14 @@ void Queue<T>::Enqueue(const T& obj) {
 		front = new QueueNode(obj, rear);
 		rear = front;
 	} else {
-		std::cout << "queue insert" << std::endl;
+		//std::cout << "queue insert" << std::endl;
 		QueueNode* tmp = new QueueNode(obj, NULL);
 		//	std::cout<<"node created"<<std::endl;
 		rear->next = tmp;
 		rear = tmp;
 	}
 	size++;
-	std::cout << "exiting" << std::endl;
+	//std::cout << "exiting" << std::endl;
 }
 
 template<class T>
@@ -95,4 +95,8 @@ bool Queue<T>::isEmpty() {
 	return (size == 0);
 }
 
-#endif /* TEMPLATE_QUEUE_H_ */
+template<class T>
+int Queue<T>::GetSize() {
+	return size;
+}
+//#endif /* TEMPLATE_QUEUE_H_ */

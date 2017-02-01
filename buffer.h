@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <stdint.h>
+#include "template_queue.h"
 
 #define N 5
 
@@ -72,7 +73,7 @@ public:
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
-	int ShortestPath(Index*,char , int,int,int);
+	int ShortestPath(Index*,char , int,int,int,Queue<int>*);
 
 	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
@@ -99,7 +100,7 @@ public:
 	void AddNeighbor(int, int, Index*);
 	void AddEdge(int, int, Index*);
 	int Query(int , int, Index*,int,int);
-	int SearchNodeNeighbours(Node*,Index*, char, int,int,int);
+	int SearchNodeNeighbours(Node*,Index*, char, int,int,int,Queue<int>*);
 	/*
 	* Increase capacity of Buffer data type.
 	* if char == 'i' then realloc incoming array
