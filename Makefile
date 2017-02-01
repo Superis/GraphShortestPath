@@ -1,12 +1,13 @@
 #Compiler settings
 
 CC = g++
-CFLAGS = -c -Wall -g -O2 -std=gnu++11
+CFLAGS = -c -Wall -g -std=gnu++11 #-O2
 SRCS = main.cpp buffer.cpp components.cpp job_scheduler.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXE = exec
 LIBS = -pthread
 SCRIPT = insert_unitest.script
+OUTPUT_FILE = results.txt
 
 all : $(SRCS) $(EXE)
 	@echo $(EXE) "HAS BEEN COMPILED"
@@ -22,7 +23,7 @@ script :
 
 clean :
 	@echo "Removing files"
-	rm $(EXE) *.o
+	rm $(EXE) $(OUTPUT_FILE) *.o
 
 rebuild :
 	make clean

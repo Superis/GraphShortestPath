@@ -1,10 +1,3 @@
-/*
-* main.cpp
-*
-*  Created on: Oct 27, 2016
-*      Author:
-*/
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -27,15 +20,30 @@ inline int max(int a, int b) {
 	return((a>b) ? (a) : (b));
 }
 
-// perror_function for threads.
-void Psystem_error(char *message) {
-	perror(message);
-	exit(1);
-}
-
-void Puser_error(char *message, char *detail) {
-	fprintf(stderr, "%s: %s\n", message, detail);
-	exit(1);
+void CreateGraph(Buffer *buffer,Index *index,ifstream &myFile,string specifier) {
+	int source, dest;
+	string line;
+	if (specifier == "STATIC") {
+		while (getline(myFile, line)) {
+			istringstream iss(line);
+			if (!(iss >> source >> dest))
+				break;
+			index->Insert(source, dest, buffer);
+			buffer->InsertBuffer(source, dest, index);
+		}
+	} else if (specifier == "DYNAMIC") {
+		while (getline(myFile, line)) {
+			istringstream iss(line);
+			if (!(iss >> source >> dest))
+				break;
+			index->Insert(source, dest, buffer);
+			buffer->InsertBuffer(source, dest, index,0);
+		}
+	} else {
+		cerr << "Wrong specifier @ workload file(neither 'STATIC' nor 'DYNAMIC'."
+				"Check spelling.Program exiting." << endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -45,11 +53,27 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	/*
+	 * Read workload file 1st line to see the kind of graph,
+	 * so to avoid initializing edgeProperty.
+	 */
+	ifstream workload;
+	char *workFile = argv[2];
+	workload.open(workFile);
+	string specifier;
+	if (workload.is_open()) {
+		getline(workload,specifier); // DYNAMIC || STATIC
+		cout << "Graph is " << specifier << endl;
+	} else {
+		cerr << "Workload-file couldn't be opened!Aborting graph creation & exitting" << endl;
+		exit(EXIT_FAILURE);
+	}
+
 	/**************		Read from Graph file 	 **************/
 	char *graphFile = argv[1];
 	ifstream myFile;
 	myFile.open(graphFile);
-	string line,specifier;
+	string line;
 	int maxVal = 0;
 	/*
 	* Find :
@@ -58,7 +82,6 @@ int main(int argc, char **argv) {
 	*/
 	if (myFile.is_open()) {
 		int source, dest;
-		//getline(myFile, specifier); // DYNAMIC || STATIC
 		while (getline(myFile, line)) {
 			istringstream iss(line);
 			if (!(iss >> source >> dest))
@@ -67,7 +90,7 @@ int main(int argc, char **argv) {
 			/*if (source != srcompare) {
 				uniqueNodes++;
 				srcompare = source;
-			}
+			}ψδ ./
 			linesCounter++;*/
 		}
 		//optimalCellValue = ceil(linesCounter / (float)uniqueNodes);
@@ -83,145 +106,105 @@ int main(int argc, char **argv) {
 	myFile.seekg(0, myFile.beg);
 
 	if (myFile.is_open()) {
-		int source, dest;
-		//getline(myFile, specifier);
-		//if (specifier == "DYNAMIC") {
-			while (getline(myFile, line)) {
-				istringstream iss(line);
-				if (!(iss >> source >> dest))
-					break;
-				index->Insert(source, dest, buffer);
-				buffer->InsertBuffer(source, dest, index,0); //version == 0
-			}
-		//}
-		/*else { // static graph no use of propertyEdge
-			while (getline(myFile, line)) {
-				istringstream iss(line);
-				if (!(iss >> source >> dest))
-					break;
-				index->Insert(source, dest, buffer);
-				buffer->InsertBuffer(source, dest, index);
-			}
-
-		}*/
+		CreateGraph(buffer,index,myFile,specifier);
 	}
 	else
 		cerr << "Unable to open Graph file(2)" << endl;
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
+
 	//buffer->PrintBuffer(index); // insert_unitest
 
 	/**************		Read from Workload file	 **************/
+	//ofstream result("results.txt"); //output file for Queries
 
-	char *workFile = argv[2];
-	myFile.open(workFile);
-
-	//if (specifier == "STATIC") {
-	int estimatedComponentsAmount = maxVal / 5;
-	if (estimatedComponentsAmount == 0)
-		estimatedComponentsAmount = 50;
-	SCC strongCC(estimatedComponentsAmount);
-	strongCC.EstimateSCC(buffer,index,maxVal);
-
-	ofstream result("results.txt"); //output file for Queries
-	//result << strongCC.GetCompCount();
-
-	if (myFile.is_open()) {
-		int repeat=0;
-		char command;
-		int source, dest;
-		IndexNode* p=index->GetIndexNode();
-		strongCC.BuildHypergraph(index,buffer);
-		strongCC.BuildGrailIndex();
-		while (getline(myFile, line)) {
-			istringstream iss(line);
-			iss >> command;
-			if (command == 'Q') {
-				iss >> source >> dest;
-				//buffer->Query(source,dest,index);
-				int k=strongCC.IsReachableGrail(index,source,dest);
-				if (k==0)
-					result << "-1" << endl;
-				else if (k==1){
-					//result << "MAYBE";
-					result << strongCC.EstimateShortestPathSCC(buffer,index,source,dest,repeat) << endl;
-					repeat++;
-				}
-				else if (k==2){
-					//result << "YES";
-					result << buffer->Query(source,dest,index,p[source].componentID,repeat) << endl;
-					repeat++;
-				}
-			}
-			else if (command == 'A') {
-				iss >> source >> dest;
-				index->CheckCap(source,dest); // Checking if reallocation is needed for Index
-				index->Insert(source, dest, buffer);
-				buffer->AddNeighbor(source, dest, index);
-			}
-			else //if (command == 'F') {
-				continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
-
-			//}
-
-		}
-	}
-	else
-		cerr << "Unable to open Workload file" << endl;
-
-	exit(1);
+	// Creating a threadpool equal to the system cores
 	int currentSystemCores = sysconf(_SC_NPROCESSORS_ONLN);
 	JobScheduler *js = new JobScheduler(currentSystemCores);
-	if (specifier == "DYNAMIC") {
-		int version = 0;
-		if (myFile.is_open()) {
-			Job *job = new Job();
-			char command,lastCommand = '\0';
-			int source, dest,commandCounter = 0;
-			while (getline(myFile, line)) {
+	cout << "Job Scheduler created" << endl;
+	int source, dest,commandCounter = - 1;
+	int *version = new int();
+	char command;
+	if (specifier == "STATIC") {
+		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
+		cout << "Maximum value of graph : " << maxVal << endl;
+		int estimatedComponentsAmount = maxVal / 5 ;
+		if (estimatedComponentsAmount == 0)
+			estimatedComponentsAmount = 50;
+		SCC* strongCC = new SCC(estimatedComponentsAmount);
+		strongCC->EstimateSCC(buffer,index,maxVal);
+
+		cout << "Building Hyper Graph & Grail Index." << endl;
+		strongCC->BuildHypergraph(index, buffer);
+		strongCC->BuildGrailIndex();
+
+		//result << strongCC.GetCompCount();
+
+		if (workload.is_open()) {
+			while (getline(workload, line)) {
+				istringstream iss(line);
+				iss >> command;
+				if (command == 'Q') {
+					Job *job = new Job();
+					commandCounter++;
+					iss >> source >> dest;
+					JobInit(job,StaticQuery,source,dest,commandCounter,version,
+							index,buffer,(void *)strongCC,js);
+					js->SubmitJob(job);
+				} else if (command == 'F') {
+					commandCounter = -1;
+					js->ExecuteJobs(); // Execute whole queue of jobs and wait till finished.
+					continue;
+				} else if (command == 'A') {
+					cout << "Found additions on static graph.Exiting" << endl;
+					break;
+				}
+			}
+		}
+	} else if (specifier == "DYNAMIC") {
+		if (workload.is_open()) {
+			char lastCommand;
+			while (getline(workload, line)) {
+				Job *job = new Job();
 				istringstream iss(line);
 				iss >> command;
 				if (command == 'Q') {
 					iss >> source >> dest;
-					job->src = source;
-					job->dest = dest;
-					job->command = 'Q';
-					job->id = commandCounter++;
+					//JobInit();
 					buffer->Query(source,dest,index,'p',1);
 				}
 				else if (command == 'A') {
 					if (lastCommand == 'Q')
 						version++;
 					iss >> source >> dest;
-					job->src = source;
-					job->dest = dest;
-					job->command = 'A';
-					job->id = commandCounter++;
+					//JobInit();
 					index->CheckCap(source,dest); // Checking if reallocation is needed for Index
 					index->Insert(source, dest, buffer);
-					buffer->AddNeighbor(source, dest, index,version);
-					buffer->AddEdge(source,dest,index);
+					buffer->AddNeighbor(source, dest, index);
 				}
 				else if (command == 'F') {
-					commandCounter = 0;
-					continue; //sto epomeno skelos pou tha asxolithoume me tis ripes ergasiwn
-
+					js->ExecuteJobs();
+					//js->PrintResults(result);
 				}
 				lastCommand = command;
 			}
 		}
 		else
-			cerr << "Unable to open Workload file" << endl;
+			cout << "Wrong specifier for WORKLOAD file." << endl;
 	}
+	else
+		cerr << "Unable to open Workload file" << endl;
+
+	workload.close();
+	//result.close();
+
+	delete version;
 	delete js;
-
-	myFile.close();
-	result.close();
-
 	delete buffer;
 	delete index;
 
-	cout << "Program terminated successfully!" << endl;
+	cout << "Program terminated!" << endl
+			<< "Results can be found on results.txt file" << endl;
 	return 0;
 }

@@ -1,8 +1,8 @@
 #ifndef TEMPLATE_LIST_H_
 #define TEMPLATE_LIST_H_
+
 #include <iostream>
 #include "components.h"
-
 
 template<class T>
 class List {
@@ -78,7 +78,6 @@ void List<T>::PushAfterCheck(const T& obj,int number) {
 	size++;
 }
 
-
 template<class T>
 T List<T>::PopHead() {
 	if (!isEmpty()) {
@@ -140,7 +139,6 @@ const T& List<T>::GetHeadData() {
 	}
 }
 
-
 template<class T>
 bool List<T>::IsOut() {
 	if (!isEmpty()) {
@@ -169,7 +167,6 @@ bool List<T>::IncCur() {
 		return false;
 }
 
-
 template<class T>
 bool List<T>::IncreaseCur() {
 	if ( (cur->next) != NULL ) {
@@ -181,7 +178,6 @@ bool List<T>::IncreaseCur() {
 		return false;
 	}
 }
-
 
 template<class T>
 void List<T>::Print() {
@@ -196,3 +192,5 @@ void List<T>::Print() {
 }
 
 #endif
+
+

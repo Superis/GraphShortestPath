@@ -10,10 +10,10 @@
 
 struct IndexNode {
 	int in; // offset of incoming node
-	int inlast; //last offset of incoming neighbors
-	int inNeighbors;
-	int out; // offset of outcoming node
-	int outlast; // last offset of outcoming neighbors
+	int inlast; // last offset of incoming neighbors.*Improved speed*
+	int inNeighbors; // sum of incoming Neighbors.*Improved speed*
+	int out;
+	int outlast;
 	int outNeighbors;
 	int src_level; // numbers the iteration in which this Node was discovered from source Node
 	int dest_level;
@@ -93,8 +93,8 @@ public:
 	int GetIncEnd();
 	int GetOutEnd();
 
-	void InsertBuffer(int, int, Index*,int version);
-	void InsertBuffer(int, int, Index*); // override to
+	void InsertBuffer(int, int, Index*);
+	void InsertBuffer(int, int, Index*,int);
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*,int version);
 	void AddNeighbor(int, int, Index*);

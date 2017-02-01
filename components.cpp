@@ -23,6 +23,7 @@ int min(int a,int b){
 }
 
 SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(0) {
+	PushChecker = NULL;
 	components = new Component*[_size];
 	edges = NULL;
 }
@@ -194,8 +195,8 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 	indArray[src].src_level = 0;
 	indArray[dest].dest_visited = repeat;
 	indArray[dest].dest_level = 0;
-	int compsrc=indArray[src].componentID;
-	int compdest=indArray[dest].componentID;
+	int compsrc = indArray[src].componentID;
+	int compdest = indArray[dest].componentID;
 	int level = 1;
 	int k,n,i,_size,count;
 	int counter_s, counter_d;

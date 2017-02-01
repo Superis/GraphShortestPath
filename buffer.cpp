@@ -182,7 +182,7 @@ int Index::GetNeighbor(int target, Buffer* buffer ,int pos) {
 	endPos = out[indexArray[target].out].GetEndPos();
 	cap = out[indexArray[target].out].GetCapacity();
 	if (cap == 0) {
-		cout << "ZEROOOOOOOOOOOOOO with target : " << target << " @ : " << indexArray[target].out << endl;
+		cout << "ZERO with target : " << target << " @ : " << indexArray[target].out << endl;
 		return -1;
 	}
 	nextNode = out[indexArray[target].out].GetNextNode();
@@ -208,9 +208,6 @@ int Index::GetNeighbor(int target, Buffer* buffer ,int pos) {
 }
 
 void Index::Insert(int src, int dest, Buffer *buf) {
-	if ((indexArray[src].out != -1) && (indexArray[dest].in != -1))
-		// if initialized from previous Insert(s) do nothing -> return
-		return;
 	/*
 	 * If it doesn't already exists in Index we insert it in the IndexArray[value] cell
 	 * then we "link" it with Buffer class by setting the offset values to
@@ -315,38 +312,6 @@ int Buffer::GetOutEnd() {
 	return outEnd;
 }
 
-void Buffer::InsertBuffer(int src, int dest, Index *index,int version) {
-	IndexNode *indexA = index->GetIndexNode();
-	if (outEnd >= outSize) { // must realloc
-		this->Reallocate('o');
-	}
-	if (incEnd >= incSize) {
-		this->Reallocate('i');
-	}
-	if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1) {
-		outcoming[indexA[src].outlast].SetNextNode(outEnd);
-		indexA[src].outlast = outEnd;
-		if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1)
-			cout << "Wrong insert @ outcoming" << endl;
-		else
-			indexA[src].outNeighbors += 1;
-		outEnd++;
-	} else
-		indexA[src].outNeighbors += 1;
-
-
-	if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1) {
-		incoming[indexA[dest].inlast].SetNextNode(incEnd);
-		indexA[dest].inlast = incEnd;
-		if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1)
-			cout << "Wrong insert @ incoming" << endl;
-		else
-			indexA[dest].inNeighbors += 1;
-		incEnd++;
-	} else
-		indexA[dest].inNeighbors += 1;
-}
-
 void Buffer::InsertBuffer(int src, int dest, Index *index) {
 	IndexNode *indexA = index->GetIndexNode();
 	if (outEnd >= outSize) { // must realloc
@@ -371,6 +336,37 @@ void Buffer::InsertBuffer(int src, int dest, Index *index) {
 		incoming[indexA[dest].inlast].SetNextNode(incEnd);
 		indexA[dest].inlast = incEnd;
 		if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1)
+			cout << "Wrong insert @ incoming" << endl;
+		else
+			indexA[dest].inNeighbors += 1;
+		incEnd++;
+	} else
+		indexA[dest].inNeighbors += 1;
+}
+void Buffer::InsertBuffer(int src, int dest, Index *index,int version) {
+	IndexNode *indexA = index->GetIndexNode();
+	if (outEnd >= outSize) {
+		this->Reallocate('o');
+	}
+	if (incEnd >= incSize) {
+		this->Reallocate('i');
+	}
+	if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1) {
+		outcoming[indexA[src].outlast].SetNextNode(outEnd);
+		indexA[src].outlast = outEnd;
+		if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1)
+			cout << "Wrong insert @ outcoming" << endl;
+		else
+			indexA[src].outNeighbors += 1;
+		outEnd++;
+	} else
+		indexA[src].outNeighbors += 1;
+
+
+	if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1) {
+		incoming[indexA[dest].inlast].SetNextNode(incEnd);
+		indexA[dest].inlast = incEnd;
+		if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1)
 			cout << "Wrong insert @ incoming" << endl;
 		else
 			indexA[dest].inNeighbors += 1;

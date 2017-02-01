@@ -38,7 +38,10 @@ struct Component {
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
 	List<int>* includedNodesID; //ids of included nodes
-	Component() : componentID(-1), nodesSum(0) { includedNodesID=new List<int>;}
+	Component() : componentID(-1), nodesSum(0) {
+		connectedComponents = NULL;
+		includedNodesID=new List<int>;
+	}
 };
 
 
