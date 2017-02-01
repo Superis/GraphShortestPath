@@ -419,7 +419,7 @@ void Buffer::AddEdge(int src, int dest, Index *index) {
 
 int Buffer::Query(int src, int dest, Index *index,int comp,int repeat) {
 	IndexNode *indArray = index->GetIndexNode();
-	int l=index->GetSize();
+	int l = index->GetSize();
 	int src_pos;//= indArray[src].out;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;

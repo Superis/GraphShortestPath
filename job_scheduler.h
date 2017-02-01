@@ -17,6 +17,8 @@
 #include "components.h"
 #include "template_queue.h"
 
+#define OUTPUT_FILE "results.txt"
+
 // perror_function for threads.
 inline void Psystem_error(const char *message) {
 	perror(message);
@@ -63,8 +65,6 @@ class JobScheduler {
 
 	int *printArray;
 	int runningThreads;
-
-
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
@@ -72,7 +72,6 @@ public:
 	//pthread_mutex_t GetMtx() { return this->mtx; };
 	//pthread_cond_t GetCond() { return this->cond; };
 	void SetLastThread(int id) { this->lastFinishedThreadID = id; };
-	void ThreadFinished() { runningThreads--;};
 	Queue<Job*>* GetQueue() { return this->queue; };
 	int* GetArray() { return this->printArray; };
 	void SubmitJob(Job *j);

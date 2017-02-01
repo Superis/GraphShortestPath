@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 	JobScheduler *js = new JobScheduler(currentSystemCores);
 	cout << "Job Scheduler created" << endl;
 	int source, dest,commandCounter = - 1;
-	int *version = new int();
+	int *version = new int(); // = 0
 	char command;
 	if (specifier == "STATIC") {
 		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
@@ -205,6 +205,6 @@ int main(int argc, char **argv) {
 	delete index;
 
 	cout << "Program terminated!" << endl
-			<< "Results can be found on results.txt file" << endl;
+			<< "Results can be found @ " << OUTPUT_FILE << endl;
 	return 0;
 }
