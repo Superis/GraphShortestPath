@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 	JobScheduler *js = new JobScheduler(currentSystemCores);
 	cout << "Job Scheduler created" << endl;
 	int source, dest,commandCounter = - 1;
-	int *version = new int(); // = 0
+	//int version = new int(); // = 0
 	char command;
 	if (specifier == "STATIC") {
 		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
@@ -142,6 +142,8 @@ int main(int argc, char **argv) {
 		//result << strongCC.GetCompCount();
 
 		if (workload.is_open()) {
+			index->InitializeVisited(currentSystemCores);
+			js->CreateThreads();
 			while (getline(workload, line)) {
 				istringstream iss(line);
 				iss >> command;
@@ -149,7 +151,7 @@ int main(int argc, char **argv) {
 					Job *job = new Job();
 					commandCounter++;
 					iss >> source >> dest;
-					JobInit(job,StaticQuery,source,dest,commandCounter,version,
+					JobInit(job,StaticQuery,source,dest,commandCounter,
 							index,buffer,(void *)strongCC,js);
 					js->SubmitJob(job);
 				} else if (command == 'F') {
@@ -172,11 +174,11 @@ int main(int argc, char **argv) {
 				if (command == 'Q') {
 					iss >> source >> dest;
 					//JobInit();
-					buffer->Query(source,dest,index,'p',1);
+					buffer->Query(source,dest,index,'p',1,0);
 				}
 				else if (command == 'A') {
 					if (lastCommand == 'Q')
-						version++;
+						//version++;
 					iss >> source >> dest;
 					//JobInit();
 					index->CheckCap(source,dest); // Checking if reallocation is needed for Index
@@ -199,7 +201,15 @@ int main(int argc, char **argv) {
 	workload.close();
 	//result.close();
 
-	delete version;
+	//delete version;
+	sleep(3);
+	void* retval;
+	js->setfinish();
+	pthread_mutex_lock(js->GetMtx());
+	pthread_cond_broadcast(js->GetRd());
+	pthread_mutex_unlock(js->GetMtx());
+	for (int i=0;i<js->ThreadsNum();i++)
+		pthread_join(js->GiveThread(i),&retval);
 	delete js;
 	delete buffer;
 	delete index;
