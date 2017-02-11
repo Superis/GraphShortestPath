@@ -115,8 +115,9 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-
-
+	int currentSystemCores = 8;
+	JobScheduler *js = new JobScheduler(currentSystemCores);
+	index->InitializeVisited(currentSystemCores);
 	auto current_time = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Function was running for " <<
@@ -127,8 +128,7 @@ int main(int argc, char **argv) {
 	//ofstream result("results.txt"); //output file for Queries
 
 	// Creating a threadpool equal to the system cores
-	int currentSystemCores = sysconf(_SC_NPROCESSORS_ONLN);
-	JobScheduler *js = new JobScheduler(currentSystemCores);
+
 	cout << "Job Scheduler created" << endl;
 	int source, dest,commandCounter = - 1;
 	//int version = new int(); // = 0
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 
 		//result << strongCC.GetCompCount();
 		if (workload.is_open()) {
-			index->InitializeVisited(currentSystemCores);
+
 			//js->CreateThreads();
 			while (getline(workload, line)) {
 				istringstream iss(line);

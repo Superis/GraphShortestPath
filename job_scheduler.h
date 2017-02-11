@@ -68,7 +68,7 @@ class JobScheduler {
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
-	void setfinish(){ Finish=true;};
+	//void setfinish(){ Finish=true;};
 	//pthread_mutex_t GetMtx() { return this->mtx; };
 	//pthread_cond_t GetCond() { return this->cond; };
 	void CreateThreads();
