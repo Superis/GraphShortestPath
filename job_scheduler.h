@@ -49,27 +49,22 @@ void JobInit(Job *job,
 		int source,int dest,int ccounter,
 		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js);
 
-void *ExecuteTask(void *j);
-void *StaticQuery(void *j);
-void *DynamicQuery(void *j);
-void *EdgeAddition(void *j);
+void *StaticQuery(void *job);
+void *DynamicQuery(void *job);
+void *EdgeAddition(void *job);
 
 
 class JobScheduler {
 	int executionThreads; // poolsize
 	Queue<Job*>* queue; // job/task queue
-	pthread_mutex_t mtx;
-	pthread_cond_t queue_ready;
-	pthread_cond_t queue_finished;
 	pthread_t *tids; // array of threads_id
 	int lastFinishedThreadID;
 	int queue_size;
 	bool Finish;
 	std::ofstream result;
-	int found_empty;
-
 	int *printArray;
-	//int runningThreads;
+	int *runningThreads;
+	bool finished;
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
@@ -80,14 +75,13 @@ public:
 	void SetLastThread(int id) { this->lastFinishedThreadID = id; };
 	Queue<Job*>* GetQueue() { return this->queue; };
 	int* GetArray() { return this->printArray; };
+	int *GetRunningThreads() {return runningThreads;};
+	bool IsFinished() {return finished; };
+	static void* ExecuteThread(void *job);
 	void SubmitJob(Job *j);
 	void ExecuteJobs();
-	int ThreadsNum() { return this->executionThreads;};
-	static void* ExecuteThread(void*);
-	pthread_t GiveThread(int i) { return tids[i];};
-	pthread_mutex_t* GetMtx() { return &mtx;};
-	pthread_cond_t* GetRd() { return &queue_ready;};
 	void WaitAll(); // waits all submitted tasks to finish
+	void DestroyAll();
 	void PrintResults();
 	//int GetPrintNum() { return print_ready; };
 	//void IncPrintNum() { print_ready++; };

@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "template_queue.h"
 
-#define N 5
+#define N 75
 
 
 struct IndexNode {
@@ -74,7 +74,6 @@ public:
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
 	int ShortestPath(Index*,char , int,int,int,Queue<int>*,int);
-
 	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
 };
