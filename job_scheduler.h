@@ -48,10 +48,9 @@ void JobInit(Job *job,
 		int source,int dest,int ccounter,int *version,
 		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js);
 
-void *ExecuteTask(void *j);
-void *StaticQuery(void *j);
-void *DynamicQuery(void *j);
-void *EdgeAddition(void *j);
+void *StaticQuery(void *job);
+void *DynamicQuery(void *job);
+void *EdgeAddition(void *job);
 
 
 class JobScheduler {
@@ -64,7 +63,9 @@ class JobScheduler {
 	std::ofstream result;
 
 	int *printArray;
-	int runningThreads;
+	int *runningThreads;
+
+	bool finished;
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
@@ -74,10 +75,13 @@ public:
 	void SetLastThread(int id) { this->lastFinishedThreadID = id; };
 	Queue<Job*>* GetQueue() { return this->queue; };
 	int* GetArray() { return this->printArray; };
+	int *GetRunningThreads() {return runningThreads;};
+	bool IsFinished() {return finished; };
+	static void* ExecuteThread(void *job);
 	void SubmitJob(Job *j);
 	void ExecuteJobs();
-	static void* ExecuteThread(void *j);
 	void WaitAll(); // waits all submitted tasks to finish
+	void DestroyAll();
 	void PrintResults();
 };
 

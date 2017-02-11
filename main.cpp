@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <chrono>
 
 #include <unistd.h>
 #include <stdint.h>
@@ -53,6 +54,7 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
+			auto start_time = std::chrono::high_resolution_clock::now();
 	/*
 	 * Read workload file 1st line to see the kind of graph,
 	 * so to avoid initializing edgeProperty.
@@ -114,6 +116,11 @@ int main(int argc, char **argv) {
 
 	cout << "Index & Graph were created." << endl;
 
+
+	auto current_time = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Function was running for " <<
+	std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << "\"" << std::endl;
 	//buffer->PrintBuffer(index); // insert_unitest
 
 	/**************		Read from Workload file	 **************/
@@ -128,7 +135,7 @@ int main(int argc, char **argv) {
 	char command;
 	if (specifier == "STATIC") {
 		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
-		cout << "Maximum value of graph : " << maxVal << endl;
+		//cout << "Maximum value of graph : " << maxVal << endl;
 		int estimatedComponentsAmount = maxVal / 5 ;
 		if (estimatedComponentsAmount == 0)
 			estimatedComponentsAmount = 50;
@@ -140,7 +147,6 @@ int main(int argc, char **argv) {
 		strongCC->BuildGrailIndex();
 
 		//result << strongCC.GetCompCount();
-
 		if (workload.is_open()) {
 			while (getline(workload, line)) {
 				istringstream iss(line);
@@ -161,6 +167,7 @@ int main(int argc, char **argv) {
 					break;
 				}
 			}
+
 		}
 	} else if (specifier == "DYNAMIC") {
 		if (workload.is_open()) {
@@ -195,12 +202,11 @@ int main(int argc, char **argv) {
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;
-
 	workload.close();
 	//result.close();
-
-	delete version;
+	js->DestroyAll();
 	delete js;
+	delete version;
 	delete buffer;
 	delete index;
 
