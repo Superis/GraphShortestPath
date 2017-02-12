@@ -168,6 +168,7 @@ Index::Index(int maxSize) :
 }
 
 Index::~Index() {
+	this->DestroyVisited();
 	delete[] indexArray;
 	cout << "An Index-data_type has been deleted." << endl;
 }
@@ -271,27 +272,36 @@ int Index::NeighboursNum(int target, char c, Buffer *buf) {
 	return sum;
 }
 
+void Index::InitializeVisited(int threads) {
+	for (int i = 0; i < indSize; i++) {
+		indexArray[i].src_visited = new int[threads];
+		for (int j = 0; j < threads; j++)
+			indexArray[i].src_visited[j] = -1;
+		indexArray[i].dest_visited = new int[threads];
+		for (int j = 0; j < threads; j++)
+			indexArray[i].dest_visited[j] = -1;
+		indexArray[i].src_level = new int[threads];
+		for (int j = 0; j < threads; j++)
+			indexArray[i].src_level[j] = -1;
+		indexArray[i].dest_level = new int[threads];
+		for (int j = 0; j < threads; j++)
+			indexArray[i].dest_level[j] = -1;
+	}
+}
+
+void Index::DestroyVisited() {
+	for (int i = 0; i < indSize; i++) {
+		delete[] indexArray[i].src_visited;
+		delete[] indexArray[i].dest_visited;
+		delete[] indexArray[i].src_level;
+		delete[] indexArray[i].dest_level;
+	}
+}
+
 void Index::Print() {
 	for (int i = 0; i < indSize; i++) {
 		cout << i << " in : " << indexArray[i].in << " &  out "
 				<< indexArray[i].out << endl;
-	}
-}
-
-void Index::InitializeVisited(int threads){
-	for (int i=0;i<indSize;i++){
-		indexArray[i].src_visited = new int[threads];
-		for (int j=0;j<threads;j++)
-			indexArray[i].src_visited[j]=-1;
-		indexArray[i].dest_visited = new int[threads];
-		for (int j=0;j<threads;j++)
-			indexArray[i].dest_visited[j]=-1;
-		indexArray[i].src_level = new int[threads];
-		for (int j=0;j<threads;j++)
-			indexArray[i].src_level[j]=-1;
-		indexArray[i].dest_level = new int[threads];
-		for (int j=0;j<threads;j++)
-			indexArray[i].dest_level[j]=-1;
 	}
 }
 
@@ -408,8 +418,8 @@ void Buffer::AddNeighbor(int src, int dest, Index *index) {
 	int pos = indArray[src].out;
 	do {
 		if (outcoming[pos].SearchNeighbors(dest) == 0) {
-			cout << "A :: Source node : " << src << " has already " << dest
-					<< " as neighbor" << endl;
+			//cout << "A :: Source node : " << src << " has already " << dest
+			//		<< " as neighbor" << endl;
 			return;
 		}
 		pos = outcoming[pos].GetNextNode();
@@ -421,8 +431,8 @@ void Buffer::AddNeighbor(int src, int dest, Index *index,int version) {
 	int pos = indArray[src].out;
 	do {
 		if (outcoming[pos].SearchNeighbors(dest) == 0) {
-			cout << "A :: Source node : " << src << " has already " << dest
-					<< " as neighbor" << endl;
+		//	cout << "A :: Source node : " << src << " has already " << dest
+			//		<< " as neighbor" << endl;
 			return;
 		}
 		pos = outcoming[pos].GetNextNode();
@@ -436,7 +446,6 @@ void Buffer::AddEdge(int src, int dest, Index *index) {
 
 int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int threadNum) {
 	IndexNode *indArray = index->GetIndexNode();
-	int l = index->GetSize();
 	int src_pos;//= indArray[src].out;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
@@ -559,6 +568,8 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 			level++;
 		}
 	}
+	delete src_queue;
+	delete dest_queue;
 	return -1;
 }
 

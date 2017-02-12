@@ -44,7 +44,6 @@ struct Component {
 	}
 };
 
-
 struct ComponentCursor {
 	int cursor;
 };

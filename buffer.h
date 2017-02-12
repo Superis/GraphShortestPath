@@ -42,11 +42,13 @@ public:
 	IndexNode* GetIndexNode();
 	int GetSize() { return indSize; };
 	int GetNeighbor(int ,Buffer* ,int);
-	void InitializeVisited(int);
 	int NeighboursNum(int, char, Buffer*);
 	void Insert(int, int, Buffer *);
 	void Reallocate(int); // increase capacity of Index data type till == "int" | Realloc
 	void CheckCap(int, int);
+
+	void InitializeVisited(int);
+	void DestroyVisited();
 
 	void Print();
 };

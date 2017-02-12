@@ -30,9 +30,12 @@ SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(0) {
 
 SCC::~SCC() {
 	for (int i=0;i<componentsCount;i++){
+		delete components[i]->connectedComponents;
+		delete components[i]->includedNodesID;
 		delete components[i];
 		delete edges[i];
 	}
+	delete[] PushChecker;
 	delete[] components;
 	delete[] edges;
 }
@@ -164,7 +167,7 @@ bool SCC::DestroySCC() {
 }
 
 void SCC::Print() {
-	cout << "Found " << componentsCount << " overall SCC" <<  endl;
+	//cout << "Found " << componentsCount << " overall SCC" <<  endl;
 	//getchar();
 	//for (int i = 0 ; i < componentsCount ; i++) {
 		//components[i]->includedNodesID->Print();
@@ -181,9 +184,7 @@ void SCC::Print() {
 
 int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,int repeat,int threadNum){
 	IndexNode *indArray = index->GetIndexNode();
-	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
-				//cout <<"pos"<< src_pos << endl;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
@@ -325,9 +326,10 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			level++;
 		}
 	}
+	//cout << src_queue->GetSize() << " & " << dest_queue->GetSize() << endl;
+	delete src_queue;
+	delete dest_queue;
 	return -1;
-
-
 }
 
 void SCC::BuildHypergraph(Index* index, Buffer* buffer) {

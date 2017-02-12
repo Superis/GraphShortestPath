@@ -5,7 +5,8 @@
  *      Author: alex
  */
 
-#pragma once
+#ifndef TEMPLATE_QUEUE_H_
+#define TEMPLATE_QUEUE_H_
 
 #include <iostream>
 
@@ -26,12 +27,9 @@ class Queue {
 	int size;
 public:
 	Queue() {
-
-		//	front=new QueueNode(NULL);
 		front = NULL;
-		rear = new QueueNode(NULL);
+		rear = NULL;
 		size = 0;
-
 		//std::cout << "Queue was constructed" << std::endl;
 	}
 	~Queue() {
@@ -84,7 +82,6 @@ T Queue<T>::Dequeue() {
 	} else {
 		return static_cast<T>(NULL);
 	}
-
 }
 
 template<class T>
@@ -105,4 +102,4 @@ int Queue<T>::GetSize() {
 	return size;
 }
 
-//#endif /* TEMPLATE_QUEUE_H_ */
+#endif /* TEMPLATE_QUEUE_H_ */
