@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	int currentSystemCores = 8;
+	int currentSystemCores = 4;
 	JobScheduler *js = new JobScheduler(currentSystemCores);
 	index->InitializeVisited(currentSystemCores);
 	auto current_time = std::chrono::high_resolution_clock::now();

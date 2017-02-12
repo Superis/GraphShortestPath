@@ -358,6 +358,7 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 		}
 		components[i]->includedNodesID->ResetCur();
 	}
+	delete[] PushChecker;
 }
 
 void SCC::BuildGrailIndex() {

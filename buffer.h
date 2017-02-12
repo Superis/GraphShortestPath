@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "template_queue.h"
 
-#define N 75
+#define N 5
 
 
 struct IndexNode {
