@@ -1,4 +1,3 @@
-
 /*
  * components.cpp
  *
@@ -15,14 +14,15 @@
 
 using namespace std;
 
-int min(int a,int b){
-	if (a<b)
+int min(int a, int b) {
+	if (a < b)
 		return a;
 	else
 		return b;
 }
 
-SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(0) {
+SCC::SCC(int _size) :
+		componentsCount(0), size(_size), level(0) {
 	PushChecker = NULL;
 	components = new Component*[_size];
 	edges = NULL;
@@ -40,15 +40,15 @@ SCC::~SCC() {
 	delete[] edges;
 }
 
-void SCC::EstimateSCC(Buffer* buffer, Index* index ,int max) {
+void SCC::EstimateSCC(Buffer* buffer, Index* index, int max) {
 	int indexSize = index->GetSize();
 	Stack<int>* stack = new Stack<int>();
 	int *level = new int(); // tarjan's level of search | Allocate and initialize () .
 	TarzanInfoStruct *tis = new TarzanInfoStruct[max + 1];
-	for (int i = 0 ; i < indexSize ; i++) {
+	for (int i = 0; i < indexSize; i++) {
 		// if Node is undefined : Tarjan
 		if (tis[i].index == -1) {
-			Tarjan(i,stack,index,buffer,max,tis,level);
+			Tarjan(i, stack, index, buffer, max, tis, level);
 		}
 	}
 	delete level;
@@ -57,8 +57,8 @@ void SCC::EstimateSCC(Buffer* buffer, Index* index ,int max) {
 	this->Print();
 }
 
-
-void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int max ,TarzanInfoStruct tis[],int *level) {
+void SCC::Tarjan(int target, Stack<int>* stack, Index* index, Buffer* buffer,
+		int max, TarzanInfoStruct tis[], int *level) {
 	IndexNode *indArr = index->GetIndexNode();
 	tis[target].index = *level;
 	tis[target].lowlink = *level;
@@ -71,15 +71,17 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 		cout << "\tERROR!Tarjan failed" << endl;
 		return;
 	}
-	int neighborSum = 0 ,child = -1;
-	while(1) {
+	int neighborSum = 0, child = -1;
+	while (1) {
 		// DFS
 		neighborSum = indArr[target].outNeighbors;
-		if ( neighborSum > tis[target].recursive_level ) {
-			child = index->GetNeighbor(target,buffer,tis[target].recursive_level);//out[indArr[target].out].GetNeighbor(indArr[target].recursive_*level,target,index,buffer);
+		if (neighborSum > tis[target].recursive_level) {
+			child = index->GetNeighbor(target, buffer,
+					tis[target].recursive_level); //out[indArr[target].out].GetNeighbor(indArr[target].recursive_*level,target,index,buffer);
 
 			if (child < 0 || child > max) {
-				cout << "Tarjan found child with unidentified value :" << child << endl;
+				cout << "Tarjan found child with unidentified value :" << child
+						<< endl;
 				break;
 			}
 			tis[target].recursive_level++;
@@ -93,7 +95,8 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 				tis[child].visited = true;
 				target = child;
 			} else if (tis[child].visited == true) {
-				tis[target].lowlink = MIN(tis[child].index,tis[target].lowlink);
+				tis[target].lowlink = MIN(tis[child].index,
+						tis[target].lowlink);
 			}
 		} else {
 			// found a SCC
@@ -132,7 +135,7 @@ void SCC::Tarjan(int target,Stack<int>* stack,Index* index,Buffer* buffer,int ma
 				target = newTarget;
 			} else
 				// if root ,break while loop.Finished
-			break;
+				break;
 		}
 	}
 }
@@ -154,12 +157,12 @@ void SCC::AddComponentToArray(Component* comp) {
 	}
 }
 
-int SCC::FindNodeSCC_ID(int nodeid ,Index* index) {
+int SCC::FindNodeSCC_ID(int nodeid, Index* index) {
 	return index->GetIndexNode()[nodeid].componentID;
 }
 
 bool SCC::DestroySCC() {
-	for (int i = 0 ; i < componentsCount ; i++) {
+	for (int i = 0; i < componentsCount; i++) {
 		delete components[i]->includedNodesID;
 		delete components[i];
 	}
@@ -170,26 +173,25 @@ void SCC::Print() {
 	//cout << "Found " << componentsCount << " overall SCC" <<  endl;
 	//getchar();
 	//for (int i = 0 ; i < componentsCount ; i++) {
-		//components[i]->includedNodesID->Print();
+	//components[i]->includedNodesID->Print();
 	//}
 	//Component *temp;
 	//while(!components.isEmpty()) {
-		//temp = components.PopHead();
-		//cout << "Printing component #ID : " << temp->componentID << endl;
-		//temp->includedNodesID.Print();
+	//temp = components.PopHead();
+	//cout << "Printing component #ID : " << temp->componentID << endl;
+	//temp->includedNodesID.Print();
 	//}
 }
 
-
-
-int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,int repeat,int threadNum){
+int SCC::EstimateShortestPathSCC(Buffer* buffer, Index* index, int src,
+		int dest, int repeat, int threadNum) {
 	IndexNode *indArray = index->GetIndexNode();
-	int src_pos;//= indArray[src].out;
-	Node* src_node;//=&(outcoming[src_pos]);
-	int dest_pos;// = indArray[src].in;
-	Node* dest_node;// = &(incoming[dest_pos]);
-	Queue<int>* src_queue=new Queue<int>;
-	Queue<int>* dest_queue=new Queue<int>;
+	int src_pos;	//= indArray[src].out;
+	Node* src_node;	//=&(outcoming[src_pos]);
+	int dest_pos;	// = indArray[src].in;
+	Node* dest_node;	// = &(incoming[dest_pos]);
+	Queue<int>* src_queue = new Queue<int>;
+	Queue<int>* dest_queue = new Queue<int>;
 	src_queue->Enqueue(src);
 	dest_queue->Enqueue(dest);
 	indArray[src].src_visited[threadNum] = repeat;
@@ -199,7 +201,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 	int compsrc = indArray[src].componentID;
 	int compdest = indArray[dest].componentID;
 	int level = 1;
-	int k,n,i,_size,count;
+	int k, n, i, _size, count;
 	int counter_s, counter_d;
 	if (indArray[src].out == -1 || indArray[dest].in == -1){
 		delete src_queue;
@@ -209,10 +211,10 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
 		while (1) {
 			counter_s = 0;
-			_size=src_queue->GetSize();
-			count=0;
+			_size = src_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=src_queue->Dequeue();
+				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
 				if (indArray[i].componentID != compsrc){
@@ -239,10 +241,10 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			if (counter_s == 0)
 				break;
 			counter_d = 0;
-			_size=dest_queue->GetSize();
-			count=0;
+			_size = dest_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=dest_queue->Dequeue();
+				i = dest_queue->Dequeue();
 				count++;
 				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
 				if (indArray[i].componentID != compdest){
@@ -270,15 +272,14 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 				break;
 			level++;
 		}
-	}
-	else {
+	} else {
 		//cout << "pame sto dest" << endl;
 		while (1) {
 			counter_d = 0;
-			_size=dest_queue->GetSize();
-			count=0;
+			_size = dest_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=dest_queue->Dequeue();
+				i = dest_queue->Dequeue();
 				count++;
 				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
 				if (indArray[i].componentID != compdest){
@@ -305,10 +306,10 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			if (counter_d == 0)
 				break;
 			counter_s = 0;
-			_size=src_queue->GetSize();
-			count=0;
+			_size = src_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=src_queue->Dequeue();
+				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
 				if (indArray[i].componentID != compsrc){
@@ -345,8 +346,8 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 
 void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 	PushChecker = new int[componentsCount];
-	for (int j=0;j<componentsCount;j++)
-		PushChecker[j]=-1;
+	for (int j = 0; j < componentsCount; j++)
+		PushChecker[j] = -1;
 	int node_pos, current_component, temp;
 	IndexNode* k = index->GetIndexNode();
 	Node* G = buffer->GetListNode('o');
@@ -356,8 +357,8 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 		current_component = this->components[i]->componentID;
 		//components[i]->includedNodesID.Print();
 		components[i]->includedNodesID->ResetCur();
-		if  (!components[i]->includedNodesID->IsOut()) {
-			do{
+		if (!components[i]->includedNodesID->IsOut()) {
+			do {
 				//cout << i << endl;
 				temp = components[i]->includedNodesID->GetCurData();
 				node_pos = k[temp].out;
@@ -367,7 +368,7 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 								current_component, this, index);
 					} while (node_pos);
 				}
-			} while(components[i]->includedNodesID->IncCur());
+			} while (components[i]->includedNodesID->IncCur());
 		}
 		components[i]->includedNodesID->ResetCur();
 	}
@@ -377,11 +378,12 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 void SCC::BuildGrailIndex() {
 	this->ResetEdges();
 	int r = 1;
-	int i=componentsCount-1;
-	while (i >= 0 ) {
-		if (components[i]->label.visited == 0){
+	int i = componentsCount - 1;
+	while (i >= 0) {
+		if (components[i]->label.visited == 0) {
 			//cout << i << " to i" << endl;
-			this->GrailProgress(i,&r);}
+			this->GrailProgress(i, &r);
+		}
 		i--;
 	}
 }
@@ -393,12 +395,13 @@ void SCC::GrailProgress(int i, int* r) {
 	Stack<int> StackProgress;
 	StackProgress.Push(i);
 	while (!StackProgress.isEmpty()) {
-		i=StackProgress.GetHeadData();
+		i = StackProgress.GetHeadData();
 		while ((new_progress = this->GetNextEdge(i)) != -1) {
 			//somefile << new_progress << " new progresss";
 			components[i]->label.flag = 1;
 			if (components[new_progress]->label.visited == 1) {
-				min_rank = min(min_rank, components[new_progress]->label.min_rank);
+				min_rank = min(min_rank,
+						components[new_progress]->label.min_rank);
 				continue;
 			}
 			i = new_progress;
@@ -408,8 +411,7 @@ void SCC::GrailProgress(int i, int* r) {
 		if (!components[i]->label.flag) {
 			components[i]->label.min_rank = myrank;
 			min_rank = min(min_rank, myrank);
-		}
-		else
+		} else
 			components[i]->label.min_rank = min_rank;
 		//cout << "tha peiraksoume tous visited kai sygkekrimena ton " << i << endl;
 		components[i]->label.visited = 1;
@@ -419,34 +421,33 @@ void SCC::GrailProgress(int i, int* r) {
 	*r = myrank;
 }
 
-
-void SCC::ResetEdges(){
-	for (int i=0;i<componentsCount;i++)
+void SCC::ResetEdges() {
+	for (int i = 0; i < componentsCount; i++)
 		this->edges[i]->ResetCur();
 }
 
 /*int SCC::GetUnvisitedEdge(int i){
-	int temp;
-	if (!this->edges[i]->IsOut()) {
-		do{
-			temp = this->edges[i]->GetCurData();
-			if (components[temp]->label.visited == 0){
-				this->edges[i]->IncCur();
-				return temp;
-			}
-		} while(this->edges[i]->IncCur());
-	}
-	int k=this->edges[i]->GetHeadData();
-	if (k==NULL)
-		return -1;
-	else
-		return -2;
-}*/
+ int temp;
+ if (!this->edges[i]->IsOut()) {
+ do{
+ temp = this->edges[i]->GetCurData();
+ if (components[temp]->label.visited == 0){
+ this->edges[i]->IncCur();
+ return temp;
+ }
+ } while(this->edges[i]->IncCur());
+ }
+ int k=this->edges[i]->GetHeadData();
+ if (k==NULL)
+ return -1;
+ else
+ return -2;
+ }*/
 
-int SCC::GetNextEdge(int i){
+int SCC::GetNextEdge(int i) {
 	int temp;
 	if (!this->edges[i]->IsOut()) {
-		temp=this->edges[i]->GetCurData();
+		temp = this->edges[i]->GetCurData();
 		this->edges[i]->IncreaseCur();
 		return temp;
 	}

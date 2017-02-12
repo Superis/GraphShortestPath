@@ -15,7 +15,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
 #include "buffer.h"
 #include "components.h"
 #include "template_queue.h"
@@ -25,7 +24,8 @@ using namespace std;
 /**************		Node class	 ***************/
 
 // Constructor & destructor are never used.
-Node::Node() : endPos(0), nextNode(0) {
+Node::Node() :
+		endPos(0), nextNode(0) {
 	maxCapacity = N;
 }
 
@@ -44,7 +44,7 @@ int Node::AddNeighbor(int i) {
 	endPos++;
 	return 0;
 }
-int Node::AddNeighbor(int i,int version) {
+int Node::AddNeighbor(int i, int version) {
 	if (endPos >= maxCapacity) { // reached max cap
 		return -1;
 	}
@@ -81,16 +81,19 @@ int Node::SearchNeighbors(int dest) {
 	return 1;
 }
 
-int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
-	IndexNode* indArray=index->GetIndexNode();
+int Node::SearchDiffComponent(int target, SCC* strongc, Index* index) {
+	IndexNode* indArray = index->GetIndexNode();
 	for (int i = 0; i < endPos; i++) {
-		if (indArray[neighbor[i]].componentID != target){
-			if (strongc->GetPushChecker()[indArray[neighbor[i]].componentID] != target){
-					strongc->GetStrongEdges()[target]->Push(indArray[neighbor[i]].componentID);
-					strongc->GetPushChecker()[indArray[neighbor[i]].componentID] = target;
+		if (indArray[neighbor[i]].componentID != target) {
+			if (strongc->GetPushChecker()[indArray[neighbor[i]].componentID]
+					!= target) {
+				strongc->GetStrongEdges()[target]->Push(
+						indArray[neighbor[i]].componentID);
+				strongc->GetPushChecker()[indArray[neighbor[i]].componentID] =
+						target;
 			}
 		}
-			//strongc->GetStrongEdges()[target]->PushAfterCheck(indArray[neighbor[i]].componentID,indArray[neighbor[i]].componentID); //
+		//strongc->GetStrongEdges()[target]->PushAfterCheck(indArray[neighbor[i]].componentID,indArray[neighbor[i]].componentID); //
 	}
 	if ((this->IsFull()) && (nextNode != 0))
 		return nextNode;
@@ -99,7 +102,7 @@ int Node::SearchDiffComponent(int target,SCC* strongc,Index* index){
 
 }
 
-void Node::PrintNeightbors(int src ,char c) {
+void Node::PrintNeightbors(int src, char c) {
 	ofstream bufOutput("graphOUTCOMING.txt", ios::app);
 	ofstream bufincoming("graphINCOMING_REVERSED.txt", ios::app);
 	if (c == 'o') {
@@ -108,21 +111,22 @@ void Node::PrintNeightbors(int src ,char c) {
 				bufOutput << setw(8) << std::left << src << neighbor[i] << endl;
 			}
 		}
-	}
-	else if (c == 'i'){
+	} else if (c == 'i') {
 		for (int i = 0; i < endPos; i++) {
 			if (neighbor[i] >= 0) {
-				bufincoming << setw(8) << std::left << neighbor[i] << src << endl;
+				bufincoming << setw(8) << std::left << neighbor[i] << src
+						<< endl;
 			}
 		}
 	}
 }
 
+
 int Node::ShortestPath(Index* index,char direction ,char firstdir, int level,int comp,int repeat,Queue<int>* myqueue,int threadNum) {
 	int i = -1;
-	IndexNode* indArray=index->GetIndexNode();
-	  // an exoume dwsei pliroforia component tote comp>=0 diladi gia strongly-connected-alliws dinoume -1
-	if (direction == 's'){
+	IndexNode* indArray = index->GetIndexNode();
+	// an exoume dwsei pliroforia component tote comp>=0 diladi gia strongly-connected-alliws dinoume -1
+	if (direction == 's') {
 		for (i = 0; i < endPos; i++) {
 			if (comp>=0 && indArray[neighbor[i]].componentID!=comp)//an den paizoume sto idio component
 			 	continue;
@@ -139,10 +143,9 @@ int Node::ShortestPath(Index* index,char direction ,char firstdir, int level,int
 					//indArray[neighbor[i]].src_level[threadNum] = level;
 				}
 		}
-	}
-	else if (direction == 'd'){
+	} else if (direction == 'd') {
 		for (i = 0; i < endPos; i++) {
-			if (comp>=0 && indArray[neighbor[i]].componentID != comp)//an den paizoume sto idio component
+			if (comp >= 0 && indArray[neighbor[i]].componentID != comp) //an den paizoume sto idio component
 				continue;
 			if (indArray[neighbor[i]].src_visited[threadNum] == repeat){
 				if (firstdir=='d')
@@ -159,10 +162,12 @@ int Node::ShortestPath(Index* index,char direction ,char firstdir, int level,int
 		}
 	}
 	if (i == -1) {
-		cout << "ERROR @ Node::ShortestPath.Variable i was used uninitialized!Exiting." << endl;
+		cout
+				<< "ERROR @ Node::ShortestPath.Variable i was used uninitialized!Exiting."
+				<< endl;
 		exit(1);
 	}
-	if ( (i == maxCapacity) && (nextNode != 0) )
+	if ((i == maxCapacity) && (nextNode != 0))
 		return -nextNode;
 	else
 		return 0;
@@ -185,34 +190,35 @@ IndexNode* Index::GetIndexNode() {
 	return this->indexArray;
 }
 
-int Index::GetNeighbor(int target, Buffer* buffer ,int pos) {
-	int cap,endPos,nextNode;
+int Index::GetNeighbor(int target, Buffer* buffer, int pos) {
+	int cap, endPos, nextNode;
 	Node *out = buffer->GetListNode('o');
 	endPos = out[indexArray[target].out].GetEndPos();
 	cap = out[indexArray[target].out].GetCapacity();
 	if (cap == 0) {
-		cout << "ZERO with target : " << target << " @ : " << indexArray[target].out << endl;
+		cout << "ZERO with target : " << target << " @ : "
+				<< indexArray[target].out << endl;
 		return -1;
 	}
 	nextNode = out[indexArray[target].out].GetNextNode();
 	// Checking where the requested neighbor is located.
-	if (pos >= endPos ) {
+	if (pos >= endPos) {
 		if (nextNode == 0) {
 			cout << "Wrong neighbor pos :: out of reach!" << endl;
 			return -1;
 		}
 		//iterate through Nodes that contain the rest neighbors
-		int count = 0,targetNode;
-		targetNode = pos/cap; // = node that the neighbor is located
+		int count = 0, targetNode;
+		targetNode = pos / cap; // = node that the neighbor is located
 		nextNode = indexArray[target].out;
 		do {
 			count++;
 			nextNode = buffer->GetListNode('o')[nextNode].GetNextNode();
 		} while (count != targetNode);
-		int newpos = pos%cap;
+		int newpos = pos % cap;
 		return out[nextNode].GetNeighbor(newpos);
-	}
-	else // it's located at the first node.
+	} else
+		// it's located at the first node.
 		return out[indexArray[target].out].GetNeighbor(pos);
 }
 
@@ -240,8 +246,7 @@ void Index::CheckCap(int src, int dest) {
 			cout << "SRC REALLOC" << endl;
 			Reallocate(src);
 		}
-	}
-	else {
+	} else {
 		if (dest > this->indSize) {
 			cout << "DEST REALLOC" << endl;
 			Reallocate(dest);
@@ -249,13 +254,13 @@ void Index::CheckCap(int src, int dest) {
 	}
 }
 
- void Index::Reallocate(int newCapacity) {
-	 IndexNode *tmp = new IndexNode[indSize + newCapacity + 1];
-	 memcpy(tmp,indexArray,indSize * sizeof(IndexNode));
-	 delete[] indexArray;
-	 indexArray = tmp;
-	 indSize = indSize + newCapacity + 1;
- }
+void Index::Reallocate(int newCapacity) {
+	IndexNode *tmp = new IndexNode[indSize + newCapacity + 1];
+	memcpy(tmp, indexArray, indSize * sizeof(IndexNode));
+	delete[] indexArray;
+	indexArray = tmp;
+	indSize = indSize + newCapacity + 1;
+}
 
 int Index::NeighboursNum(int target, char c, Buffer *buf) {
 	Node* tmpnode = buf->GetListNode(c);
@@ -366,7 +371,6 @@ void Buffer::InsertBuffer(int src, int dest, Index *index) {
 	} else
 		indexA[src].outNeighbors += 1;
 
-
 	if (incoming[indexA[dest].inlast].AddNeighbor(src) == -1) {
 		incoming[indexA[dest].inlast].SetNextNode(incEnd);
 		indexA[dest].inlast = incEnd;
@@ -378,7 +382,7 @@ void Buffer::InsertBuffer(int src, int dest, Index *index) {
 	} else
 		indexA[dest].inNeighbors += 1;
 }
-void Buffer::InsertBuffer(int src, int dest, Index *index,int version) {
+void Buffer::InsertBuffer(int src, int dest, Index *index, int version) {
 	IndexNode *indexA = index->GetIndexNode();
 	if (outEnd >= outSize) {
 		this->Reallocate('o');
@@ -386,10 +390,10 @@ void Buffer::InsertBuffer(int src, int dest, Index *index,int version) {
 	if (incEnd >= incSize) {
 		this->Reallocate('i');
 	}
-	if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1) {
+	if (outcoming[indexA[src].outlast].AddNeighbor(dest, version) == -1) {
 		outcoming[indexA[src].outlast].SetNextNode(outEnd);
 		indexA[src].outlast = outEnd;
-		if (outcoming[indexA[src].outlast].AddNeighbor(dest,version) == -1)
+		if (outcoming[indexA[src].outlast].AddNeighbor(dest, version) == -1)
 			cout << "Wrong insert @ outcoming" << endl;
 		else
 			indexA[src].outNeighbors += 1;
@@ -397,11 +401,10 @@ void Buffer::InsertBuffer(int src, int dest, Index *index,int version) {
 	} else
 		indexA[src].outNeighbors += 1;
 
-
-	if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1) {
+	if (incoming[indexA[dest].inlast].AddNeighbor(src, version) == -1) {
 		incoming[indexA[dest].inlast].SetNextNode(incEnd);
 		indexA[dest].inlast = incEnd;
-		if (incoming[indexA[dest].inlast].AddNeighbor(src,version) == -1)
+		if (incoming[indexA[dest].inlast].AddNeighbor(src, version) == -1)
 			cout << "Wrong insert @ incoming" << endl;
 		else
 			indexA[dest].inNeighbors += 1;
@@ -434,32 +437,29 @@ void Buffer::AddNeighbor(int src, int dest, Index *index) {
 	} while (pos != 0);
 	this->InsertBuffer(src, dest, index);
 }
-void Buffer::AddNeighbor(int src, int dest, Index *index,int version) {
+void Buffer::AddNeighbor(int src, int dest, Index *index, int version) {
 	IndexNode *indArray = index->GetIndexNode();
 	int pos = indArray[src].out;
 	do {
 		if (outcoming[pos].SearchNeighbors(dest) == 0) {
-		//	cout << "A :: Source node : " << src << " has already " << dest
+			//	cout << "A :: Source node : " << src << " has already " << dest
 			//		<< " as neighbor" << endl;
 			return;
 		}
 		pos = outcoming[pos].GetNextNode();
 	} while (pos != 0);
-	this->InsertBuffer(src, dest, index,version);
+	this->InsertBuffer(src, dest, index, version);
 }
 
-void Buffer::AddEdge(int src, int dest, Index *index) {
-
-}
-
-int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int threadNum) {
+int Buffer::Query(int src, int dest, Index *index, int comp, int repeat,
+		int threadNum) {
 	IndexNode *indArray = index->GetIndexNode();
-	int src_pos;//= indArray[src].out;
-	Node* src_node;//=&(outcoming[src_pos]);
-	int dest_pos;// = indArray[src].in;
-	Node* dest_node;// = &(incoming[dest_pos]);
-	Queue<int>* src_queue=new Queue<int>;
-	Queue<int>* dest_queue=new Queue<int>;
+	int src_pos;			//= indArray[src].out;
+	Node* src_node;			//=&(outcoming[src_pos]);
+	int dest_pos;			// = indArray[src].in;
+	Node* dest_node;			// = &(incoming[dest_pos]);
+	Queue<int>* src_queue = new Queue<int>;
+	Queue<int>* dest_queue = new Queue<int>;
 	src_queue->Enqueue(src);
 	dest_queue->Enqueue(dest);
 	indArray[src].src_visited[threadNum] = repeat;
@@ -467,7 +467,7 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 	indArray[dest].dest_visited[threadNum] = repeat;
 	//indArray[dest].dest_level[threadNum] = 0;
 	int level = 1;
-	int k,i,_size,count;
+	int k, i, _size, count;
 	int counter_s, counter_d;
 	if (indArray[src].out == -1 || indArray[dest].in == -1){
 		delete src_queue;
@@ -475,13 +475,12 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 		return -1;
 	}
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
-		//cout << "pame source" <<endl;
 		while (1) {
 			counter_s = 0;
-			_size=src_queue->GetSize();
-			count=0;
+			_size = src_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=src_queue->Dequeue();
+				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
 				counter_s++;
@@ -503,10 +502,10 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 			if (counter_s == 0)
 				break;
 			counter_d = 0;
-			_size=dest_queue->GetSize();
-			count=0;
+			_size = dest_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=dest_queue->Dequeue();
+				i = dest_queue->Dequeue();
 				count++;
 				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
 				counter_d++;
@@ -529,15 +528,14 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 				break;
 			level++;
 		}
-	}
-	else {
+	} else {
 		//cout << "pame sto dest" << endl;
 		while (1) {
-			counter_d=0;
-			_size=dest_queue->GetSize();
-			count=0;
+			counter_d = 0;
+			_size = dest_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=dest_queue->Dequeue();
+				i = dest_queue->Dequeue();
 				count++;
 				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
 				counter_d++;
@@ -559,10 +557,10 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 			if (counter_d == 0)
 				break;
 			counter_s = 0;
-			_size=src_queue->GetSize();
-			count=0;
+			_size = src_queue->GetSize();
+			count = 0;
 			while (count < _size) {
-				i=src_queue->Dequeue();
+				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
 				counter_s++;
@@ -592,6 +590,7 @@ int Buffer::Query(int src, int dest, Index *index,int comp,int repeat,int thread
 }
 
 
+
 int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c,char f, int level,int comp,int repeat,Queue<int>* myqueue,int threadNum) {
 	int k;
 	if (c == 's') {
@@ -604,8 +603,7 @@ int Buffer::SearchNodeNeighbours(Node* node,Index* index, char c,char f, int lev
 			else
 				return 0;
 		} while (k < 0); //den exei vrei to path akoma
-	}
-	else if (c == 'd') {
+	} else if (c == 'd') {
 		do {
 			k = node->ShortestPath(index, c,f, level,comp,repeat,myqueue,threadNum);
 			if (k > 0)
@@ -643,7 +641,7 @@ void Buffer::PrintBuffer(Index *index) {
 		int pos = a[i].out;
 		if (pos != -1) {
 			do {
-				outcoming[pos].PrintNeightbors(i,'o');
+				outcoming[pos].PrintNeightbors(i, 'o');
 				pos = outcoming[pos].GetNextNode();
 			} while (pos != 0);
 		}
@@ -651,7 +649,7 @@ void Buffer::PrintBuffer(Index *index) {
 		pos = a[i].in;
 		if (pos != -1) {
 			do {
-				incoming[pos].PrintNeightbors(i,'i');
+				incoming[pos].PrintNeightbors(i, 'i');
 				pos = incoming[pos].GetNextNode();
 			} while (pos != 0);
 		}

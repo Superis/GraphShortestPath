@@ -99,7 +99,6 @@ public:
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*,int version);
 	void AddNeighbor(int, int, Index*);
-	void AddEdge(int, int, Index*);
 	int Query(int , int, Index*,int,int,int);
 	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,Queue<int>*,int);
 	/*
