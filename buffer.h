@@ -15,8 +15,8 @@ struct IndexNode {
 	int out;
 	int outlast;
 	int outNeighbors;
-	int* src_level; // numbers the iteration in which this Node was discovered from source Node
-	int* dest_level;
+	//int* src_level; // numbers the iteration in which this Node was discovered from source Node
+	//int* dest_level;
 	int* src_visited;
 	int* dest_visited;
 	// Part 2 Additions :
@@ -24,7 +24,7 @@ struct IndexNode {
 
 	IndexNode() :
 			in(-1), inlast(-1), inNeighbors(0), out(-1), outlast(-1),
-			outNeighbors(0), src_level(NULL), dest_level(NULL),src_visited(NULL),dest_visited(NULL), componentID(-1) {}
+			outNeighbors(0),src_visited(NULL),dest_visited(NULL), componentID(-1) {}
 };
 
 class Buffer;
@@ -42,11 +42,13 @@ public:
 	IndexNode* GetIndexNode();
 	int GetSize() { return indSize; };
 	int GetNeighbor(int ,Buffer* ,int);
-	void InitializeVisited(int);
 	int NeighboursNum(int, char, Buffer*);
 	void Insert(int, int, Buffer *);
 	void Reallocate(int); // increase capacity of Index data type till == "int" | Realloc
 	void CheckCap(int, int);
+
+	void InitializeVisited(int);
+	void DestroyVisited();
 
 	void Print();
 };
@@ -73,7 +75,7 @@ public:
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
-	int ShortestPath(Index*,char , int,int,int,Queue<int>*,int);
+	int ShortestPath(Index*,char,char,int,int,int,Queue<int>*,int);
 	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
 };
@@ -99,7 +101,7 @@ public:
 	void AddNeighbor(int, int, Index*);
 	void AddEdge(int, int, Index*);
 	int Query(int , int, Index*,int,int,int);
-	int SearchNodeNeighbours(Node*,Index*, char, int,int,int,Queue<int>*,int);
+	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,Queue<int>*,int);
 	/*
 	* Increase capacity of Buffer data type.
 	* if char == 'i' then realloc incoming array

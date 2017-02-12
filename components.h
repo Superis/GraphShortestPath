@@ -34,16 +34,15 @@ struct Label{
 
 struct Component {
     Label label;  //Gia ton Grail
-    int* connectedComponents;
+    //int* connectedComponents;
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
 	List<int>* includedNodesID; //ids of included nodes
 	Component() : componentID(-1), nodesSum(0) {
-		connectedComponents = NULL;
+		//connectedComponents = NULL;
 		includedNodesID=new List<int>;
 	}
 };
-
 
 struct ComponentCursor {
 	int cursor;

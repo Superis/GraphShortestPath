@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 			/*if (source != srcompare) {
 				uniqueNodes++;
 				srcompare = source;
-			}ψδ ./
+			}
 			linesCounter++;*/
 		}
 		//optimalCellValue = ceil(linesCounter / (float)uniqueNodes);
@@ -115,28 +115,26 @@ int main(int argc, char **argv) {
 	myFile.close();
 
 	cout << "Index & Graph were created." << endl;
-	int currentSystemCores = 4;
-	JobScheduler *js = new JobScheduler(currentSystemCores);
-	index->InitializeVisited(currentSystemCores);
+
+	// Creating a threadpool equal to the system cores
+	JobScheduler *js = new JobScheduler(THREADPOOL);
+	index->InitializeVisited(THREADPOOL);
 	auto current_time = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Function was running for " <<
 	std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << "\"" << std::endl;
+
 	//buffer->PrintBuffer(index); // insert_unitest
 
 	/**************		Read from Workload file	 **************/
-	//ofstream result("results.txt"); //output file for Queries
 
-	// Creating a threadpool equal to the system cores
-
-	cout << "Job Scheduler created" << endl;
-	int source, dest,commandCounter = - 1;
-	//int version = new int(); // = 0
+	int source, dest,
+	   commandCounter = -1,version = 0;
 	char command;
 	if (specifier == "STATIC") {
 		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
 		//cout << "Maximum value of graph : " << maxVal << endl;
-		int estimatedComponentsAmount = maxVal / 5 ;
+		int estimatedComponentsAmount = maxVal / 3 ;
 		if (estimatedComponentsAmount == 0)
 			estimatedComponentsAmount = 50;
 		SCC* strongCC = new SCC(estimatedComponentsAmount);
@@ -165,36 +163,41 @@ int main(int argc, char **argv) {
 					js->ExecuteJobs(); // Execute whole queue of jobs and wait till finished.
 					continue;
 				} else if (command == 'A') {
-					cout << "Found additions on static graph.Exiting" << endl;
-					break;
+					//cout << "Found additions on static graph.Expect wrong results." << endl;
+					continue;
 				}
 			}
-
+		delete strongCC;
 		}
 	} else if (specifier == "DYNAMIC") {
 		if (workload.is_open()) {
-			char lastCommand;
+			char lastCommand = 'N';
 			while (getline(workload, line)) {
-				Job *job = new Job();
 				istringstream iss(line);
 				iss >> command;
 				if (command == 'Q') {
+					/*Job *job = new Job();
+					commandCounter++;
 					iss >> source >> dest;
-					//JobInit();
-					buffer->Query(source,dest,index,'p',1,0);
+					JobInit(job,StaticQuery,source,dest,commandCounter,
+							index,buffer,(void *)CC,js);
+					js->SubmitJob(job);*/
+					//buffer->Query(source,dest,index,'p',1,0);
 				}
 				else if (command == 'A') {
 					if (lastCommand == 'Q')
-						//version++;
+						version++;
 					iss >> source >> dest;
-					//JobInit();
-					index->CheckCap(source,dest); // Checking if reallocation is needed for Index
+					/* Checking if reallocation is needed for Index.
+					 * No need for given datasets.
+					index->CheckCap(source,dest);
 					index->Insert(source, dest, buffer);
-					buffer->AddNeighbor(source, dest, index);
+					*/
+					buffer->AddNeighbor(source, dest, index,version);
 				}
 				else if (command == 'F') {
-					js->ExecuteJobs();
-					//js->PrintResults(result);
+					commandCounter = -1;
+					//js->ExecuteJobs();
 				}
 				lastCommand = command;
 			}
@@ -204,12 +207,11 @@ int main(int argc, char **argv) {
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;
-	workload.close();
-	//result.close();
 
-	js->DestroyAll();
+	workload.close();
+	js->DestroyAll(); // Destroy all waiting threads.
+
 	delete js;
-	//delete version;
 	delete buffer;
 	delete index;
 

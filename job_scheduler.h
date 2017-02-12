@@ -8,7 +8,6 @@
 #ifndef JOB_SCHEDULER_H_
 #define JOB_SCHEDULER_H_
 
-//#include <thread>
 #include <pthread.h>
 #include <unistd.h>
 #include <fstream>
@@ -17,6 +16,7 @@
 #include "components.h"
 #include "template_queue.h"
 
+#define THREADPOOL sysconf(_SC_NPROCESSORS_ONLN)
 #define OUTPUT_FILE "results.txt"
 
 // perror_function for threads.
@@ -51,30 +51,26 @@ void JobInit(Job *job,
 
 void *StaticQuery(void *job);
 void *DynamicQuery(void *job);
-void *EdgeAddition(void *job);
 
 
 class JobScheduler {
 	int executionThreads; // poolsize
 	Queue<Job*>* queue; // job/task queue
 	pthread_t *tids; // array of threads_id
-	int lastFinishedThreadID;
-	int queue_size;
-	bool Finish;
+	int queue_size; // number of current job queue
+
+	int *printArray; // array of jobs-result
+	int *runningThreads; // current number of non-waiting threads
+	bool finished; // signalling the termination of threads
+
 	std::ofstream result;
-	int *printArray;
-	int *runningThreads;
-	bool finished;
 public:
 	JobScheduler(int threadpool);
 	~JobScheduler();
-	//void setfinish(){ Finish=true;};
 	//pthread_mutex_t GetMtx() { return this->mtx; };
 	//pthread_cond_t GetCond() { return this->cond; };
-	void CreateThreads();
-	void SetLastThread(int id) { this->lastFinishedThreadID = id; };
 	Queue<Job*>* GetQueue() { return this->queue; };
-	int* GetArray() { return this->printArray; };
+	int *GetArray() { return this->printArray; };
 	int *GetRunningThreads() {return runningThreads;};
 	bool IsFinished() {return finished; };
 	static void* ExecuteThread(void *job);
@@ -83,8 +79,6 @@ public:
 	void WaitAll(); // waits all submitted tasks to finish
 	void DestroyAll();
 	void PrintResults();
-	//int GetPrintNum() { return print_ready; };
-	//void IncPrintNum() { print_ready++; };
 };
 
 #endif /* JOB_SCHEDULER_H_ */

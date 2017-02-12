@@ -30,9 +30,12 @@ SCC::SCC(int _size) : componentsCount(0) ,size(_size), level(0) {
 
 SCC::~SCC() {
 	for (int i=0;i<componentsCount;i++){
+		//delete components[i]->connectedComponents;
+		delete components[i]->includedNodesID;
 		delete components[i];
 		delete edges[i];
 	}
+	//delete[] PushChecker;
 	delete[] components;
 	delete[] edges;
 }
@@ -164,7 +167,7 @@ bool SCC::DestroySCC() {
 }
 
 void SCC::Print() {
-	cout << "Found " << componentsCount << " overall SCC" <<  endl;
+	//cout << "Found " << componentsCount << " overall SCC" <<  endl;
 	//getchar();
 	//for (int i = 0 ; i < componentsCount ; i++) {
 		//components[i]->includedNodesID->Print();
@@ -181,9 +184,7 @@ void SCC::Print() {
 
 int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,int repeat,int threadNum){
 	IndexNode *indArray = index->GetIndexNode();
-	int l=index->GetSize();
 	int src_pos;//= indArray[src].out;
-				//cout <<"pos"<< src_pos << endl;
 	Node* src_node;//=&(outcoming[src_pos]);
 	int dest_pos;// = indArray[src].in;
 	Node* dest_node;// = &(incoming[dest_pos]);
@@ -193,15 +194,18 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 	dest_queue->Enqueue(dest);
 	indArray[src].src_visited[threadNum] = repeat;
 	indArray[dest].dest_visited[threadNum] = repeat;
-	indArray[dest].dest_level[threadNum] = 0;
-	indArray[src].src_level[threadNum] = 0;
+	//indArray[dest].dest_level[threadNum] = 0;
+	//indArray[src].src_level[threadNum] = 0;
 	int compsrc = indArray[src].componentID;
 	int compdest = indArray[dest].componentID;
 	int level = 1;
 	int k,n,i,_size,count;
 	int counter_s, counter_d;
-	if (indArray[src].out == -1 || indArray[dest].in == -1)
+	if (indArray[src].out == -1 || indArray[dest].in == -1){
+		delete src_queue;
+		delete dest_queue;
 		return -1;
+	}
 	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
 		while (1) {
 			counter_s = 0;
@@ -210,25 +214,27 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			while (count < _size) {
 				i=src_queue->Dequeue();
 				count++;
-				if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
-					if (indArray[i].componentID != compsrc){
-						n=this->IsReachableGrail(index,i,dest);
-						if (n==0)
-							continue;
-					}
-					counter_s++;
-					src_pos = indArray[i].out;
-					if (src_pos == -1){
-						counter_s--;
-						continue;
-					}
-					src_node = &(buffer->GetListNode('o')[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat,src_queue,threadNum);
-					if (k > 0)
-						return k;
-					else
+				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
+				if (indArray[i].componentID != compsrc){
+					n=this->IsReachableGrail(index,i,dest);
+					if (n==0)
 						continue;
 				}
+				counter_s++;
+				src_pos = indArray[i].out;
+				if (src_pos == -1){
+					counter_s--;
+					continue;
+				}
+				src_node = &(buffer->GetListNode('o')[src_pos]);
+				k = buffer->SearchNodeNeighbours(src_node,index, 's','s', level,-1,repeat,src_queue,threadNum);
+				if (k > 0){
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				}
+				else
+					continue;
 			}
 			if (counter_s == 0)
 				break;
@@ -238,25 +244,27 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			while (count < _size) {
 				i=dest_queue->Dequeue();
 				count++;
-				if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
-					if (indArray[i].componentID != compdest){
-						n=this->IsReachableGrail(index,src,i);
-						if (n==0)
-							continue;
-					}
-					counter_d++;
-					dest_pos = indArray[i].in;
-					if (dest_pos == -1){
-						counter_d--;
-						continue;
-					}
-					dest_node = &(buffer->GetListNode('i')[dest_pos]);
-					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat,dest_queue,threadNum);
-					if (k > 0)
-						return k;
-					else
+				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
+				if (indArray[i].componentID != compdest){
+					n=this->IsReachableGrail(index,src,i);
+					if (n==0)
 						continue;
 				}
+				counter_d++;
+				dest_pos = indArray[i].in;
+				if (dest_pos == -1){
+					counter_d--;
+					continue;
+				}
+				dest_node = &(buffer->GetListNode('i')[dest_pos]);
+				k = buffer->SearchNodeNeighbours(dest_node,index, 'd','s', level,-1,repeat,dest_queue,threadNum);
+				if (k > 0){
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				}
+				else
+					continue;
 			}
 			if (counter_d == 0)
 				break;
@@ -272,25 +280,27 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			while (count < _size) {
 				i=dest_queue->Dequeue();
 				count++;
-				if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
-					if (indArray[i].componentID != compdest){
-						n=this->IsReachableGrail(index,src,i);
-						if (n==0)
-							continue;
-					}
-					counter_d++;
-					dest_pos = indArray[i].in;
-					if (dest_pos == -1){
-						counter_d--;
-						continue;
-					}
-					dest_node = &(buffer->GetListNode('i')[dest_pos]);
-					k = buffer->SearchNodeNeighbours(dest_node,index, 'd', level,-1,repeat,dest_queue,threadNum);
-					if (k > 0)
-						return k;
-					else
+				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
+				if (indArray[i].componentID != compdest){
+					n=this->IsReachableGrail(index,src,i);
+					if (n==0)
 						continue;
 				}
+				counter_d++;
+				dest_pos = indArray[i].in;
+				if (dest_pos == -1){
+					counter_d--;
+					continue;
+				}
+				dest_node = &(buffer->GetListNode('i')[dest_pos]);
+				k = buffer->SearchNodeNeighbours(dest_node,index, 'd','d', level,-1,repeat,dest_queue,threadNum);
+				if (k > 0){
+					delete src_queue;
+	        		delete dest_queue;
+					return k;
+				}
+				else
+					continue;
 			}
 			if (counter_d == 0)
 				break;
@@ -300,34 +310,37 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer,Index* index,int src ,int dest,i
 			while (count < _size) {
 				i=src_queue->Dequeue();
 				count++;
-				if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
-					if (indArray[i].componentID != compsrc){
-						n=this->IsReachableGrail(index,i,dest);
-						if (n==0)
-							continue;
-					}
-					counter_s++;
-					src_pos = indArray[i].out;
-					if (src_pos == -1){
-						counter_s--;
-						continue;
-					}
-					src_node = &(buffer->GetListNode('o')[src_pos]);
-					k = buffer->SearchNodeNeighbours(src_node,index, 's', level,-1,repeat,src_queue,threadNum);
-					if (k > 0)
-						return k;
-					else
+				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
+				if (indArray[i].componentID != compsrc){
+					n=this->IsReachableGrail(index,i,dest);
+					if (n==0)
 						continue;
 				}
+				counter_s++;
+				src_pos = indArray[i].out;
+				if (src_pos == -1){
+					counter_s--;
+					continue;
+				}
+				src_node = &(buffer->GetListNode('o')[src_pos]);
+				k = buffer->SearchNodeNeighbours(src_node,index, 's','d', level,-1,repeat,src_queue,threadNum);
+				if (k > 0){
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				}
+				else
+					continue;
 			}
 			if (counter_s == 0)
 				break;
 			level++;
 		}
 	}
+	//cout << src_queue->GetSize() << " & " << dest_queue->GetSize() << endl;
+	delete src_queue;
+	delete dest_queue;
 	return -1;
-
-
 }
 
 void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
