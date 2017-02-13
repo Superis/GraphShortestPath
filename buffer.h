@@ -6,7 +6,6 @@
 #include "template_queue.h"
 
 #define N 65
-#define GRAILTIMES 5
 
 
 struct IndexNode {

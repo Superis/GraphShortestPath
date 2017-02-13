@@ -479,7 +479,7 @@ int Buffer::Query(int src, int dest, Index *index, int comp, int repeat,
 			counter_s = 0;
 			_size = src_queue->GetSize();
 			count = 0;
-			while (count < _size) {
+			while (count < _size) { // level distinction dequqeue current level
 				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
@@ -499,7 +499,7 @@ int Buffer::Query(int src, int dest, Index *index, int comp, int repeat,
 				else
 					continue;
 			}
-			if (counter_s == 0)
+			if (counter_s == 0) // if no neighbors
 				break;
 			counter_d = 0;
 			_size = dest_queue->GetSize();
@@ -689,30 +689,19 @@ int Buffer::Find_First_Unmarked(Index*ind){
 	}
 }
 CC* Buffer::estimateConnectedComponents(Index *ind){
-	int ccounter=0;
-	CC* compIndex=new CC;
+	int ccounter = 0;
+	CC* compIndex = new CC;
 	Queue<int> Queue_Out;
 	Queue<int> Queue_In;
-	compIndex->num_of_comp=0;
+	compIndex->num_of_comp = 0;
 	IndexNode *indarr = ind->GetIndexNode();
-	int pos_in=Find_First_Unmarked_In(ind);
-	int pos_out=Find_First_Unmarked_Out(ind);
-	int pos=Find_First_Unmarked(ind);
-	int nodes_visited=0;
-	cout<<"size: "<<ind->GetSize()<<endl;
-	while(nodes_visited<ind->GetSize()){
-		nodes_visited+=BFS(ind,pos,ccounter,compIndex);
-	//	cout<<"visited: "<<nodes_visited<<" nodes"<<endl;
-		compIndex->num_of_comp++;
-
-		cout<<"component: "<<compIndex->num_of_comp<<endl;
-	//	system("pause");
-		pos=Find_First_Unmarked(ind);
-		pos_in=Find_First_Unmarked_In(ind);
-		pos_out=Find_First_Unmarked_Out(ind);
+	int indexSize = index->GetSize();
+	for (int i = 0; i < indexSize; i++) {
+		// if Node is undefined : BFS
+		if ((indarr[i].visited_out==false) && (indarr[i].visited_in==false))
+			BFS(ind,pos,ccounter,compIndex);
+		}
 	}
-	//cout<<"nodes visited: "<<nodes_visited<<endl;
-
 	return compIndex;
 }
 
@@ -735,8 +724,8 @@ int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
 	//cindex
 	out_position=indarr[pos].out;
 	in_position=indarr[pos].in;
-	cout<<"outpos: "<<out_position<<endl;
-cout<<"inpos: "<<in_position<<endl;
+	//cout<<"outpos: "<<out_position<<endl;
+//cout<<"inpos: "<<in_position<<endl;
 	while(Queue_In.isEmpty()==0 || Queue_Out.isEmpty()==0){
 
 		if(Queue_Out.isEmpty()==0){
@@ -747,7 +736,9 @@ cout<<"inpos: "<<in_position<<endl;
 
 			out_position=indarr[outTemp].out;
 
-       	cout<<"out_deque: "<< Queue_Out.Dequeue()<<endl;
+       	//cout<<"out_deque: "<<
+		Queue_Out.Dequeue();
+		//<<endl;
        	 if(out_position!=-1){
      	   do
      	   {
@@ -781,8 +772,8 @@ cout<<"inpos: "<<in_position<<endl;
 			inTemp=Queue_In.GetfrontData();
 			 in_position=indarr[inTemp].in;
 			 indarr[inTemp].in_queue=false;
-			cout<<"in deque: "<<Queue_In.Dequeue()<<endl;
-
+			//cout<<"in deque: "<<<<endl;
+			Queue_In.Dequeue();
 			if(in_position!=-1){
 
 				do{

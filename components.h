@@ -24,9 +24,9 @@
 	typeof (b) _b = (b); \
     _a > _b ? _a : _b; })
 
-// valte oti nomizetai stin tixi ta vala gia arxi
 #define NUM 20
 #define ROWS 1000000
+#define GRAILTIMES 5
 
 enum GRAIL_ANSWER {NO, MAYBE, YES};
 
