@@ -139,11 +139,19 @@ int main(int argc, char **argv) {
 			estimatedComponentsAmount = 50;
 		SCC* strongCC = new SCC(estimatedComponentsAmount);
 		strongCC->EstimateSCC(buffer,index,maxVal);
-
-		cout << "Building Hyper Graph & Grail Index." << endl;
+		cout << "tarjan ended" << endl;
+ 		cout << "Building Hyper Graph & Grail Index." << endl;
 		strongCC->BuildHypergraph(index, buffer);
-		strongCC->BuildGrailIndex();
+		cout << "Hyper built" << endl;
+		for (int i=0;i<GRAILTIMES;i++){
+			strongCC->BuildGrailIndex(i);
+			cout <<  "grail @" << i << " built" << endl;
+		}
 
+		auto current_time = std::chrono::high_resolution_clock::now();
+
+		std::cout << "Function was running for " <<
+		std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << "\"" << std::endl;
 		//result << strongCC.GetCompCount();
 		if (workload.is_open()) {
 

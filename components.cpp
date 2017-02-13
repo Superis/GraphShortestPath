@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <time.h>
 
 #include "components.h"
 #include "template_list.h"
@@ -26,6 +27,7 @@ SCC::SCC(int _size) :
 	PushChecker = NULL;
 	components = new Component*[_size];
 	edges = NULL;
+	edgesArray =  NULL;
 }
 
 SCC::~SCC() {
@@ -351,7 +353,9 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 	int node_pos, current_component, temp;
 	IndexNode* k = index->GetIndexNode();
 	Node* G = buffer->GetListNode('o');
+	int u;
 	this->edges = new List<int>*[componentsCount];
+	this->edgesArray = new int*[componentsCount];
 	for (int i = 0; i < componentsCount; i++) {
 		edges[i] = new List<int>;
 		current_component = this->components[i]->componentID;
@@ -371,24 +375,61 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 			} while (components[i]->includedNodesID->IncCur());
 		}
 		components[i]->includedNodesID->ResetCur();
+		edges[i]->ResetCur();
+		u =edges[i]->GetSize();
+		this->edgesArray[i]= new int[u];
+		for (int j=0;j < u;j++){
+			edgesArray[i][j]=edges[i]->GetCurData();
+			edges[i]->IncCur();
+		}
 	}
 	delete[] PushChecker;
 }
 
-void SCC::BuildGrailIndex() {
-	this->ResetEdges();
-	int r = 1;
-	int i = componentsCount - 1;
-	while (i >= 0) {
-		if (components[i]->label.visited == 0) {
-			//cout << i << " to i" << endl;
-			this->GrailProgress(i, &r);
+void SCC::ShuffleEdges() {
+	srand(time(NULL));
+	int k,temp,u;
+	for (int i = 0; i < componentsCount; i++) {
+		u=edges[i]->GetSize();
+		for (int j=0;j < u;j++){
+		    k = j + rand() % (u - j);
+		    temp = edgesArray[i][j];
+		    edgesArray[i][j] = edgesArray[i][k];
+		    edgesArray[i][k] = temp;
 		}
-		i--;
 	}
+
 }
 
-void SCC::GrailProgress(int i, int* r) {
+void SCC::BuildGrailIndex(int grailnum) {
+	//this->ResetEdges();
+	int r = 1;
+	if (rand() % 2 ==0) {
+		int i = componentsCount - 1;
+		while (i >= 0) {
+			if (components[i]->label[grailnum].visited == 0) {
+				//cout << i << " to i" << endl;
+				this->GrailProgress(i, &r,grailnum);
+			}
+			i--;
+		}
+	}
+	else {
+		int i=0;
+		while (i<componentsCount){
+			if (components[i]->label[grailnum].visited == 0) {
+				//cout << i << " to i" << endl;
+				this->GrailProgress(i, &r,grailnum);
+			}
+			i++;
+		}
+	}
+	if (grailnum < GRAILTIMES)
+		this->ShuffleEdges();
+
+}
+
+void SCC::GrailProgress(int i, int* r,int grailnum) {
 	int min_rank = componentsCount; //timi wste me tin prwti na paroume mikrotero min_rank
 	int myrank = *r;
 	int new_progress;
@@ -396,25 +437,25 @@ void SCC::GrailProgress(int i, int* r) {
 	StackProgress.Push(i);
 	while (!StackProgress.isEmpty()) {
 		i = StackProgress.GetHeadData();
-		while ((new_progress = this->GetNextEdge(i)) != -1) {
+		while ((new_progress = this->GetNextArrayEdge(i)) != -1) {
 			//somefile << new_progress << " new progresss";
-			components[i]->label.flag = 1;
-			if (components[new_progress]->label.visited == 1) {
+			components[i]->label[grailnum].flag = 1;
+			if (components[new_progress]->label[grailnum].visited == 1) {
 				min_rank = min(min_rank,
-						components[new_progress]->label.min_rank);
+						components[new_progress]->label[grailnum].min_rank);
 				continue;
 			}
 			i = new_progress;
 			StackProgress.Push(i);
 		}
-		components[i]->label.rank = myrank;
-		if (!components[i]->label.flag) {
-			components[i]->label.min_rank = myrank;
+		components[i]->label[grailnum].rank = myrank;
+		if (!components[i]->label[grailnum].flag) {
+			components[i]->label[grailnum].min_rank = myrank;
 			min_rank = min(min_rank, myrank);
 		} else
-			components[i]->label.min_rank = min_rank;
+			components[i]->label[grailnum].min_rank = min_rank;
 		//cout << "tha peiraksoume tous visited kai sygkekrimena ton " << i << endl;
-		components[i]->label.visited = 1;
+		components[i]->label[grailnum].visited = 1;
 		myrank++;
 		StackProgress.Pop();
 	}
@@ -455,16 +496,31 @@ int SCC::GetNextEdge(int i) {
 	return -1;
 }
 
+int SCC::GetNextArrayEdge(int i) {
+	int temp;
+	if (this->components[i]->lastArrayEdge < this->edges[i]->GetSize()){
+		temp = edgesArray[i][this->components[i]->lastArrayEdge];
+		this->components[i]->lastArrayEdge++;
+		return temp;
+	}
+
+	this->components[i]->lastArrayEdge=0;
+	return -1;
+}
+
 GRAIL_ANSWER SCC::IsReachableGrail(Index* index, int source, int dest) {
 	IndexNode* indArray = index->GetIndexNode();
 	if (indArray[source].componentID == indArray[dest].componentID)
 		return YES;
 	else {  // ELEGXOUME TO EURETIRIO GRAIL
-		if (this->Subset(components[indArray[dest].componentID]->label,
-				components[indArray[source].componentID]->label))
-			return MAYBE;
-		else
-			return NO;
+		for (int i=0;i<GRAILTIMES;i++){
+			if (this->Subset(components[indArray[dest].componentID]->label[i],
+				components[indArray[source].componentID]->label[i]))
+				continue;
+			else
+				return NO;
+		}
+		return MAYBE;
 	}
 }
 

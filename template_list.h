@@ -37,6 +37,7 @@ public:
 	const T& GetHeadData();
 	bool isEmpty();
 	void ResetCur() { cur = head; };
+	int GetSize();
 	bool IncCur();
 	bool IncreaseCur();
 	void Print();
@@ -191,6 +192,9 @@ void List<T>::Print() {
 		std::cout <<cur->data << std::endl;
 }
 
+template<class T>
+int List<T>::GetSize() {
+	return size;
+}
+
 #endif
-
-
