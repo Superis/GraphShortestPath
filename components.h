@@ -40,13 +40,11 @@ struct Label{
 
 struct Component {
     Label label[GRAILTIMES];  //Gia ton Grail
-    //int* connectedComponents;
-    int lastArrayEdge;
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
+    int lastArrayEdge;
 	List<int>* includedNodesID; //ids of included nodes
 	Component() : componentID(-1), nodesSum(0),lastArrayEdge(0) {
-		//connectedComponents = NULL;
 		includedNodesID=new List<int>;
 	}
 };
@@ -129,7 +127,7 @@ public:
 	int Get_Comp(int);
 	int*Get_CCindex(){return ccindex;}
 	int FindNodeCC_ID(uint32_t nodeId);
-	bool RebuildIndex(List<int>*,int, int );
+	void RebuildIndex(List<int>*,int, int );
 	void DestroyCC();
 	void print_cc();
 };

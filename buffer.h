@@ -106,14 +106,13 @@ public:
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*,int version);
 	void AddNeighbor(int, int, Index*);
+	
 	int Query(int , int, Index*,int,int,int);
 	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,Queue<int>*,int);
 
-	int Find_First_Unmarked_In(Index*);
-	int Find_First_Unmarked_Out(Index*);
-	int Find_First_Unmarked(Index*);
 	CC* estimateConnectedComponents(Index*);
 	int BFS(Index*,int,int,CC*);
+
 	/*
 	* Increase capacity of Buffer data type.
 	* if char == 'i' then realloc incoming array

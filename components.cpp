@@ -27,11 +27,11 @@ SCC::SCC(int _size) :
 	PushChecker = NULL;
 	components = new Component*[_size];
 	edges = NULL;
-	edgesArray =  NULL;
+	edgesArray = NULL;
 }
 
 SCC::~SCC() {
-	for (int i=0;i<componentsCount;i++){
+	for (int i = 0; i < componentsCount; i++) {
 		//delete components[i]->connectedComponents;
 		delete components[i]->includedNodesID;
 		delete components[i];
@@ -205,7 +205,7 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer, Index* index, int src,
 	int level = 1;
 	int k, n, i, _size, count;
 	int counter_s, counter_d;
-	if (indArray[src].out == -1 || indArray[dest].in == -1){
+	if (indArray[src].out == -1 || indArray[dest].in == -1) {
 		delete src_queue;
 		delete dest_queue;
 		return -1;
@@ -219,25 +219,25 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer, Index* index, int src,
 				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
-				if (indArray[i].componentID != compsrc){
-					n=this->IsReachableGrail(index,i,dest);
-					if (n==0)
+				if (indArray[i].componentID != compsrc) {
+					n = this->IsReachableGrail(index, i, dest);
+					if (n == 0)
 						continue;
 				}
 				counter_s++;
 				src_pos = indArray[i].out;
-				if (src_pos == -1){
+				if (src_pos == -1) {
 					counter_s--;
 					continue;
 				}
 				src_node = &(buffer->GetListNode('o')[src_pos]);
-				k = buffer->SearchNodeNeighbours(src_node,index, 's','s', level,-1,repeat,src_queue,threadNum);
-				if (k > 0){
+				k = buffer->SearchNodeNeighbours(src_node, index, 's', 's',
+						level, -1, repeat, src_queue, threadNum);
+				if (k > 0) {
 					delete src_queue;
 					delete dest_queue;
 					return k;
-				}
-				else
+				} else
 					continue;
 			}
 			if (counter_s == 0)
@@ -249,25 +249,25 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer, Index* index, int src,
 				i = dest_queue->Dequeue();
 				count++;
 				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
-				if (indArray[i].componentID != compdest){
-					n=this->IsReachableGrail(index,src,i);
-					if (n==0)
+				if (indArray[i].componentID != compdest) {
+					n = this->IsReachableGrail(index, src, i);
+					if (n == 0)
 						continue;
 				}
 				counter_d++;
 				dest_pos = indArray[i].in;
-				if (dest_pos == -1){
+				if (dest_pos == -1) {
 					counter_d--;
 					continue;
 				}
 				dest_node = &(buffer->GetListNode('i')[dest_pos]);
-				k = buffer->SearchNodeNeighbours(dest_node,index, 'd','s', level,-1,repeat,dest_queue,threadNum);
-				if (k > 0){
+				k = buffer->SearchNodeNeighbours(dest_node, index, 'd', 's',
+						level, -1, repeat, dest_queue, threadNum);
+				if (k > 0) {
 					delete src_queue;
 					delete dest_queue;
 					return k;
-				}
-				else
+				} else
 					continue;
 			}
 			if (counter_d == 0)
@@ -284,25 +284,25 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer, Index* index, int src,
 				i = dest_queue->Dequeue();
 				count++;
 				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
-				if (indArray[i].componentID != compdest){
-					n=this->IsReachableGrail(index,src,i);
-					if (n==0)
+				if (indArray[i].componentID != compdest) {
+					n = this->IsReachableGrail(index, src, i);
+					if (n == 0)
 						continue;
 				}
 				counter_d++;
 				dest_pos = indArray[i].in;
-				if (dest_pos == -1){
+				if (dest_pos == -1) {
 					counter_d--;
 					continue;
 				}
 				dest_node = &(buffer->GetListNode('i')[dest_pos]);
-				k = buffer->SearchNodeNeighbours(dest_node,index, 'd','d', level,-1,repeat,dest_queue,threadNum);
-				if (k > 0){
+				k = buffer->SearchNodeNeighbours(dest_node, index, 'd', 'd',
+						level, -1, repeat, dest_queue, threadNum);
+				if (k > 0) {
 					delete src_queue;
-	        		delete dest_queue;
+					delete dest_queue;
 					return k;
-				}
-				else
+				} else
 					continue;
 			}
 			if (counter_d == 0)
@@ -314,25 +314,25 @@ int SCC::EstimateShortestPathSCC(Buffer* buffer, Index* index, int src,
 				i = src_queue->Dequeue();
 				count++;
 				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
-				if (indArray[i].componentID != compsrc){
-					n=this->IsReachableGrail(index,i,dest);
-					if (n==0)
+				if (indArray[i].componentID != compsrc) {
+					n = this->IsReachableGrail(index, i, dest);
+					if (n == 0)
 						continue;
 				}
 				counter_s++;
 				src_pos = indArray[i].out;
-				if (src_pos == -1){
+				if (src_pos == -1) {
 					counter_s--;
 					continue;
 				}
 				src_node = &(buffer->GetListNode('o')[src_pos]);
-				k = buffer->SearchNodeNeighbours(src_node,index, 's','d', level,-1,repeat,src_queue,threadNum);
-				if (k > 0){
+				k = buffer->SearchNodeNeighbours(src_node, index, 's', 'd',
+						level, -1, repeat, src_queue, threadNum);
+				if (k > 0) {
 					delete src_queue;
 					delete dest_queue;
 					return k;
-				}
-				else
+				} else
 					continue;
 			}
 			if (counter_s == 0)
@@ -376,10 +376,10 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 		}
 		components[i]->includedNodesID->ResetCur();
 		edges[i]->ResetCur();
-		u =edges[i]->GetSize();
-		this->edgesArray[i]= new int[u];
-		for (int j=0;j < u;j++){
-			edgesArray[i][j]=edges[i]->GetCurData();
+		u = edges[i]->GetSize();
+		this->edgesArray[i] = new int[u];
+		for (int j = 0; j < u; j++) {
+			edgesArray[i][j] = edges[i]->GetCurData();
 			edges[i]->IncCur();
 		}
 	}
@@ -388,14 +388,14 @@ void SCC::BuildHypergraph(Index* index, Buffer* buffer) {
 
 void SCC::ShuffleEdges() {
 	srand(time(NULL));
-	int k,temp,u;
+	int k, temp, u;
 	for (int i = 0; i < componentsCount; i++) {
-		u=edges[i]->GetSize();
-		for (int j=0;j < u;j++){
-		    k = j + rand() % (u - j);
-		    temp = edgesArray[i][j];
-		    edgesArray[i][j] = edgesArray[i][k];
-		    edgesArray[i][k] = temp;
+		u = edges[i]->GetSize();
+		for (int j = 0; j < u; j++) {
+			k = j + rand() % (u - j);
+			temp = edgesArray[i][j];
+			edgesArray[i][j] = edgesArray[i][k];
+			edgesArray[i][k] = temp;
 		}
 	}
 
@@ -404,22 +404,21 @@ void SCC::ShuffleEdges() {
 void SCC::BuildGrailIndex(int grailnum) {
 	//this->ResetEdges();
 	int r = 1;
-	if (rand() % 2 ==0) {
+	if (rand() % 2 == 0) {
 		int i = componentsCount - 1;
 		while (i >= 0) {
 			if (components[i]->label[grailnum].visited == 0) {
 				//cout << i << " to i" << endl;
-				this->GrailProgress(i, &r,grailnum);
+				this->GrailProgress(i, &r, grailnum);
 			}
 			i--;
 		}
-	}
-	else {
-		int i=0;
-		while (i<componentsCount){
+	} else {
+		int i = 0;
+		while (i < componentsCount) {
 			if (components[i]->label[grailnum].visited == 0) {
 				//cout << i << " to i" << endl;
-				this->GrailProgress(i, &r,grailnum);
+				this->GrailProgress(i, &r, grailnum);
 			}
 			i++;
 		}
@@ -429,7 +428,7 @@ void SCC::BuildGrailIndex(int grailnum) {
 
 }
 
-void SCC::GrailProgress(int i, int* r,int grailnum) {
+void SCC::GrailProgress(int i, int* r, int grailnum) {
 	int min_rank = componentsCount; //timi wste me tin prwti na paroume mikrotero min_rank
 	int myrank = *r;
 	int new_progress;
@@ -498,13 +497,13 @@ int SCC::GetNextEdge(int i) {
 
 int SCC::GetNextArrayEdge(int i) {
 	int temp;
-	if (this->components[i]->lastArrayEdge < this->edges[i]->GetSize()){
+	if (this->components[i]->lastArrayEdge < this->edges[i]->GetSize()) {
 		temp = edgesArray[i][this->components[i]->lastArrayEdge];
 		this->components[i]->lastArrayEdge++;
 		return temp;
 	}
 
-	this->components[i]->lastArrayEdge=0;
+	this->components[i]->lastArrayEdge = 0;
 	return -1;
 }
 
@@ -513,9 +512,9 @@ GRAIL_ANSWER SCC::IsReachableGrail(Index* index, int source, int dest) {
 	if (indArray[source].componentID == indArray[dest].componentID)
 		return YES;
 	else {  // ELEGXOUME TO EURETIRIO GRAIL
-		for (int i=0;i<GRAILTIMES;i++){
+		for (int i = 0; i < GRAILTIMES; i++) {
 			if (this->Subset(components[indArray[dest].componentID]->label[i],
-				components[indArray[source].componentID]->label[i]))
+					components[indArray[source].componentID]->label[i]))
 				continue;
 			else
 				return NO;
@@ -531,64 +530,65 @@ int SCC::Subset(Label a, Label b) {
 		return 0;
 }
 
-void CC::Set_Comp(int pos,int num){
-	ccindex[pos]=num;
+void CC::Set_Comp(int pos, int num) {
+	ccindex[pos] = num;
 }
-int CC::FindNodeCC_ID(uint32_t nodeId){
+
+int CC::FindNodeCC_ID(uint32_t nodeId) {
 	return ccindex[nodeId];
 }
-void CC::print_cc(){
-	cout<<"number of connected components: "<<num_of_comp<<endl;
+
+void CC::print_cc() {
+	cout << "number of connected components: " << num_of_comp << endl;
 }
 
-bool CC::RebuildIndex(List<int>*components,int indexsize,int differentcc){
+void CC::RebuildIndex(List<int>*components, int indexsize, int differentcc) {
 	int i;
 	int j;
-		for(j=0;j<differentcc;i++)
-			for(i=0;i<indexsize;i++)
-				if(components[j].FindElement(FindNodeCC_ID(ccindex[i]))==1) Set_Comp(ccindex[i],components[j].GetHeadData());
-
+	for (j = 0; j < differentcc; i++) {
+		for (i = 0; i < indexsize; i++) {
+			if (components[j].FindElement(FindNodeCC_ID(ccindex[i])) == 1)
+				Set_Comp(ccindex[i], components[j].GetHeadData());
+		}
+	}
 
 }
 
-int CC::Get_Comp(int pos){
+int CC::Get_Comp(int pos) {
 	return ccindex[pos];
 }
 
-void CC::DestroyCC(){
+void CC::DestroyCC() {
 	updateIndex->DestroyIndex();
 	delete updateIndex;
 }
-UpdateIndex::UpdateIndex(int size){
-	int i;
-	index=new List<int>[size];
-	emptyindex=0;
-	differentcc=size;
+UpdateIndex::UpdateIndex(int size) {
+	index = new List<int> [size];
+	emptyindex = 0;
+	differentcc = size;
 }
 
-
-void UpdateIndex::Insert_Components(int comp1,int comp2){
-	index[MIN(comp1,comp2)].Push(MAX(comp1,comp2));
-	 emptyindex++;
+void UpdateIndex::Insert_Components(int comp1, int comp2) {
+	index[MIN(comp1, comp2)].Push(MAX(comp1, comp2));
+	emptyindex++;
 }
 
-void UpdateIndex::Find_Connections(int elem,List<int>*connected){
+void UpdateIndex::Find_Connections(int elem, List<int>*connected) {
 
-	Queue <int> Components;
-	int i=0;
-	int pos;
+	Queue<int> Components;
+	int i = 0;
 	int element;
 
-	int compnum=0; //poies components tha enwthoun se mia
-	pos=Find_Non_Empty_Cell();
-	while(emptyindex>0){
+	int compnum = 0; //poies components tha enwthoun se mia
+	int pos = Find_Non_Empty_Cell();
+	while (emptyindex > 0) {
 		connected[i].Push(index[pos].GetHeadData());
 		Components.Enqueue(index[pos].PopHead());
 
 		emptyindex--;
-		while(Components.isEmpty()==0){
-			element=Components.Dequeue();
-			while(index[element].isEmpty()==0){
+		while (Components.isEmpty() == 0) {
+			element = Components.Dequeue();
+			while (index[element].isEmpty() == 0) {
 				connected[i].Push(index[element].GetHeadData());
 				Components.Enqueue(index[element].PopHead());
 				emptyindex--;
@@ -597,29 +597,27 @@ void UpdateIndex::Find_Connections(int elem,List<int>*connected){
 
 		}
 		i++;
-		pos=Find_Non_Empty_Cell();
+		pos = Find_Non_Empty_Cell();
 		compnum++;
 	}
-	differentcc=i;
+	differentcc = i;
 }
 
-int UpdateIndex::Find_Non_Empty_Cell(){
-	int i;
-	for(i=0;i<differentcc;i++){
-		if(index[i].isEmpty()==0) return i;
+int UpdateIndex::Find_Non_Empty_Cell() {
+	for (int i = 0; i < differentcc; i++) {
+		if (index[i].isEmpty() == 0)
+			return i;
 	}
 	return -1;
 }
-int UpdateIndex::Search_Connection(int comp1,int comp2){
-	int i;
-	int cell=MIN(comp1,comp2);
-	if(index[cell].FindElement(MAX(comp1,comp2))==1) return 1;
-	else return 0;
+int UpdateIndex::Search_Connection(int comp1, int comp2) {
+	int cell = MIN(comp1, comp2);
+	if (index[cell].FindElement(MAX(comp1, comp2)) == 1)
+		return 1;
+	else
+		return 0;
 }
 
-void UpdateIndex::DestroyIndex(){
-	int i;
+void UpdateIndex::DestroyIndex() {
 	delete[] index;
-
-
 }

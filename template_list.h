@@ -84,7 +84,7 @@ void List<T>::PushAfterCheck(const T& obj,int number) {
 template<class T>
 T List<T>::PopHead() {
 	if (!isEmpty()) {
-		T data;
+		T data = T();
 		if (size == 1) {
 			head->next = NULL;
 			head->prev = NULL;
@@ -140,6 +140,7 @@ const T& List<T>::GetHeadData() {
 	if (!isEmpty()) {
 		return head->data;
 	}
+	return static_cast<T>(NULL);
 }
 
 template<class T>
