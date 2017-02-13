@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include "template_queue.h"
 
-#define N 5
-#define GRAILTIMES 3
+#define N 65
+#define GRAILTIMES 5
 
 
 struct IndexNode {
@@ -20,12 +20,19 @@ struct IndexNode {
 	//int* dest_level;
 	int* src_visited;
 	int* dest_visited;
+
+	bool visited_in;
+	bool visited_out;
+	bool in_queue;
+	bool out_queue;
 	// Part 2 Additions :
 	int componentID;
 
 	IndexNode() :
 			in(-1), inlast(-1), inNeighbors(0), out(-1), outlast(-1),
-			outNeighbors(0),src_visited(NULL),dest_visited(NULL), componentID(-1) {}
+			outNeighbors(0),src_visited(NULL),dest_visited(NULL),
+			visited_in(false), visited_out(false),in_queue(false),out_queue(false),
+			componentID(-1) {}
 };
 
 class Buffer;
@@ -102,6 +109,12 @@ public:
 	void AddNeighbor(int, int, Index*);
 	int Query(int , int, Index*,int,int,int);
 	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,Queue<int>*,int);
+
+	int Find_First_Unmarked_In(Index*);
+	int Find_First_Unmarked_Out(Index*);
+	int Find_First_Unmarked(Index*);
+	CC* estimateConnectedComponents(Index*);
+	int BFS(Index*,int,int,CC*);
 	/*
 	* Increase capacity of Buffer data type.
 	* if char == 'i' then realloc incoming array
@@ -109,9 +122,6 @@ public:
 	*/
 	void Reallocate(char);
 	void PrintBuffer(Index *);
-	int Find_First_Unmarked(Index*);
-	CC* estimateConnectedComponents(Index*);
-	int BFS(Index*,int,int,CC*);
 };
 
 #endif /* BUFFER_H_ */

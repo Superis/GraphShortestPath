@@ -661,3 +661,161 @@ void Buffer::PrintBuffer(Index *index) {
 	getchar();
 	cout << "Continuing..." << endl;
 }
+int Buffer::Find_First_Unmarked_In(Index* ind){
+	IndexNode *indarr = ind->GetIndexNode();
+	for(int i=0;i<ind->GetSize();i++){
+		if(indarr[i].visited_in==false) ///????
+			return i;
+	}
+	cout<< "no node found"<<endl;
+	return -1;
+}
+int Buffer::Find_First_Unmarked_Out(Index*ind){
+
+		IndexNode *indarr = ind->GetIndexNode();
+	for(int i=0;i<ind->GetSize();i++){
+		if(indarr[i].visited_out==false) ///????
+			return i;
+	}
+	cout<< "no node found"<<endl;
+	return -1;
+}
+int Buffer::Find_First_Unmarked(Index*ind){
+
+		IndexNode *indarr = ind->GetIndexNode();
+	for(int i=0;i<ind->GetSize();i++){
+		if(indarr[i].visited_out==false&& indarr[i].visited_in==false) ///????
+			return i;
+	}
+}
+CC* Buffer::estimateConnectedComponents(Index *ind){
+	int ccounter=0;
+	CC* compIndex=new CC;
+	Queue<int> Queue_Out;
+	Queue<int> Queue_In;
+	compIndex->num_of_comp=0;
+	IndexNode *indarr = ind->GetIndexNode();
+	int pos_in=Find_First_Unmarked_In(ind);
+	int pos_out=Find_First_Unmarked_Out(ind);
+	int pos=Find_First_Unmarked(ind);
+	int nodes_visited=0;
+	cout<<"size: "<<ind->GetSize()<<endl;
+	while(nodes_visited<ind->GetSize()){
+		nodes_visited+=BFS(ind,pos,ccounter,compIndex);
+	//	cout<<"visited: "<<nodes_visited<<" nodes"<<endl;
+		compIndex->num_of_comp++;
+
+		cout<<"component: "<<compIndex->num_of_comp<<endl;
+	//	system("pause");
+		pos=Find_First_Unmarked(ind);
+		pos_in=Find_First_Unmarked_In(ind);
+		pos_out=Find_First_Unmarked_Out(ind);
+	}
+	//cout<<"nodes visited: "<<nodes_visited<<endl;
+
+	return compIndex;
+}
+
+int Buffer::BFS(Index*index,int pos,int component,CC*cindex){
+	IndexNode*indarr=index->GetIndexNode();
+	int outTemp;
+	int inTemp;
+	int nodes_count=0;
+	int out_position;
+	int in_position;
+	int neighbor_id;
+	int i;
+
+	//oura gia ekserxomenous`
+	Queue<int> Queue_Out;
+	Queue_Out.Enqueue(pos);
+	Queue <int>Queue_In;
+	Queue_In.Enqueue(pos);
+	cindex->Set_Comp(pos,component);
+	//cindex
+	out_position=indarr[pos].out;
+	in_position=indarr[pos].in;
+	cout<<"outpos: "<<out_position<<endl;
+cout<<"inpos: "<<in_position<<endl;
+	while(Queue_In.isEmpty()==0 || Queue_Out.isEmpty()==0){
+
+		if(Queue_Out.isEmpty()==0){
+
+			outTemp = Queue_Out.GetfrontData();
+			indarr[outTemp].out_queue=false;
+		//	 cout<<"outTemp: "<<outTemp<<endl;
+
+			out_position=indarr[outTemp].out;
+
+       	cout<<"out_deque: "<< Queue_Out.Dequeue()<<endl;
+       	 if(out_position!=-1){
+     	   do
+     	   {
+     	   	for(int i=0;i<this->outcoming[out_position].GetEndPos();i++){
+
+					neighbor_id=outcoming[out_position].GetNeighbor(i);
+				//	cout<<"neighbor of "<<outTemp<<": "<<neighbor_id<<endl;
+      	    	  if(indarr[neighbor_id].visited_out==false && indarr[neighbor_id].out_queue==false)
+     	      	 {
+
+           	   		  indarr[neighbor_id].out_queue = true;
+    	          	  Queue_Out.Enqueue(neighbor_id);
+    	          	cindex->Set_Comp(neighbor_id,component);
+    	          	if(indarr[neighbor_id].visited_in==false&& indarr[neighbor_id].in_queue==false){
+					  	 Queue_In.Enqueue(neighbor_id); //prepei na psaksei kai tous eiserxomenous
+					  	indarr[neighbor_id].in_queue=true;
+					}
+    	          	//  indarr[neighbor_id].componentID=component;
+    	       	 }
+    	       }
+    	     	out_position=outcoming[out_position].GetNextNode();
+       	 }while(out_position!=0);
+
+       }
+       	indarr[outTemp].visited_out=1;
+       	//if(indarr[outTe])
+      // 	nodes_count++;
+		}
+
+		if(Queue_In.isEmpty()==0){
+			inTemp=Queue_In.GetfrontData();
+			 in_position=indarr[inTemp].in;
+			 indarr[inTemp].in_queue=false;
+			cout<<"in deque: "<<Queue_In.Dequeue()<<endl;
+
+			if(in_position!=-1){
+
+				do{
+					for(int i=0;i<this->incoming[in_position].GetEndPos();i++){
+
+						neighbor_id=incoming[in_position].GetNeighbor(i);
+			//			cout<<"neighbor: "<<neighbor_id<<endl;
+      	    	  	if(indarr[neighbor_id].visited_in==false && indarr[neighbor_id].in_queue==false)
+     	      		 {
+    	          		Queue_In.Enqueue(neighbor_id);
+    	          		indarr[neighbor_id].in_queue=true;
+    	          		cindex->Set_Comp(neighbor_id,component);
+    	          		if(indarr[neighbor_id].visited_out==false && indarr[neighbor_id].out_queue==false) {
+
+						  	Queue_Out.Enqueue(neighbor_id);
+						  	indarr[neighbor_id].out_queue=true;
+						}
+
+    	          		//nodes_count++;
+    	          		//indarr[neighbor_id].componentID=component;
+    	       	 	}
+					}
+				in_position=incoming[in_position].GetNextNode();
+				}while(in_position!=0);
+
+			}
+						indarr[inTemp].visited_in=1;
+					//	nodes_count++;
+		}
+		//	cout<<"ADDING NODE"<<endl;
+			nodes_count++;
+		//--------------------------------------------------		cout<<"count: "<<nodes_count<<endl;
+	}
+	cout<<"function end"<<endl;
+	return nodes_count;
+}

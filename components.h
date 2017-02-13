@@ -11,6 +11,7 @@
 #include "buffer.h"
 #include "template_list.h"
 #include "template_stack.h"
+#include "template_queue.h"
 
 // MACRO using typeof/template.
 #define MIN(a,b) \
@@ -18,9 +19,14 @@
 	typeof (b) _b = (b); \
     _a < _b ? _a : _b; })
 
+#define MAX(a,b) \
+    ({ typeof (a) _a = (a); \
+	typeof (b) _b = (b); \
+    _a > _b ? _a : _b; })
+
 // valte oti nomizetai stin tixi ta vala gia arxi
 #define NUM 20
-#define ROWS 50
+#define ROWS 1000000
 
 enum GRAIL_ANSWER {NO, MAYBE, YES};
 
@@ -96,19 +102,37 @@ public:
 };
 
 struct UpdateIndex {
-	int index[ROWS][2];
+
+	List<int>*index;
+	int emptyindex;
+	int differentcc; //poses enwseis tha yparksoun
+
+	UpdateIndex(int);
+	void Insert_Components(int ,int);
+	void Find_Connections(int ,List<int>*);
+	int Find_Non_Empty_Cell();
+	int Search_Connection(int, int);
+	void DestroyIndex();
+
 };
 
 class CC {
 	int ccindex[ROWS]; //CCIndex
-	UpdateIndex* updateIndex;
-	int metricVal;
+
 public:
+	int metricVal;
+	UpdateIndex* updateIndex;
+	int num_of_comp;
 	CC* EstimateCC(Buffer* );
 	bool InsertNewEdge(int ,int );
-	int FindNodeCC_ID(CC* components, uint32_t nodeId);
-	bool RebuildIndexes();
-	bool DestroyCC();
+	void Set_Comp(int, int);
+	int Get_Comp(int);
+	int*Get_CCindex(){return ccindex;}
+	int FindNodeCC_ID(uint32_t nodeId);
+	bool RebuildIndex(List<int>*,int, int );
+	void DestroyCC();
+	void print_cc();
 };
+
 
 #endif

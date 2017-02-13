@@ -154,8 +154,6 @@ int main(int argc, char **argv) {
 		std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() << "\"" << std::endl;
 		//result << strongCC.GetCompCount();
 		if (workload.is_open()) {
-
-			//js->CreateThreads();
 			while (getline(workload, line)) {
 				istringstream iss(line);
 				iss >> command;
@@ -164,7 +162,7 @@ int main(int argc, char **argv) {
 					commandCounter++;
 					iss >> source >> dest;
 					JobInit(job,StaticQuery,source,dest,commandCounter,
-							index,buffer,(void *)strongCC,js);
+							index,buffer,(void *)strongCC,js,NULL);
 					js->SubmitJob(job);
 				} else if (command == 'F') {
 					commandCounter = -1;
@@ -178,18 +176,22 @@ int main(int argc, char **argv) {
 		delete strongCC;
 		}
 	} else if (specifier == "DYNAMIC") {
+		CC*cindex=new CC;
+		int *metric = new int();
+		cindex=buffer->estimateConnectedComponents(index);
+		cindex->updateIndex=new UpdateIndex(cindex->num_of_comp);
 		if (workload.is_open()) {
 			char lastCommand = 'N';
 			while (getline(workload, line)) {
 				istringstream iss(line);
 				iss >> command;
 				if (command == 'Q') {
-					/*Job *job = new Job();
+					Job *job = new Job();
 					commandCounter++;
 					iss >> source >> dest;
-					JobInit(job,StaticQuery,source,dest,commandCounter,
-							index,buffer,(void *)CC,js);
-					js->SubmitJob(job);*/
+					JobInit(job,DynamicQuery,source,dest,commandCounter,
+							index,buffer,(void *)cindex,js,metric);
+					js->SubmitJob(job);
 					//buffer->Query(source,dest,index,'p',1,0);
 				}
 				else if (command == 'A') {
@@ -202,16 +204,21 @@ int main(int argc, char **argv) {
 					index->Insert(source, dest, buffer);
 					*/
 					buffer->AddNeighbor(source, dest, index,version);
+					if(cindex->Get_Comp(source)!=cindex->Get_Comp(dest))
+				   		cindex->updateIndex->Insert_Components(source,dest);
 				}
 				else if (command == 'F') {
 					commandCounter = -1;
-					//js->ExecuteJobs();
+					js->ExecuteJobs();
 				}
 				lastCommand = command;
 			}
 		}
 		else
 			cout << "Wrong specifier for WORKLOAD file." << endl;
+		delete metric;
+		cindex->DestroyCC();
+		delete cindex;
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;

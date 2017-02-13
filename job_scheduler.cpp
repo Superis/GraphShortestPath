@@ -12,7 +12,8 @@ void JobInit(
 		Job *job,
 		void* (*adressToFunction)(void *),
 		int source,int dest,int commandCounter,
-		Index *index,Buffer *buffer,void *compPointer,JobScheduler *_js)
+		Index *index,Buffer *buffer,void *compPointer,JobScheduler *_js,
+		int* _metric)
 {
 	job->adressToFunction = StaticQuery; // storing function call
 
@@ -23,24 +24,34 @@ void JobInit(
 	job->index = index;
 	job->buffer = buffer;
 	job->js = _js;
+	job->metric = _metric;
 }
- /*
+
 void* DynamicQuery(void *job) {
 	Job *j = ((Job*) job);
-	Index *index = j->index;
-	Buffer *buffer = j->buffer;
-	int *printArray = j->js->GetArray();
-	CC* cc = static_cast<CC*>(j->componentsPointer);
+	//Index *index = j->index;
+	//Buffer *buffer = j->buffer;
+	//int *printArray = j->js->GetArray();
+	CC* cindex = static_cast<CC*>(j->componentsPointer);
 	int source = j->src;
 	int dest = j->dest;
-	int repeat = j->version;
-	int threadNum=j->id;
-	IndexNode* p = index->GetIndexNode();
-
+	//int repeat = j->version;
+	//int threadNum=j->id;
+	if(cindex->Get_Comp(source)==cindex->Get_Comp(dest))
+		cout<<"ektelesi query"<<endl;
+	else {
+		(*(j->metric))++;
+		int result=cindex->updateIndex->Search_Connection(source,dest);
+		if(result==1)
+			cout<<"the 2 componets are joined"<<endl;
+		else {
+			cout<<"no path between the nodes"<<endl;
+		}
+	}
 	delete j;
 	return NULL;
 }
-*/
+
 
 void* StaticQuery(void *job) {
 	Job *j = ((Job*) job);

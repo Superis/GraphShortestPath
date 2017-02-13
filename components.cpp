@@ -530,3 +530,96 @@ int SCC::Subset(Label a, Label b) {
 	else
 		return 0;
 }
+
+void CC::Set_Comp(int pos,int num){
+	ccindex[pos]=num;
+}
+int CC::FindNodeCC_ID(uint32_t nodeId){
+	return ccindex[nodeId];
+}
+void CC::print_cc(){
+	cout<<"number of connected components: "<<num_of_comp<<endl;
+}
+
+bool CC::RebuildIndex(List<int>*components,int indexsize,int differentcc){
+	int i;
+	int j;
+		for(j=0;j<differentcc;i++)
+			for(i=0;i<indexsize;i++)
+				if(components[j].FindElement(FindNodeCC_ID(ccindex[i]))==1) Set_Comp(ccindex[i],components[j].GetHeadData());
+
+
+}
+
+int CC::Get_Comp(int pos){
+	return ccindex[pos];
+}
+
+void CC::DestroyCC(){
+	updateIndex->DestroyIndex();
+	delete updateIndex;
+}
+UpdateIndex::UpdateIndex(int size){
+	int i;
+	index=new List<int>[size];
+	emptyindex=0;
+	differentcc=size;
+}
+
+
+void UpdateIndex::Insert_Components(int comp1,int comp2){
+	index[MIN(comp1,comp2)].Push(MAX(comp1,comp2));
+	 emptyindex++;
+}
+
+void UpdateIndex::Find_Connections(int elem,List<int>*connected){
+
+	Queue <int> Components;
+	int i=0;
+	int pos;
+	int element;
+
+	int compnum=0; //poies components tha enwthoun se mia
+	pos=Find_Non_Empty_Cell();
+	while(emptyindex>0){
+		connected[i].Push(index[pos].GetHeadData());
+		Components.Enqueue(index[pos].PopHead());
+
+		emptyindex--;
+		while(Components.isEmpty()==0){
+			element=Components.Dequeue();
+			while(index[element].isEmpty()==0){
+				connected[i].Push(index[element].GetHeadData());
+				Components.Enqueue(index[element].PopHead());
+				emptyindex--;
+
+			}
+
+		}
+		i++;
+		pos=Find_Non_Empty_Cell();
+		compnum++;
+	}
+	differentcc=i;
+}
+
+int UpdateIndex::Find_Non_Empty_Cell(){
+	int i;
+	for(i=0;i<differentcc;i++){
+		if(index[i].isEmpty()==0) return i;
+	}
+	return -1;
+}
+int UpdateIndex::Search_Connection(int comp1,int comp2){
+	int i;
+	int cell=MIN(comp1,comp2);
+	if(index[cell].FindElement(MAX(comp1,comp2))==1) return 1;
+	else return 0;
+}
+
+void UpdateIndex::DestroyIndex(){
+	int i;
+	delete[] index;
+
+
+}
