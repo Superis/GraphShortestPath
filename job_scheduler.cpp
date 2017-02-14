@@ -7,8 +7,23 @@ pthread_mutex_t mtx;
 pthread_cond_t empty_queue;
 pthread_cond_t print;
 
+void StaticJobInit(
+		Job *job,
+		void* (*adressToFunction)(void *) ,
+		int source,int dest,int commandCounter,
+		Index *index,Buffer *buffer,void *compPointer,JobScheduler *_js)
+{
+	job->adressToFunction = adressToFunction; // storing function call
 
-void JobInit(
+	job->src = source;
+	job->dest = dest;
+	job->printPos = commandCounter;
+	job->componentsPointer = compPointer;
+	job->index = index;
+	job->buffer = buffer;
+	job->js = _js;
+}
+void DynamicJobInit(
 		Job *job,
 		void* (*adressToFunction)(void *) ,
 		int source,int dest,int commandCounter,
@@ -35,15 +50,17 @@ void* DynamicQuery(void *job) {
 	Index *index = j->index;
 	Buffer *buffer = j->buffer;
 	int *printArray = j->js->GetArray();
-	CC* cindex = static_cast<CC*>(j->componentsPointer);
+	//CC* cindex = static_cast<CC*>(j->componentsPointer);
 	int source = j->src;
 	int dest = j->dest;
 	int repeat = j->repeat;
 	int threadNum = j->id;
 	int version = j->query_version;
 
-	if (cindex->Get_Comp(source) == cindex->Get_Comp(dest))
-		printArray[j->printPos] =
+	printArray[j->printPos] = //buffer->Query(source, dest, index,-1,repeat,threadNum);
+			buffer->DynamicQuery(source,dest,index,repeat,threadNum,version);
+	/*if (cindex->Get_Comp(source) == cindex->Get_Comp(dest))
+		printArray[j->printPos] = //buffer->Query(source,dest,index,-1,repeat,threadNum);
 				buffer->DynamicQuery(source,dest,index,repeat,threadNum,version);
 		//cout << "ektelesi query" << endl;
 	else {
@@ -52,13 +69,13 @@ void* DynamicQuery(void *job) {
 		int result = cindex->updateIndex->
 				Search_Connection(cindex->Get_Comp(source),cindex->Get_Comp(dest));
 		if (result == 1)
-			printArray[j->printPos] =
+			printArray[j->printPos] = //buffer->Query(source,dest,index,-1,repeat,threadNum);
 					buffer->DynamicQuery(source,dest,index,repeat,threadNum,version);
 			//cout << "the 2 componets are joined" << endl;
 		else {
 			printArray[j->printPos] = -1;
 		}
-	}
+	}*/
 	delete j;
 	return NULL;
 }
@@ -151,7 +168,7 @@ JobScheduler::JobScheduler(int threadpool) {
 	queue_size = 0;
 	runningThreads = new int(threadpool);
 	finished = false;
-	result.open(OUTPUT_FILE,ios::app); //output file for Queries
+	result.open(OUTPUT_FILE); //output file for Queries
 	tids = new pthread_t[executionThreads];
 
 	if (pthread_mutex_init(&mtx, NULL) != 0)

@@ -40,8 +40,6 @@ public:
 	int GetSize();
 	bool IncCur();
 	bool IncreaseCur();
-	int FindElement(const T&object);
-	ListNode* Get_Head() {return head;}
 	void Print();
 };
 
@@ -84,7 +82,7 @@ void List<T>::PushAfterCheck(const T& obj,int number) {
 template<class T>
 T List<T>::PopHead() {
 	if (!isEmpty()) {
-		T data = T();
+		T data;
 		if (size == 1) {
 			head->next = NULL;
 			head->prev = NULL;
@@ -140,7 +138,6 @@ const T& List<T>::GetHeadData() {
 	if (!isEmpty()) {
 		return head->data;
 	}
-	return static_cast<T>(NULL);
 }
 
 template<class T>
@@ -200,14 +197,7 @@ int List<T>::GetSize() {
 	return size;
 }
 
-template<class T>
-int List<T>::FindElement(const T& object){
-	ListNode*temp=head;
-	while(temp!=NULL){
-		if(temp->data==object) return 1;
-		temp=temp->next;
-	}
-	return -1;
-}
+
+
 
 #endif

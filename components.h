@@ -11,7 +11,6 @@
 #include "buffer.h"
 #include "template_list.h"
 #include "template_stack.h"
-#include "template_queue.h"
 
 // MACRO using typeof/template.
 #define MIN(a,b) \
@@ -24,9 +23,7 @@
 	typeof (b) _b = (b); \
     _a > _b ? _a : _b; })
 
-#define NUM 20
-#define ROWS 1000000
-#define GRAILTIMES 5
+#define ROWS 50
 
 enum GRAIL_ANSWER {NO, MAYBE, YES};
 
@@ -40,11 +37,13 @@ struct Label{
 
 struct Component {
     Label label[GRAILTIMES];  //Gia ton Grail
+    //int* connectedComponents;
 	int componentID; //current component id
 	int nodesSum; //number of nodes in component
     int lastArrayEdge;
 	List<int>* includedNodesID; //ids of included nodes
 	Component() : componentID(-1), nodesSum(0),lastArrayEdge(0) {
+		//connectedComponents = NULL;
 		includedNodesID=new List<int>;
 	}
 };
@@ -75,7 +74,6 @@ class SCC {
 public:
 	SCC(int);
 	~SCC();
-
     List<int>** GetStrongEdges(){ return edges;};
     Component** GetComponent(){ return components;};
     int GetCompCount(){ return componentsCount;};
@@ -85,7 +83,9 @@ public:
 	int FindNodeSCC_ID(int,Index*);
 	bool NextSCC_ID(ComponentCursor* );
 	int EstimateShortestPathSCC(Buffer*,Index*,int ,int,int,int);
-	bool DestroySCC();
+    int SrcBeforeDest(Index*,Buffer*,int,int,int,int,int ,int,int,Queue<int>*,Queue<int>* );
+    int DestBeforeSrc(Index*,Buffer*,int,int,int,int,int ,int,int,Queue<int>*,Queue<int>* );
+    bool DestroySCC();
     void Tarjan(int ,Stack<int>* ,Index* ,Buffer* ,int, TarzanInfoStruct[], int*);
 	void Print();
     int Subset(Label a,Label b);
@@ -99,6 +99,8 @@ public:
     void GrailProgress(int,int*,int);
     GRAIL_ANSWER IsReachableGrail(Index*,int,int);
 };
+
+
 
 struct UpdateIndex {
 	List<int>*index;

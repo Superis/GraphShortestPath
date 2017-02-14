@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include "template_queue.h"
 
-#define N 65
+#define N 50
+#define GRAILTIMES 5
 
 
 struct IndexNode {
@@ -15,22 +16,16 @@ struct IndexNode {
 	int out;
 	int outlast;
 	int outNeighbors;
-
+	//int* src_level; // numbers the iteration in which this Node was discovered from source Node
+	//int* dest_level;
 	int* src_visited;
 	int* dest_visited;
-
-	bool visited_in;
-	bool visited_out;
-	bool in_queue;
-	bool out_queue;
 	// Part 2 Additions :
 	int componentID;
 
 	IndexNode() :
 			in(-1), inlast(-1), inNeighbors(0), out(-1), outlast(-1),
-			outNeighbors(0),src_visited(NULL),dest_visited(NULL),
-			visited_in(false), visited_out(false),in_queue(false),out_queue(false),
-			componentID(-1) {}
+			outNeighbors(0),src_visited(NULL),dest_visited(NULL), componentID(-1) {}
 };
 
 class Buffer;
@@ -81,8 +76,9 @@ public:
 	int IsFull();
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
-	int ShortestPath(Index*,char,char,int,int,int,Queue<int>*,int);
-	int ShortestPathDynamic(Index*,char,char,int,int,Queue<int>*,int,int);
+	int DynamicShortestPath(Index*,char,char,int,int,Queue<int>*,int,int);
+	int StaticShortestPath(Index* index,char direction ,char firstdir, int level,int comp,int repeat,Queue<int>* myqueue,int threadNum);
+	int StaticShortestPath(Index*,char,char,int,int,int,int,Queue<int>*,int,SCC*);
 	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
 };
@@ -106,14 +102,11 @@ public:
 	void IncreaseEndPos(char c);
 	void AddNeighbor(int, int, Index*,int version);
 	void AddNeighbor(int, int, Index*);
-	
 	int Query(int , int, Index*,int,int,int);
 	int DynamicQuery(int,int,Index*,int,int,int);
 	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,Queue<int>*,int);
+	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,int,Queue<int>*,int,SCC*);
 	int SearchNodeNeighboursDynamic(Node*,Index*, char,char, int,int,Queue<int>*,int,int);
-
-	CC* estimateConnectedComponents(Index*);
-	int BFS(Index*,int,int,CC*);
 
 	/*
 	* Increase capacity of Buffer data type.
@@ -122,6 +115,9 @@ public:
 	*/
 	void Reallocate(char);
 	void PrintBuffer(Index *);
+	int Find_First_Unmarked(Index*);
+	CC* estimateConnectedComponents(Index*);
+	int BFS(Index*,int,int,CC*);
 };
 
 #endif /* BUFFER_H_ */

@@ -134,19 +134,17 @@ int main(int argc, char **argv) {
 	char command;
 	if (specifier == "STATIC") {
 		cout << "Graph is labeled as STATIC.\nPerfoming Tarjan algorithm." << endl;
-		//cout << "Maximum value of graph : " << maxVal << endl;
+
 		int estimatedComponentsAmount = maxVal / 3 ;
 		if (estimatedComponentsAmount == 0)
 			estimatedComponentsAmount = 50;
 		SCC* strongCC = new SCC(estimatedComponentsAmount);
 		strongCC->EstimateSCC(buffer,index,maxVal);
-		cout << "tarjan ended" << endl;
- 		cout << "Building Hyper Graph & Grail Index." << endl;
+
+		cout << "Building Hyper Graph & Grail Indexes." << endl;
 		strongCC->BuildHypergraph(index, buffer);
-		cout << "Hyper built" << endl;
-		for (int i=0;i<GRAILTIMES;i++){
+		for (int i = 0; i < GRAILTIMES; i++) {
 			strongCC->BuildGrailIndex(i);
-			cout <<  "grail @" << i << " built" << endl;
 		}
 
 		auto current_time = std::chrono::high_resolution_clock::now();
@@ -162,9 +160,8 @@ int main(int argc, char **argv) {
 					Job *job = new Job();
 					commandCounter++;
 					iss >> source >> dest;
-					JobInit(job,StaticQuery,source,dest,commandCounter,
-							index,buffer,(void *)strongCC,js,
-							-1,NULL);
+					StaticJobInit(job,StaticQuery,source,dest,commandCounter,
+							index,buffer,(void *)strongCC,js);
 					js->SubmitJob(job);
 				} else if (command == 'F') {
 					commandCounter = -1;
@@ -178,13 +175,13 @@ int main(int argc, char **argv) {
 		delete strongCC;
 		}
 	} else if (specifier == "DYNAMIC") {
-		CC *cindex = new CC;
+	//	CC *cindex = new CC;
 		int *metric = new int();
 
 		cout << "Graph is labeled as DYNAMIC.\n"
 				"Perfoming BFS for weakly connected componenets." << endl;
-		cindex = buffer->estimateConnectedComponents(index);
-		cindex->updateIndex = new UpdateIndex(cindex->num_of_comp);
+	//	cindex = buffer->estimateConnectedComponents(index);
+		//cindex->updateIndex = new UpdateIndex(cindex->num_of_comp);
 
 		if (workload.is_open()) {
 			char lastCommand = 'N';
@@ -195,8 +192,8 @@ int main(int argc, char **argv) {
 					Job *job = new Job();
 					commandCounter++;
 					iss >> source >> dest;
-					JobInit(job,DynamicQuery,source,dest,commandCounter,
-							index,buffer,(void *)cindex,js,
+					DynamicJobInit(job,DynamicQuery,source,dest,commandCounter,
+							index,buffer,(void *)NULL,js,
 							version,metric);
 					js->SubmitJob(job);
 					//buffer->Query(source,dest,index,'p',1,0);
@@ -205,14 +202,13 @@ int main(int argc, char **argv) {
 					if (lastCommand == 'Q')
 						version++;
 					iss >> source >> dest;
-					/* Checking if reallocation is needed for Index.
-					 * No need for given datasets.
+					 //Checking if reallocation is needed for Index.
 					 index->CheckCap(source,dest);
 					 index->Insert(source, dest, buffer);
-					 */
+
 					buffer->AddNeighbor(source, dest, index, version);
-					if (cindex->Get_Comp(source) != cindex->Get_Comp(dest))
-						cindex->updateIndex->Insert_Components(source, dest);
+					//if (cindex->Get_Comp(source) != cindex->Get_Comp(dest))
+					//	cindex->updateIndex->Insert_Components(source, dest);
 				}
 				else if (command == 'F') {
 					commandCounter = -1;
@@ -224,9 +220,9 @@ int main(int argc, char **argv) {
 		else
 			cout << "Wrong specifier for WORKLOAD file." << endl;
 
-		delete metric;
-		cindex->DestroyCC();
-		delete cindex;
+		//delete metric;
+		//cindex->DestroyCC();
+		//delete cindex;
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;

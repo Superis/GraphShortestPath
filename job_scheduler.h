@@ -43,12 +43,15 @@ struct Job {
 	Buffer *buffer;
 	JobScheduler *js;
 
-	//
 	int query_version;
 	int *metric; // Dynamic Query
 };
 
-void JobInit(Job *job,
+void StaticJobInit(Job *job,
+		void* (*adressToFunction)(void *job),
+		int source,int dest,int ccounter,
+		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js);
+void DynamicJobInit(Job *job,
 		void* (*adressToFunction)(void *job),
 		int source,int dest,int ccounter,
 		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js,
