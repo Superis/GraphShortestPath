@@ -169,12 +169,58 @@ int Node::ShortestPath(Index* index, char direction, char firstdir, int level,
 	else
 		return 0;
 }
+
+int Node::ShortestPathDynamic(Index* index, char direction, char firstdir,
+		int level, int repeat, Queue<int>* myqueue, int threadNum,
+		int version) {
+	int i = -1;
+	IndexNode* indArray = index->GetIndexNode();
+	if (direction == 's') {
+		for (i = 0; i < endPos; i++) {
+			if ((edgeProperty[i] <= version)
+					&& (indArray[neighbor[i]].dest_visited[threadNum] == repeat)) {
+				if (firstdir == 's')
+					return (2 * level - 1);
+				else
+					return 2 * level;
+			} else if ((edgeProperty[i] <= version)
+					&& (indArray[neighbor[i]].src_visited[threadNum] != repeat)) {
+				myqueue->Enqueue(neighbor[i]);
+				indArray[neighbor[i]].src_visited[threadNum] = repeat;
+			}
+		}
+	} else if (direction == 'd') {
+		for (i = 0; i < endPos; i++) {
+			if ((edgeProperty[i] <= version)
+					&& (indArray[neighbor[i]].src_visited[threadNum] == repeat)) {
+				if (firstdir == 'd')
+					return (2 * level - 1);
+				else
+					return 2 * level;
+			} else if ((edgeProperty[i] <= version)
+					&& (indArray[neighbor[i]].dest_visited[threadNum] != repeat)) {
+				myqueue->Enqueue(neighbor[i]);
+				indArray[neighbor[i]].dest_visited[threadNum] = repeat;
+			}
+		}
+	}
+	if (i == -1) {
+		cout
+				<< "ERROR @ Node::ShortestPath.Variable i was used uninitialized!Exiting."
+				<< endl;
+		exit(1);
+	}
+	if ((i == maxCapacity) && (nextNode != 0))
+		return -nextNode;
+	else
+		return 0;
+}
 /**************		Index class 	**************/
 
 Index::Index(int maxSize) :
 		indSize(maxSize) {
 	indexArray = new IndexNode[maxSize];
-	cout << "An Index-data_type has been created." << endl;
+	//cout << "An Index-data_type has been created." << endl;
 }
 
 Index::~Index() {
@@ -321,7 +367,7 @@ Buffer::Buffer(int maxVal) :
 		incSize(maxVal), incEnd(0), outSize(maxVal), outEnd(0) {
 	incoming = new Node[maxVal];
 	outcoming = new Node[maxVal];
-	cout << "A buffer-data_type has been created." << endl;
+	//cout << "A buffer-data_type has been created." << endl;
 }
 
 Buffer::~Buffer() {
@@ -446,6 +492,144 @@ void Buffer::AddNeighbor(int src, int dest, Index *index, int version) {
 		pos = outcoming[pos].GetNextNode();
 	} while (pos != 0);
 	this->InsertBuffer(src, dest, index, version);
+}
+
+int Buffer::DynamicQuery(int src, int dest, Index *index, int repeat,
+		int threadNum, int version) {
+	IndexNode *indArray = index->GetIndexNode();
+	int src_pos;			//= indArray[src].out;
+	Node* src_node;			//=&(outcoming[src_pos]);
+	int dest_pos;			// = indArray[src].in;
+	Node* dest_node;			// = &(incoming[dest_pos]);
+	Queue<int>* src_queue = new Queue<int>;
+	Queue<int>* dest_queue = new Queue<int>;
+	src_queue->Enqueue(src);
+	dest_queue->Enqueue(dest);
+	indArray[src].src_visited[threadNum] = repeat;
+	//indArray[src].src_level[threadNum] = 0;
+	indArray[dest].dest_visited[threadNum] = repeat;
+	//indArray[dest].dest_level[threadNum] = 0;
+	int level = 1;
+	int k, i, _size, count;
+	int counter_s, counter_d;
+	if (indArray[src].out == -1 || indArray[dest].in == -1) {
+		delete src_queue;
+		delete dest_queue;
+		return -1;
+	}
+	if (indArray[src].outNeighbors <= indArray[dest].inNeighbors) {
+		while (1) {
+			counter_s = 0;
+			_size = src_queue->GetSize();
+			count = 0;
+			while (count < _size) { // level distinction dequqeue current level
+				i = src_queue->Dequeue();
+				count++;
+				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
+				counter_s++;
+				src_pos = indArray[i].out;
+				if (src_pos == -1) {
+					counter_s--;
+					continue;
+				}
+				src_node = &(outcoming[src_pos]);
+				k = this->SearchNodeNeighboursDynamic(src_node, index, 's', 's',
+						level, repeat, src_queue, threadNum, version);
+				if (k > 0) {
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				} else
+					continue;
+			}
+			if (counter_s == 0) // if no neighbors
+				break;
+			counter_d = 0;
+			_size = dest_queue->GetSize();
+			count = 0;
+			while (count < _size) {
+				i = dest_queue->Dequeue();
+				count++;
+				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
+				counter_d++;
+				dest_pos = indArray[i].in;
+				if (dest_pos == -1) {
+					counter_d--;
+					continue;
+				}
+				dest_node = &(incoming[dest_pos]);
+				k = this->SearchNodeNeighboursDynamic(dest_node, index, 'd',
+						's', level, repeat, dest_queue, threadNum, version);
+				if (k > 0) {
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				} else
+					continue;
+			}
+			if (counter_d == 0)
+				break;
+			level++;
+		}
+	} else {
+		//cout << "pame sto dest" << endl;
+		while (1) {
+			counter_d = 0;
+			_size = dest_queue->GetSize();
+			count = 0;
+			while (count < _size) {
+				i = dest_queue->Dequeue();
+				count++;
+				//if (indArray[i].dest_visited[threadNum] == repeat && indArray[i].dest_level[threadNum]==level-1) {
+				counter_d++;
+				dest_pos = indArray[i].in;
+				if (dest_pos == -1) {
+					counter_d--;
+					continue;
+				}
+				dest_node = &(incoming[dest_pos]);
+				k = this->SearchNodeNeighboursDynamic(dest_node, index, 'd',
+						'd', level, repeat, dest_queue, threadNum, version);
+				if (k > 0) {
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				} else
+					continue;
+			}
+			if (counter_d == 0)
+				break;
+			counter_s = 0;
+			_size = src_queue->GetSize();
+			count = 0;
+			while (count < _size) {
+				i = src_queue->Dequeue();
+				count++;
+				//if (indArray[i].src_visited[threadNum] == repeat && indArray[i].src_level[threadNum]==level-1) {
+				counter_s++;
+				src_pos = indArray[i].out;
+				if (src_pos == -1) {
+					counter_s--;
+					continue;
+				}
+				src_node = &(outcoming[src_pos]);
+				k = this->SearchNodeNeighboursDynamic(src_node, index, 's', 'd',
+						level, repeat, src_queue, threadNum, version);
+				if (k > 0) {
+					delete src_queue;
+					delete dest_queue;
+					return k;
+				} else
+					continue;
+			}
+			if (counter_s == 0)
+				break;
+			level++;
+		}
+	}
+	delete src_queue;
+	delete dest_queue;
+	return -1;
 }
 
 int Buffer::Query(int src, int dest, Index *index, int comp, int repeat,
@@ -614,6 +798,35 @@ int Buffer::SearchNodeNeighbours(Node* node, Index* index, char c, char f,
 	}
 	return 0;
 }
+int Buffer::SearchNodeNeighboursDynamic(Node* node, Index* index, char c,
+		char f, int level, int repeat, Queue<int>* myqueue, int threadNum,
+		int version) {
+	int k;
+	if (c == 's') {
+		do {
+			k = node->ShortestPathDynamic(index, c, f, level, repeat, myqueue,
+					threadNum, version);
+			if (k > 0)
+				return k;
+			else if (k < 0)
+				node = &(outcoming[-k]);
+			else
+				return 0;
+		} while (k < 0); //den exei vrei to path akoma
+	} else if (c == 'd') {
+		do {
+			k = node->ShortestPathDynamic(index, c, f, level, repeat, myqueue,
+					threadNum, version);
+			if (k > 0)
+				return k;
+			else if (k < 0)
+				node = &(incoming[-k]);
+			else
+				return 0;
+		} while (k < 0);
+	}
+	return 0;
+}
 
 void Buffer::Reallocate(char c) {
 	if (c == 'i') {
@@ -681,7 +894,7 @@ CC* Buffer::estimateConnectedComponents(Index *ind) {
 
 int Buffer::BFS(Index*index, int pos, int component, CC*cindex) {
 	IndexNode*indarr = index->GetIndexNode();
-	int outTemp,inTemp;
+	int outTemp, inTemp;
 	int nodes_count = 0;
 	int neighbor_id;
 
@@ -736,7 +949,8 @@ int Buffer::BFS(Index*index, int pos, int component, CC*cindex) {
 			Queue_In.Dequeue();
 			if (in_position != -1) {
 				do {
-					for (int i = 0; i < this->incoming[in_position].GetEndPos();i++) {
+					for (int i = 0; i < this->incoming[in_position].GetEndPos();
+							i++) {
 						neighbor_id = incoming[in_position].GetNeighbor(i);
 						if (indarr[neighbor_id].visited_in == false
 								&& indarr[neighbor_id].in_queue == false) {
@@ -763,6 +977,6 @@ int Buffer::BFS(Index*index, int pos, int component, CC*cindex) {
 		nodes_count++;
 		//--------------------------------------------------		cout<<"count: "<<nodes_count<<endl;
 	}
-	cout << "function end" << endl;
+	//cout << "function end" << endl;
 	return nodes_count;
 }

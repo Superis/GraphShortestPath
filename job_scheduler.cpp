@@ -10,12 +10,12 @@ pthread_cond_t print;
 
 void JobInit(
 		Job *job,
-		void* (*adressToFunction)(void *),
+		void* (*adressToFunction)(void *) ,
 		int source,int dest,int commandCounter,
 		Index *index,Buffer *buffer,void *compPointer,JobScheduler *_js,
-		int* _metric)
+		int query_version,int* _metric)
 {
-	job->adressToFunction = StaticQuery; // storing function call
+	job->adressToFunction = adressToFunction; // storing function call
 
 	job->src = source;
 	job->dest = dest;
@@ -24,28 +24,39 @@ void JobInit(
 	job->index = index;
 	job->buffer = buffer;
 	job->js = _js;
+
+	// Dynamic Query extra variables
+	job->query_version = query_version;
 	job->metric = _metric;
 }
 
 void* DynamicQuery(void *job) {
 	Job *j = ((Job*) job);
-	//Index *index = j->index;
-	//Buffer *buffer = j->buffer;
-	//int *printArray = j->js->GetArray();
+	Index *index = j->index;
+	Buffer *buffer = j->buffer;
+	int *printArray = j->js->GetArray();
 	CC* cindex = static_cast<CC*>(j->componentsPointer);
 	int source = j->src;
 	int dest = j->dest;
-	//int repeat = j->version;
-	//int threadNum=j->id;
-	if(cindex->Get_Comp(source)==cindex->Get_Comp(dest))
-		cout<<"ektelesi query"<<endl;
+	int repeat = j->repeat;
+	int threadNum = j->id;
+	int version = j->query_version;
+
+	if (cindex->Get_Comp(source) == cindex->Get_Comp(dest))
+		printArray[j->printPos] =
+				buffer->DynamicQuery(source,dest,index,repeat,threadNum,version);
+		//cout << "ektelesi query" << endl;
 	else {
+
 		(*(j->metric))++;
-		int result=cindex->updateIndex->Search_Connection(source,dest);
-		if(result==1)
-			cout<<"the 2 componets are joined"<<endl;
+		int result = cindex->updateIndex->
+				Search_Connection(cindex->Get_Comp(source),cindex->Get_Comp(dest));
+		if (result == 1)
+			printArray[j->printPos] =
+					buffer->DynamicQuery(source,dest,index,repeat,threadNum,version);
+			//cout << "the 2 componets are joined" << endl;
 		else {
-			cout<<"no path between the nodes"<<endl;
+			printArray[j->printPos] = -1;
 		}
 	}
 	delete j;
@@ -61,7 +72,7 @@ void* StaticQuery(void *job) {
 	SCC* strongCC = static_cast<SCC*>(j->componentsPointer);
 	int source = j->src;
 	int dest = j->dest;
-	int repeat = j->version;
+	int repeat = j->repeat;
 	int threadNum=j->id;
 	IndexNode* p = index->GetIndexNode();
 
@@ -123,9 +134,10 @@ void* JobScheduler::ExecuteThread(void *job) {
 			pthread_mutex_unlock(&mtx);
 			continue;
 		}
+		//cout << "\tThread #" << threadID << " perfomming address!" << endl;
 		pthread_mutex_unlock(&mtx);
-		j->id=threadID;
-		j->version=repeat;
+		j->id = threadID;
+		j->repeat = repeat;
 		j->adressToFunction((void*) j);
 		repeat++;
 	}
@@ -159,6 +171,9 @@ JobScheduler::JobScheduler(int threadpool) {
 }
 
 JobScheduler::~JobScheduler() {
+
+	this->DestroyAll(); // Destroy all waiting threads.
+
 	delete queue;
 	delete[] tids;
 	delete runningThreads;
@@ -176,7 +191,9 @@ JobScheduler::~JobScheduler() {
 void JobScheduler::SubmitJob(Job *j) {
 	if (pthread_mutex_lock(&mtx) != 0)
 		Psystem_error("mtx lock @ JobScheduler::SubmitJob ");
+
 	queue->Enqueue(j);
+
 	if (pthread_mutex_unlock(&mtx) != 0)
 		Psystem_error("mtx unlock @ JobScheduler::SubmitJob ");
 }
@@ -189,10 +206,12 @@ void JobScheduler::ExecuteJobs() {
 		delete[] printArray;
 		this->printArray = new int[queue_size];
 	}
+
 	// Assign tasks to empty Thread pool
 	pthread_mutex_lock(&mtx);
 	pthread_cond_broadcast(&empty_queue);
 	pthread_mutex_unlock(&mtx);
+
 	this->WaitAll();
 }
 
@@ -206,18 +225,20 @@ void JobScheduler::WaitAll() {
 }
 
 void JobScheduler::DestroyAll() {
+
 	finished = true;
-	cout << "Destroying all threads" << endl;
+	cout << "Signalling threads for destruction." << endl;
 	pthread_mutex_lock(&mtx);
 	pthread_cond_broadcast(&empty_queue);
 	pthread_mutex_unlock(&mtx);
+
 	for( int i = 0; i < executionThreads; i++) {
 		void *threadReturn;
         if (pthread_join(tids[i], &threadReturn) < 0) {
         	perror("pthread_join ");
         	exit(EXIT_FAILURE);
         }
-        //cout << "Thread #" << i << " ended." << endl;
+        cout << "Thread #" << i << " ended." << endl;
 	}
 }
 

@@ -75,6 +75,7 @@ class SCC {
 public:
 	SCC(int);
 	~SCC();
+
     List<int>** GetStrongEdges(){ return edges;};
     Component** GetComponent(){ return components;};
     int GetCompCount(){ return componentsCount;};
@@ -100,7 +101,6 @@ public:
 };
 
 struct UpdateIndex {
-
 	List<int>*index;
 	int emptyindex;
 	int differentcc; //poses enwseis tha yparksoun

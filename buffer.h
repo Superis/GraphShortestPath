@@ -15,8 +15,7 @@ struct IndexNode {
 	int out;
 	int outlast;
 	int outNeighbors;
-	//int* src_level; // numbers the iteration in which this Node was discovered from source Node
-	//int* dest_level;
+
 	int* src_visited;
 	int* dest_visited;
 
@@ -83,6 +82,7 @@ public:
 	int SearchNeighbors(int); // search neightbors if equal with "int".If exists return 0 else 1
 	void CreateTables(int); //dimiourgei tous pinakes neighbor kai edgeProperty
 	int ShortestPath(Index*,char,char,int,int,int,Queue<int>*,int);
+	int ShortestPathDynamic(Index*,char,char,int,int,Queue<int>*,int,int);
 	void PrintNeightbors(int,char);
 	void PrintNeightborsINC(int);
 };
@@ -108,7 +108,9 @@ public:
 	void AddNeighbor(int, int, Index*);
 	
 	int Query(int , int, Index*,int,int,int);
+	int DynamicQuery(int,int,Index*,int,int,int);
 	int SearchNodeNeighbours(Node*,Index*, char,char, int,int,int,Queue<int>*,int);
+	int SearchNodeNeighboursDynamic(Node*,Index*, char,char, int,int,Queue<int>*,int,int);
 
 	CC* estimateConnectedComponents(Index*);
 	int BFS(Index*,int,int,CC*);

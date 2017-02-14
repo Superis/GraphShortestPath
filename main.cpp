@@ -54,7 +54,8 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-			auto start_time = std::chrono::high_resolution_clock::now();
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	/*
 	 * Read workload file 1st line to see the kind of graph,
 	 * so to avoid initializing edgeProperty.
@@ -162,7 +163,8 @@ int main(int argc, char **argv) {
 					commandCounter++;
 					iss >> source >> dest;
 					JobInit(job,StaticQuery,source,dest,commandCounter,
-							index,buffer,(void *)strongCC,js,NULL);
+							index,buffer,(void *)strongCC,js,
+							-1,NULL);
 					js->SubmitJob(job);
 				} else if (command == 'F') {
 					commandCounter = -1;
@@ -176,10 +178,14 @@ int main(int argc, char **argv) {
 		delete strongCC;
 		}
 	} else if (specifier == "DYNAMIC") {
-		CC*cindex=new CC;
+		CC *cindex = new CC;
 		int *metric = new int();
-		cindex=buffer->estimateConnectedComponents(index);
-		cindex->updateIndex=new UpdateIndex(cindex->num_of_comp);
+
+		cout << "Graph is labeled as DYNAMIC.\n"
+				"Perfoming BFS for weakly connected componenets." << endl;
+		cindex = buffer->estimateConnectedComponents(index);
+		cindex->updateIndex = new UpdateIndex(cindex->num_of_comp);
+
 		if (workload.is_open()) {
 			char lastCommand = 'N';
 			while (getline(workload, line)) {
@@ -190,7 +196,8 @@ int main(int argc, char **argv) {
 					commandCounter++;
 					iss >> source >> dest;
 					JobInit(job,DynamicQuery,source,dest,commandCounter,
-							index,buffer,(void *)cindex,js,metric);
+							index,buffer,(void *)cindex,js,
+							version,metric);
 					js->SubmitJob(job);
 					//buffer->Query(source,dest,index,'p',1,0);
 				}
@@ -200,12 +207,12 @@ int main(int argc, char **argv) {
 					iss >> source >> dest;
 					/* Checking if reallocation is needed for Index.
 					 * No need for given datasets.
-					index->CheckCap(source,dest);
-					index->Insert(source, dest, buffer);
-					*/
-					buffer->AddNeighbor(source, dest, index,version);
-					if(cindex->Get_Comp(source)!=cindex->Get_Comp(dest))
-				   		cindex->updateIndex->Insert_Components(source,dest);
+					 index->CheckCap(source,dest);
+					 index->Insert(source, dest, buffer);
+					 */
+					buffer->AddNeighbor(source, dest, index, version);
+					if (cindex->Get_Comp(source) != cindex->Get_Comp(dest))
+						cindex->updateIndex->Insert_Components(source, dest);
 				}
 				else if (command == 'F') {
 					commandCounter = -1;
@@ -216,6 +223,7 @@ int main(int argc, char **argv) {
 		}
 		else
 			cout << "Wrong specifier for WORKLOAD file." << endl;
+
 		delete metric;
 		cindex->DestroyCC();
 		delete cindex;
@@ -224,7 +232,6 @@ int main(int argc, char **argv) {
 		cerr << "Unable to open Workload file" << endl;
 
 	workload.close();
-	js->DestroyAll(); // Destroy all waiting threads.
 
 	delete js;
 	delete buffer;

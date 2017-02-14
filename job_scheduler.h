@@ -36,20 +36,23 @@ class JobScheduler;
 struct Job {
 	void* (*adressToFunction)(void *job);
 	int src,dest,id,
-	version, // repeat for STATIC || version for DYNAMIC
+	repeat, // repeat for STATIC || version for DYNAMIC
 	*printArr,printPos; // pointer to dynamic Array for results
 	void *componentsPointer; // points to SCC or CC
 	Index *index;
 	Buffer *buffer;
 	JobScheduler *js;
 
+	//
+	int query_version;
 	int *metric; // Dynamic Query
 };
 
 void JobInit(Job *job,
 		void* (*adressToFunction)(void *job),
 		int source,int dest,int ccounter,
-		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js,int *metric);
+		Index *index,Buffer *buffer,void *compPoint,JobScheduler *js,
+		int version,int *metric);
 
 void *StaticQuery(void *job);
 void *DynamicQuery(void *job);
