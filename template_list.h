@@ -41,6 +41,9 @@ public:
 	bool IncCur();
 	bool IncreaseCur();
 	void Print();
+	int FindElement(const T&object);
+	const T& FindMinimum();
+	ListNode*Get_Head(){return head;}
 };
 
 template<class T>
@@ -197,7 +200,26 @@ int List<T>::GetSize() {
 	return size;
 }
 
+template<class T>
+int List<T>::FindElement(const T& object){
+	ListNode*temp=head;
+	while(temp!=NULL){
+		if(temp->data==object) return 1;
+		temp=temp->next;
+	}
+	return -1;
+}
 
+template<class T>
+const T& List<T>::FindMinimum(){
+	ListNode*temp=head;
+	T min=temp->data;
+	while(temp!=NULL){
+		if(temp->data<min) min=temp->data;
+		temp=temp->next;
+	}
+	return min;
+}
 
 
 #endif
