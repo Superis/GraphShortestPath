@@ -145,7 +145,7 @@ public:
 	int Get_Comp(int);
 	int*Get_CCindex(){return ccindex;}
 	int FindNodeCC_ID(uint32_t nodeId);
-	bool RebuildIndex(List<int>*,int, int );
+	void RebuildIndex(List<int>*,int, int );
 	void DestroyCC();
 	void print_cc();
 	
