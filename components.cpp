@@ -36,10 +36,12 @@ SCC::~SCC() {
 		delete components[i]->includedNodesID;
 		delete components[i];
 		delete edges[i];
+		delete[] edgesArray[i];
 	}
 	//delete[] PushChecker;
 	delete[] components;
 	delete[] edges;
+	delete[] edgesArray;
 }
 
 void SCC::EstimateSCC(Buffer* buffer, Index* index, int max) {
