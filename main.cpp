@@ -175,14 +175,20 @@ int main(int argc, char **argv) {
 		delete strongCC;
 		}
 	} else if (specifier == "DYNAMIC") {
+		CC*cindex=new CC(index->GetSize());
 	//	CC *cindex = new CC;
+		
 		int *metric = new int();
-
+		
 		cout << "Graph is labeled as DYNAMIC.\n"
 				"Perfoming BFS for weakly connected componenets." << endl;
-	//	cindex = buffer->estimateConnectedComponents(index);
-		//cindex->updateIndex = new UpdateIndex(cindex->num_of_comp);
-
+		cindex = buffer->estimateConnectedComponents(index);
+		cindex->updateIndex = new UpdateIndex(cindex->num_of_comp);
+		cindex->print_cc();
+		//int num_of_queries=0;  //arithmps erwtimatwn
+		int index_queries=0; // queries pou xrisimopoioun updateindex
+ 		float metricVal=0.0;
+		List<int>* Connected=new List<int>[cindex->updateIndex->differentcc]; //pinakas pou tha organwnei tis cc pou enwthikan
 		if (workload.is_open()) {
 			char lastCommand = 'N';
 			while (getline(workload, line)) {
@@ -195,6 +201,45 @@ int main(int argc, char **argv) {
 					DynamicJobInit(job,DynamicQuery,source,dest,commandCounter,
 							index,buffer,(void *)NULL,js,
 							version,metric);
+							
+					if(cindex->Get_Comp(source)==cindex->Get_Comp(dest)) cout<<"ektelesi query"<<endl; //oi kovmoi vriskontai sto idio component
+				else{
+					
+					index_queries++;
+				
+					result=cindex->updateIndex->Search_Connection(cindex->Get_Comp(source),cindex->Get_Comp(dest));	 //elegxos gia to an oi components exoun enwthei
+				
+					if(result==1){
+						 cout<<"the 2 componets are joined"<<endl;
+							//getchar();
+					}
+					else if(result==0){ //ksexwrista components: den yparxei monopati metaksy twn komvwn
+						cout<<"no path between the nodes"<<endl;
+					}
+					metricVal=(float)index_queries/(float)commandCounter;
+					
+					if((metricVal>=THRESHOLD)&& (cindex->updateIndex->emptyindex!=0)){ //rebuild otan kseperastei to threshold
+					
+						//euresi twn enwmenwn pleon components  kai anadomisi tou ccindex me ta nea stoixeia
+					 
+						int count_comp=cindex->updateIndex->Find_Connections(Connected);	
+		
+						cindex->RebuildIndex(Connected,index->GetSize(),count_comp);
+					
+						metricVal=0;
+					
+						index_queries=0;
+						
+						num_of_queries=0;
+						
+						delete []Connected;
+				
+						Connected=NULL;
+						
+						Connected= new List<int>[cindex->updateIndex->differentcc];
+					//	cindex->updateIndex->Clear_Table();
+					}
+				} 		
 					js->SubmitJob(job);
 					//buffer->Query(source,dest,index,'p',1,0);
 				}
@@ -205,10 +250,9 @@ int main(int argc, char **argv) {
 					 //Checking if reallocation is needed for Index.
 					 index->CheckCap(source,dest);
 					 index->Insert(source, dest, buffer);
-
+	
 					buffer->AddNeighbor(source, dest, index, version);
-					//if (cindex->Get_Comp(source) != cindex->Get_Comp(dest))
-					//	cindex->updateIndex->Insert_Components(source, dest);
+					if (cindex->Get_Comp(source) != cindex->Get_Comp(dest))	cindex->updateIndex->Insert_Components(source, dest);
 				}
 				else if (command == 'F') {
 					commandCounter = -1;
@@ -221,8 +265,8 @@ int main(int argc, char **argv) {
 			cout << "Wrong specifier for WORKLOAD file." << endl;
 
 		//delete metric;
-		//cindex->DestroyCC();
-		//delete cindex;
+		cindex->DestroyCC();
+		delete cindex;
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;

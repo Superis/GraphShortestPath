@@ -522,3 +522,114 @@ int SCC::Subset(Label a, Label b) {
 	else
 		return 0;
 }
+
+CC::CC(int size){
+	ccindex=new int[size];
+}
+
+void CC::Set_Comp(int pos,int num){
+	ccindex[pos]=num;
+	
+}
+int CC::FindNodeCC_ID(uint32_t nodeId){
+	return ccindex[nodeId];
+}
+void CC::print_cc(){
+	cout<<"number of connected components: "<<num_of_comp<<endl;
+	
+}
+
+void CC::RebuildIndex(List<int>*components,int indexsize,int differentcc){
+	cout<<"Rebuilding index"<<endl;
+	int i;
+	int j;
+	//differentcc: to teleutaio mi adeio keli tou pinaka components 
+		
+		for(j=0;j<differentcc;j++){
+			
+			int List_Min=components[j].FindMinimum(); //vriskei to minimum tis kathe listas me components wste na kanei ti swsti antistoixisi kata tin anadomisi
+			
+			for(i=0;i<indexsize;i++)
+				if(components[j].FindElement(FindNodeCC_ID(ccindex[i]))==1) Set_Comp(ccindex[i],List_Min); //antikatastasi tis proigoumenis component me tin kainourgia
+		}
+				
+
+}
+
+int CC::Get_Comp(int pos){
+	return ccindex[pos];
+}
+void CC::Print_Index(){
+	for(int i=0;i<ROWS;i++)
+		if(ccindex[i]>0) cout<<"component:"<<ccindex[i]<<endl;
+}
+
+void CC::DestroyCC(){
+	updateIndex->DestroyIndex();
+	delete updateIndex;
+}
+UpdateIndex::UpdateIndex(int size){
+	int i;
+	index=new List<int>[size]; //pinakas apo sundedemenes listes
+	emptyindex=0;
+	differentcc=size;
+}
+	
+	
+void UpdateIndex::Insert_Components(int comp1,int comp2){
+	index[MIN(comp1,comp2)].Push(MAX(comp1,comp2)); // i component me ti mikroteri timi diatirei lista me tis components pou enwthike
+	 emptyindex++;
+	 //cout<<"components inserted"<<endl;
+}
+
+/*vriskei to poies components tha enwthoun kai tis apothikeuei se mia domi antistoixi tou updateindex*/
+int UpdateIndex::Find_Connections(List<int>*connected){
+
+	Queue <int> Components;
+	int i=0;
+	int pos;
+	int element;	
+	int compnum=0; //poies components tha enwthoun se mia
+	pos=Find_Non_Empty_Cell();
+	while(emptyindex>0){ 
+		connected[i].Push(index[pos].GetHeadData());
+		Components.Enqueue(index[pos].PopHead());
+		
+		emptyindex--;
+		while(Components.isEmpty()==0){
+			element=Components.Dequeue(); //eisagwgi se oura twn components pou enwthikan wste na eisaxthoun sti domi components
+			while(index[element].isEmpty()==0){
+				connected[i].Push(index[element].GetHeadData());
+				Components.Enqueue(index[element].PopHead());
+				emptyindex--;
+				
+			}
+		
+		}
+		i++;
+		pos=Find_Non_Empty_Cell();
+		compnum++;
+	}
+
+return i; //wste na kserw poio einai to teleutaio keli tou pinaka pou periexei stoixeia
+}
+
+int UpdateIndex::Find_Non_Empty_Cell(){
+	int i;
+	for(i=0;i<differentcc;i++){
+		if(index[i].isEmpty()==0) return i;
+	}
+	return -1;
+}
+int UpdateIndex::Search_Connection(int comp1,int comp2){
+	int i;
+	int cell=MIN(comp1,comp2);
+	if(index[cell].FindElement(MAX(comp1,comp2))==1) return 1;
+	 return 0;
+}
+
+
+void UpdateIndex::DestroyIndex(){
+	int i;
+	delete[] index;
+}

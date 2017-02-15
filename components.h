@@ -11,7 +11,7 @@
 #include "buffer.h"
 #include "template_list.h"
 #include "template_stack.h"
-
+#include "template_queue.h"
 // MACRO using typeof/template.
 #define MIN(a,b) \
     ({ typeof (a) _a = (a); \
@@ -24,7 +24,7 @@
     _a > _b ? _a : _b; })
 
 #define ROWS 50
-
+#define THRESHOLD 0.5
 enum GRAIL_ANSWER {NO, MAYBE, YES};
 
 struct Label{
@@ -115,11 +115,27 @@ struct UpdateIndex {
 	void DestroyIndex();
 
 };
+struct UpdateIndex {
+	
+	List<int>*index;
+	int emptyindex;
+	int differentcc; //poses enwseis tha yparksoun
 
-class CC {
-	int ccindex[ROWS]; //CCIndex
+	UpdateIndex(int);
+	void Insert_Components(int ,int);
+	int Find_Connections(List<int>*);
+	int Find_Non_Empty_Cell();
+	int Search_Connection(int, int);
+	void Clear_Table();
+	void DestroyIndex();
+	
+};
 
+class CC {	
+	int* ccindex; //CCIndex
+	
 public:
+	CC(int);
 	int metricVal;
 	UpdateIndex* updateIndex;
 	int num_of_comp;
@@ -132,7 +148,8 @@ public:
 	void RebuildIndex(List<int>*,int, int );
 	void DestroyCC();
 	void print_cc();
+	
+	void Print_Index();
 };
-
 
 #endif
