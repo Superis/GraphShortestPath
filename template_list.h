@@ -213,12 +213,16 @@ int List<T>::FindElement(const T& object){
 template<class T>
 const T& List<T>::FindMinimum(){
 	ListNode*temp=head;
+	ListNode*temp2;
 	T min=temp->data;
 	while(temp!=NULL){
-		if(temp->data<min) min=temp->data;
+		if(temp->data<min){
+			min=temp->data;
+			temp2=temp;	
+		}
 		temp=temp->next;
 	}
-	return min;
+	return temp2->data;
 }
 
 
