@@ -537,7 +537,7 @@ void CC::print_cc(){
 	
 }
 
-bool CC::RebuildIndex(List<int>*components,int indexsize,int differentcc){
+void CC::RebuildIndex(List<int>*components,int indexsize,int differentcc){
 	cout<<"Rebuilding index"<<endl;
 	int i;
 	int j;
