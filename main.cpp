@@ -265,8 +265,8 @@ int main(int argc, char **argv) {
 			cout << "Wrong specifier for WORKLOAD file." << endl;
 
 		//delete metric;
-		//cindex->DestroyCC();
-		//delete cindex;
+		cindex->DestroyCC();
+		delete cindex;
 	}
 	else
 		cerr << "Unable to open Workload file" << endl;
