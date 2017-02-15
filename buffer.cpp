@@ -962,3 +962,124 @@ void Buffer::PrintBuffer(Index *index) {
 	getchar();
 	cout << "Continuing..." << endl;
 }
+
+
+CC* Buffer::estimateConnectedComponents(Index *ind) {
+    int ccounter = 0;
+    CC* compIndex = new CC(ind->GetSize());
+    compIndex->num_of_comp = 0;
+    IndexNode *indarr = ind->GetIndexNode();
+    int indexSize = ind->GetSize();
+    cout<<indexSize<<endl;
+    for (int i = 0; i < indexSize; i++) {
+
+        if ((indarr[i].visited_out == false)
+                && (indarr[i].visited_in == false)) {
+           
+		   //klisi tou bfs gia  kathe nea component
+		   BFS(ind, i, ccounter, compIndex);
+        	
+			compIndex->num_of_comp++;
+          	
+			ccounter++; //o arithmos tis cc pou vriskomaste
+        }
+    }
+    return compIndex;
+}
+
+/* episkepsi twn komvwn kai twn geitonwn tous kai topothetisi tis stin antistoixi oura
+	me vasi ton arithmo tis klisis tou bfs, topotheteitai kai sto ccindex i katallili component*/
+int Buffer::BFS(Index*index, int pos, int component, CC*cindex) {
+    IndexNode*indarr = index->GetIndexNode();
+    int outTemp,inTemp;
+    int nodes_count = 0;
+    int neighbor_id;
+ 
+    Queue<int> Queue_Out; // oura gia tous ekserxomenous komvous
+    Queue_Out.Enqueue(pos);
+    Queue<int> Queue_In;   //oura gia tous eiserxomenous komvous
+    Queue_In.Enqueue(pos);
+    
+	cindex->Set_Comp(pos, component);
+    int out_position = indarr[pos].out;
+    int in_position = indarr[pos].in;
+   
+    while (Queue_In.isEmpty() == 0 || Queue_Out.isEmpty() == 0) {
+        
+		if (Queue_Out.isEmpty() == 0) {
+            outTemp = Queue_Out.GetfrontData();
+            indarr[outTemp].out_queue = false;
+            out_position = indarr[outTemp].out;
+        	Queue_Out.Dequeue();
+            if (out_position != -1) { //o komvos exei geitones
+                do {
+                    for (int i = 0;i < this->outcoming[out_position].GetEndPos();i++) 
+					{
+                    	 neighbor_id = outcoming[out_position].GetNeighbor(i);
+                       
+					    if (indarr[neighbor_id].visited_out == false&& indarr[neighbor_id].out_queue == false) 
+						{
+ 
+                            indarr[neighbor_id].out_queue = true;
+                            
+							Queue_Out.Enqueue(neighbor_id);
+                            
+							cindex->Set_Comp(neighbor_id, component);
+ 
+                            if (indarr[neighbor_id].visited_in == false && indarr[neighbor_id].in_queue == false) 
+							{
+                                Queue_In.Enqueue(neighbor_id); //prepei na psaksei kai tous eiserxomenous
+                                
+								indarr[neighbor_id].in_queue = true;
+                            }
+                        }
+                    }
+                    out_position = outcoming[out_position].GetNextNode();
+                
+				} while (out_position != 0);  //anazitisi gia olous tous geitones
+ 
+            }
+            indarr[outTemp].visited_out = 1;
+        }
+        //antistoixi diadikasia gia tous eiserxomenous komvous
+        if (Queue_In.isEmpty() == 0) {
+            
+			inTemp = Queue_In.GetfrontData();
+            
+			in_position = indarr[inTemp].in;
+            
+			indarr[inTemp].in_queue = false;
+            
+			Queue_In.Dequeue();
+            
+			if (in_position != -1) {
+                do {
+                    for (int i = 0; i < this->incoming[in_position].GetEndPos();i++) {
+                        neighbor_id = incoming[in_position].GetNeighbor(i);
+                        if (indarr[neighbor_id].visited_in == false && indarr[neighbor_id].in_queue == false) 
+						{
+                            Queue_In.Enqueue(neighbor_id);
+                            
+							indarr[neighbor_id].in_queue = true; 
+                            
+							cindex->Set_Comp(neighbor_id, component); 
+                            
+							if (indarr[neighbor_id].visited_out == false && indarr[neighbor_id].out_queue == false) 
+							{
+                                Queue_Out.Enqueue(neighbor_id);
+                                
+								indarr[neighbor_id].out_queue = true;
+                            }
+                        }
+                    }
+                    in_position = incoming[in_position].GetNextNode();
+                } while (in_position != 0);
+ 
+            }
+            indarr[inTemp].visited_in = 1;
+        }
+        nodes_count++;
+        //--------------------------------------------------        cout<<"count: "<<nodes_count<<endl;
+    }
+    return nodes_count;
+}
